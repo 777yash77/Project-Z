@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply min-h-screen text-slate-100 antialiased;
+  background-image: radial-gradient(circle at top left, rgba(56, 189, 248, 0.22), transparent 22%),
+    radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.18), transparent 20%),
+    linear-gradient(135deg, #040b18 0%, #0f172a 35%, #1f2937 100%);
+}
+.modal-backdrop {
+  background: rgba(15, 23, 42, 0.88);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.6) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.32);
+  border-radius: 9999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
