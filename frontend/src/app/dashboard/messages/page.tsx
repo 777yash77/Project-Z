@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Send, MessageSquare, Search, Building2, UserCheck, ShieldCheck } from 'lucide-react';
-import { fetchHrUsers, fetchMessages, sendMessage } from '../api';
+import { fetchHrProfile, fetchHrUsers, fetchMessages, sendMessage } from '../api';
 
 interface HrContact {
   id: number;
