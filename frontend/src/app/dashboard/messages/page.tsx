@@ -42,19 +42,26 @@ export default function MessagesPage() {
     }).catch(() => { setProfiles([]); setThreads([]); });
   }, [initialRecipientId]);
 
+  const getOrgName = (org: any): string => {
+    if (!org) return '';
+    if (typeof org === 'string') return org;
+    if (typeof org === 'object' && org.name) return String(org.name);
+    return String(org);
+  };
+
   // Filtered HR contacts
   const filteredProfiles = useMemo(() => {
     return profiles.filter((p) => {
       const query = searchQuery.toLowerCase();
-      const matchName = p.username.toLowerCase().includes(query);
-      const matchOrg = (p.organization || '').toLowerCase().includes(query);
+      const matchName = (p.username || '').toLowerCase().includes(query);
+      const matchOrg = getOrgName(p.organization).toLowerCase().includes(query);
       const matchRole = (p.role || '').toLowerCase().includes(query);
       return matchName || matchOrg || matchRole;
     });
   }, [profiles, searchQuery]);
 
   const selectedProfile = useMemo(() => profiles.find((p) => p.id === selectedId), [profiles, selectedId]);
-  const currentThread = useMemo(() => threads.filter((m) => m.sender.id === selectedId || m.recipient.id === selectedId), [threads, selectedId]);
+  const currentThread = useMemo(() => threads.filter((m) => m.sender?.id === selectedId || m.recipient?.id === selectedId), [threads, selectedId]);
 
   const handleSendMessage = async () => {
     if (!draft.trim() || !selectedId) return;
@@ -112,6 +119,7 @@ export default function MessagesPage() {
           <div className="space-y-2 overflow-y-auto max-h-[480px]">
             {filteredProfiles.map((profile) => {
               const isActive = profile.id === selectedId;
+              const orgName = getOrgName(profile.organization);
               return (
                 <button
                   key={profile.id}
@@ -123,13 +131,13 @@ export default function MessagesPage() {
                   }`}
                 >
                   <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-green-500/15 text-sm font-bold text-green-400">
-                    {profile.username.slice(0, 2).toUpperCase()}
+                    {(profile.username || 'HR').slice(0, 2).toUpperCase()}
                   </div>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-white">{profile.username}</p>
                     <p className="truncate text-[11px] text-green-100/30 flex items-center gap-1">
                       <Building2 size={11} className="text-green-400 flex-shrink-0" />
-                      {profile.organization || 'Independent HR'}
+                      {orgName || 'Independent HR'}
                     </p>
                   </div>
                   {isActive && <span className="ml-auto h-1.5 w-1.5 flex-shrink-0 rounded-full bg-green-400 shadow-[0_0_6px_rgba(0,255,136,0.8)]" />}
@@ -149,11 +157,11 @@ export default function MessagesPage() {
               {/* Chat header */}
               <div className="mb-4 flex items-center gap-3 rounded-xl border border-green-500/8 bg-black/30 px-4 py-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/15 text-sm font-bold text-green-400">
-                  {selectedProfile.username.slice(0, 2).toUpperCase()}
+                  {(selectedProfile.username || 'HR').slice(0, 2).toUpperCase()}
                 </div>
                 <div>
                   <p className="font-semibold text-white">{selectedProfile.username}</p>
-                  <p className="text-xs text-green-100/30">{selectedProfile.role} · {selectedProfile.organization || 'Independent HR'}</p>
+                  <p className="text-xs text-green-100/30">{selectedProfile.role || 'HR'} · {getOrgName(selectedProfile.organization) || 'Independent HR'}</p>
                 </div>
                 <div className="ml-auto flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-green-400 shadow-[0_0_6px_rgba(0,255,136,0.8)]" />

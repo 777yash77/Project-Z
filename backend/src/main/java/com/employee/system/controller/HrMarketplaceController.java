@@ -179,8 +179,7 @@ public class HrMarketplaceController {
 
     @PostMapping("/trade-listings/{id}/claim")
     public ResponseEntity<?> claimTradeListing(@PathVariable Long id) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByUsername(username).orElse(null);
+        User user = getCurrentUser();
         if (user == null || user.getOrganization() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Organization required"));
         }
@@ -211,8 +210,7 @@ public class HrMarketplaceController {
 
     @PostMapping("/messages")
     public ResponseEntity<?> sendMessage(@RequestBody Map<String, Object> payload) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User sender = userRepository.findByUsername(username).orElse(null);
+        User sender = getCurrentUser();
         if (sender == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         Long recipientId = ((Number) payload.get("recipientId")).longValue();
         User recipient = userRepository.findById(recipientId).orElse(null);
