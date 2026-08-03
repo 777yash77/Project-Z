@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, DollarSign, Users as UsersIcon, BarChart3, TrendingUp, Activity, Filter, Search, Sparkles, PieChart, ShieldAlert, ArrowUpRight, ChevronRight, BarChart2 } from 'lucide-react';
 import { fetchEmployees, fetchWorkforceAiAnalytics, getCurrentUserProfile } from './api';
 import EmployeeDetailModal from './EmployeeDetailModal';
+import AiReportRenderer from './AiReportRenderer';
 
 interface Employee {
   id: number;
@@ -195,9 +196,7 @@ export default function ExecutiveDashboardPage() {
 
           <div className="rounded-2xl border border-emerald-500/15 bg-background/60 p-5 text-xs">
             {aiWorkforceReport ? (
-              <div className="prose prose-invert max-w-none text-xs text-foreground/90 whitespace-pre-wrap leading-relaxed">
-                {aiWorkforceReport}
-              </div>
+              <AiReportRenderer reportText={aiWorkforceReport} />
             ) : (
               <div className="space-y-4">
                 <div>

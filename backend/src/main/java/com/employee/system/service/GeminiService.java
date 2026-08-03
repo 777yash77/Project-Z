@@ -29,33 +29,41 @@ public class GeminiService {
             return null;
         }
 
-        try {
-            String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" + apiKey;
+        List<String> models = List.of(
+            "gemini-2.0-flash",
+            "gemini-1.5-flash-8b",
+            "gemini-1.5-pro"
+        );
 
-            Map<String, Object> requestBody = Map.of(
-                "contents", List.of(
-                    Map.of("parts", List.of(Map.of("text", promptText)))
-                )
-            );
+        for (String model : models) {
+            try {
+                String url = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + apiKey;
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
+                Map<String, Object> requestBody = Map.of(
+                    "contents", List.of(
+                        Map.of("parts", List.of(Map.of("text", promptText)))
+                    )
+                );
 
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-            Map<String, Object> response = restTemplate.postForObject(url, entity, Map.class);
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
 
-            if (response != null && response.containsKey("candidates")) {
-                List<Map<String, Object>> candidates = (List<Map<String, Object>>) response.get("candidates");
-                if (!candidates.isEmpty()) {
-                    Map<String, Object> content = (Map<String, Object>) candidates.get(0).get("content");
-                    List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
-                    if (!parts.isEmpty()) {
-                        return (String) parts.get(0).get("text");
+                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+                Map<String, Object> response = restTemplate.postForObject(url, entity, Map.class);
+
+                if (response != null && response.containsKey("candidates")) {
+                    List<Map<String, Object>> candidates = (List<Map<String, Object>>) response.get("candidates");
+                    if (!candidates.isEmpty()) {
+                        Map<String, Object> content = (Map<String, Object>) candidates.get(0).get("content");
+                        List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
+                        if (!parts.isEmpty()) {
+                            return (String) parts.get(0).get("text");
+                        }
                     }
                 }
+            } catch (Exception e) {
+                log.debug("Gemini model {} failed, trying next candidate...", model);
             }
-        } catch (Exception e) {
-            log.warn("Gemini API request failed: {}. Utilizing internal AI engine fallback.", e.getMessage());
         }
         return null;
     }

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { X, Sparkles, AlertTriangle, ShieldCheck, ArrowRight, RefreshCw, BarChart2, CheckCircle2, TrendingDown, TrendingUp } from 'lucide-react';
 import { fetchEmployeeDetails, simulateRisk } from './api';
 
+import AiReportRenderer from './AiReportRenderer';
+
 interface EmployeeDetailModalProps {
   employeeId: number | null;
   onClose: () => void;
@@ -151,11 +153,7 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
                 </div>
 
                 {data.riskAnalysis?.fullAiReport ? (
-                  <div className="space-y-4 text-xs">
-                    <div className="prose prose-invert max-w-none text-xs text-foreground/90 whitespace-pre-wrap leading-relaxed">
-                      {data.riskAnalysis.fullAiReport}
-                    </div>
-                  </div>
+                  <AiReportRenderer reportText={data.riskAnalysis.fullAiReport} />
                 ) : (
                   <div className="space-y-4 text-xs">
                     <div>
