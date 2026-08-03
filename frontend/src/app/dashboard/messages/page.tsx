@@ -1,15 +1,15 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Send, MessageCircleMore, UserCircle2, Search, Building2 } from 'lucide-react';
+import { Send, MessageSquare, Search, Building2, UserCheck, ShieldCheck } from 'lucide-react';
 import { fetchHrUsers, fetchMessages, sendMessage } from '../api';
 
 interface HrContact {
   id: number;
   username: string;
   role: string;
-  organization: string | null;
+  organization: string | object | null;
 }
 
 interface MessageItem {
@@ -20,6 +20,20 @@ interface MessageItem {
   createdAt: string;
 }
 
+// Generates consistent avatar color for each HR user
+const getAvatarColor = (name: string) => {
+  const colors = [
+    'from-emerald-500 to-teal-700 text-white',
+    'from-blue-500 to-indigo-700 text-white',
+    'from-purple-500 to-pink-700 text-white',
+    'from-amber-500 to-orange-700 text-white',
+    'from-cyan-500 to-blue-700 text-white',
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return colors[Math.abs(hash) % colors.length];
+};
+
 export default function MessagesPage() {
   const searchParams = useSearchParams();
   const initialRecipientId = searchParams.get('recipientId') ? Number(searchParams.get('recipientId')) : null;
@@ -29,18 +43,32 @@ export default function MessagesPage() {
   const [selectedId, setSelectedId] = useState<number | null>(initialRecipientId);
   const [searchQuery, setSearchQuery] = useState('');
   const [draft, setDraft] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const loadData = () => {
+    Promise.all([fetchHrUsers(), fetchMessages()])
+      .then(([usersRes, messagesRes]) => {
+        setProfiles(usersRes.data);
+        setThreads(messagesRes.data);
+        if (initialRecipientId && usersRes.data.some((u: any) => u.id === initialRecipientId)) {
+          setSelectedId(initialRecipientId);
+        } else if (usersRes.data.length && !selectedId) {
+          setSelectedId(usersRes.data[0].id);
+        }
+      })
+      .catch(() => {
+        setProfiles([]);
+        setThreads([]);
+      });
+  };
 
   useEffect(() => {
-    Promise.all([fetchHrUsers(), fetchMessages()]).then(([usersRes, messagesRes]) => {
-      setProfiles(usersRes.data);
-      setThreads(messagesRes.data);
-      if (initialRecipientId && usersRes.data.some((u: any) => u.id === initialRecipientId)) {
-        setSelectedId(initialRecipientId);
-      } else if (usersRes.data.length && !selectedId) {
-        setSelectedId(usersRes.data[0].id);
-      }
-    }).catch(() => { setProfiles([]); setThreads([]); });
+    loadData();
   }, [initialRecipientId]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [threads, selectedId]);
 
   const getOrgName = (org: any): string => {
     if (!org) return '';
@@ -49,7 +77,6 @@ export default function MessagesPage() {
     return String(org);
   };
 
-  // Filtered HR contacts
   const filteredProfiles = useMemo(() => {
     return profiles.filter((p) => {
       const query = searchQuery.toLowerCase();
@@ -61,7 +88,10 @@ export default function MessagesPage() {
   }, [profiles, searchQuery]);
 
   const selectedProfile = useMemo(() => profiles.find((p) => p.id === selectedId), [profiles, selectedId]);
-  const currentThread = useMemo(() => threads.filter((m) => m.sender?.id === selectedId || m.recipient?.id === selectedId), [threads, selectedId]);
+  const currentThread = useMemo(
+    () => threads.filter((m) => m.sender?.id === selectedId || m.recipient?.id === selectedId),
+    [threads, selectedId]
+  );
 
   const handleSendMessage = async () => {
     if (!draft.trim() || !selectedId) return;
@@ -69,156 +99,205 @@ export default function MessagesPage() {
       const res = await sendMessage({ recipientId: selectedId, content: draft.trim() });
       setThreads((prev) => [...prev, res.data]);
       setDraft('');
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); }
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
   };
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="rounded-2xl border border-green-500/12 bg-[#060e09] p-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      {/* Top Banner */}
+      <div className="rounded-3xl border border-emerald-500/20 bg-card p-6 shadow-lg">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-green-400/50">Cross-HR Messaging</p>
-            <h1 className="mt-2 text-3xl font-bold text-white">Private HR Conversations</h1>
-            <p className="mt-1 text-sm text-green-100/35">Search and chat directly with HR professionals across all partner organizations.</p>
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-emerald-500">
+                Secure HR Network
+              </span>
+              <ShieldCheck size={16} className="text-emerald-500" />
+            </div>
+            <h1 className="mt-2 text-2xl font-extrabold text-foreground sm:text-3xl">Private HR Messaging</h1>
+            <p className="mt-1 text-xs text-muted sm:text-sm">
+              Connect and chat securely with verified HR professionals across partner organizations.
+            </p>
           </div>
-          <div className="flex items-center gap-2 rounded-xl border border-green-500/15 bg-green-500/8 px-4 py-2.5">
-            <MessageCircleMore size={15} className="text-green-400" />
-            <span className="text-sm text-green-100/40">{profiles.length} Total HR Contacts</span>
+          <div className="flex items-center gap-2.5 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-emerald-600 dark:text-emerald-400">
+            <MessageSquare size={18} />
+            <span className="text-xs font-bold">{profiles.length} Active HR Contacts</span>
           </div>
         </div>
       </div>
 
-      {/* Chat layout */}
-      <div className="grid gap-5 xl:grid-cols-[320px_1fr]">
-        {/* Contacts sidebar */}
-        <aside className="rounded-2xl border border-green-500/10 bg-[#060e09] p-5 flex flex-col space-y-4">
+      {/* Main Chat Interface */}
+      <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
+        {/* Sidebar: HR Contacts */}
+        <aside className="flex flex-col rounded-3xl border border-emerald-500/20 bg-card p-5 shadow-lg space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-[0.25em] text-green-400/40">HR Contacts</h2>
-            <span className="text-[10px] text-green-100/30">{filteredProfiles.length} available</span>
+            <h2 className="text-xs font-extrabold uppercase tracking-widest text-foreground">HR Contacts</h2>
+            <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-500">
+              {filteredProfiles.length} Available
+            </span>
           </div>
 
-          {/* Search Bar for HRs */}
-          <div className="flex items-center gap-2 rounded-xl border px-3 py-2 text-xs transition-all shadow-sm" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
-            <Search size={14} className="text-green-400" />
+          {/* Search Box */}
+          <div className="relative flex items-center">
+            <Search size={15} className="absolute left-3.5 text-muted pointer-events-none" />
             <input
               type="text"
               placeholder="Search HR by name or company..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-transparent outline-none w-full"
-              style={{ color: 'var(--text-primary)' }}
+              className="w-full rounded-2xl border border-emerald-500/20 bg-background pl-10 pr-4 py-2.5 text-xs text-foreground outline-none transition placeholder:text-muted focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
 
-          {/* HR Contacts List */}
-          <div className="space-y-2 overflow-y-auto max-h-[480px]">
+          {/* Contacts List */}
+          <div className="space-y-2 overflow-y-auto max-h-[500px] pr-1">
             {filteredProfiles.map((profile) => {
               const isActive = profile.id === selectedId;
               const orgName = getOrgName(profile.organization);
+              const avatarStyle = getAvatarColor(profile.username || 'HR');
+
               return (
                 <button
                   key={profile.id}
                   onClick={() => setSelectedId(profile.id)}
-                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition ${
+                  className={`flex w-full items-center gap-3.5 rounded-2xl p-3 text-left transition-all ${
                     isActive
-                      ? 'border border-green-500/20 bg-green-500/8'
-                      : 'border border-transparent hover:bg-green-500/4'
+                      ? 'border border-emerald-500/30 bg-emerald-500/10 shadow-sm'
+                      : 'border border-transparent hover:bg-emerald-500/5'
                   }`}
                 >
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-green-500/15 text-sm font-bold text-green-400">
-                    {(profile.username || 'HR').slice(0, 2).toUpperCase()}
+                  <div className="relative">
+                    <div
+                      className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${avatarStyle} text-sm font-extrabold shadow-md`}
+                    >
+                      {(profile.username || 'HR').slice(0, 2).toUpperCase()}
+                    </div>
+                    <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card bg-emerald-500" />
                   </div>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-white">{profile.username}</p>
-                    <p className="truncate text-[11px] text-green-100/30 flex items-center gap-1">
-                      <Building2 size={11} className="text-green-400 flex-shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <p className="truncate text-sm font-bold text-foreground">{profile.username}</p>
+                    </div>
+                    <p className="truncate text-xs text-muted flex items-center gap-1 mt-0.5">
+                      <Building2 size={12} className="text-emerald-500 flex-shrink-0" />
                       {orgName || 'Independent HR'}
                     </p>
                   </div>
-                  {isActive && <span className="ml-auto h-1.5 w-1.5 flex-shrink-0 rounded-full bg-green-400 shadow-[0_0_6px_rgba(0,255,136,0.8)]" />}
                 </button>
               );
             })}
             {filteredProfiles.length === 0 && (
-              <p className="py-8 text-center text-xs text-green-100/20">No HR professionals found matching &quot;{searchQuery}&quot;.</p>
+              <div className="py-12 text-center text-xs text-muted">
+                No HR contacts match &quot;{searchQuery}&quot;.
+              </div>
             )}
           </div>
         </aside>
 
-        {/* Chat area */}
-        <section className="flex flex-col rounded-2xl border border-green-500/10 bg-[#060e09] p-5" style={{ minHeight: '500px' }}>
+        {/* Chat Conversation Panel */}
+        <section className="flex flex-col rounded-3xl border border-emerald-500/20 bg-card p-5 sm:p-6 shadow-lg min-h-[560px]">
           {selectedProfile ? (
             <>
-              {/* Chat header */}
-              <div className="mb-4 flex items-center gap-3 rounded-xl border border-green-500/8 bg-black/30 px-4 py-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/15 text-sm font-bold text-green-400">
-                  {(selectedProfile.username || 'HR').slice(0, 2).toUpperCase()}
+              {/* Active Contact Header */}
+              <div className="flex items-center justify-between border-b border-emerald-500/15 pb-4 mb-4">
+                <div className="flex items-center gap-3.5">
+                  <div
+                    className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${getAvatarColor(
+                      selectedProfile.username
+                    )} text-sm font-extrabold shadow-md`}
+                  >
+                    {(selectedProfile.username || 'HR').slice(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <h2 className="text-base font-extrabold text-foreground">{selectedProfile.username}</h2>
+                    <p className="text-xs text-muted flex items-center gap-1 mt-0.5">
+                      <span>{selectedProfile.role || 'HR Professional'}</span>
+                      <span>•</span>
+                      <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                        {getOrgName(selectedProfile.organization) || 'Independent HR'}
+                      </span>
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-semibold text-white">{selectedProfile.username}</p>
-                  <p className="text-xs text-green-100/30">{selectedProfile.role || 'HR'} · {getOrgName(selectedProfile.organization) || 'Independent HR'}</p>
-                </div>
-                <div className="ml-auto flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-green-400 shadow-[0_0_6px_rgba(0,255,136,0.8)]" />
-                  <span className="text-[10px] text-green-400/50">Active HR Contact</span>
+                <div className="flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                  <UserCheck size={14} />
+                  <span>Verified HR</span>
                 </div>
               </div>
 
-              {/* Messages */}
-              <div className="flex-1 space-y-3 overflow-y-auto rounded-xl border border-green-500/6 bg-black/20 p-4" style={{ maxHeight: '320px' }}>
-                {currentThread.length > 0 ? currentThread.map((message) => {
-                  const isMine = message.sender.id !== selectedId;
-                  return (
-                    <div key={message.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
-                        isMine
-                          ? 'bg-green-500/15 text-green-100'
-                          : 'bg-black/50 border border-green-500/8 text-green-100/70'
-                      }`}>
-                        <p>{message.content}</p>
-                        <p className={`mt-1 text-[10px] ${isMine ? 'text-green-400/40' : 'text-green-100/20'}`}>
-                          {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </p>
+              {/* Chat Messages History */}
+              <div className="flex-1 space-y-4 overflow-y-auto rounded-2xl border border-emerald-500/10 bg-background/60 p-4 max-h-[380px] min-h-[300px]">
+                {currentThread.length > 0 ? (
+                  currentThread.map((message) => {
+                    const isMine = message.sender?.id !== selectedId;
+                    return (
+                      <div key={message.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                        <div className="flex flex-col max-w-[80%] sm:max-w-[70%]">
+                          <div
+                            className={`rounded-2xl px-4 py-3 text-sm shadow-sm transition ${
+                              isMine
+                                ? 'bg-emerald-600 text-white font-medium rounded-tr-xs shadow-emerald-900/10'
+                                : 'bg-card border border-emerald-500/20 text-foreground font-medium rounded-tl-xs'
+                            }`}
+                          >
+                            <p className="whitespace-pre-wrap break-words leading-relaxed">{message.content}</p>
+                          </div>
+                          <span
+                            className={`mt-1 text-[10px] font-semibold tracking-wide ${
+                              isMine ? 'text-right text-emerald-600 dark:text-emerald-400' : 'text-left text-muted'
+                            }`}
+                          >
+                            {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  );
-                }) : (
-                  <div className="flex h-full items-center justify-center text-xs text-green-100/20">
-                    No messages yet with {selectedProfile.username}. Send a message to start the conversation!
+                    );
+                  })
+                ) : (
+                  <div className="flex h-full flex-col items-center justify-center py-16 text-center text-xs text-muted space-y-2">
+                    <MessageSquare size={32} className="text-emerald-500/30 mb-1" />
+                    <p className="font-semibold">No messages yet with {selectedProfile.username}.</p>
+                    <p>Send a message below to start your private HR conversation!</p>
                   </div>
                 )}
+                <div ref={messagesEndRef} />
               </div>
 
-              {/* Input */}
-              <div className="mt-4 flex items-end gap-3">
-                <textarea
-                  id="message-input"
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder={`Write a message to ${selectedProfile.username}... (Enter to send)`}
-                  className="min-h-[72px] flex-1 resize-none rounded-xl border border-green-500/12 bg-black/40 px-4 py-3 text-sm text-white outline-none transition placeholder:text-green-100/20 focus:border-green-500/30 focus:ring-2 focus:ring-green-500/8"
-                />
-                <button
-                  id="send-message-btn"
-                  onClick={handleSendMessage}
-                  className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-500 text-black transition hover:bg-green-400 hover:shadow-[0_0_16px_rgba(0,255,136,0.4)]"
-                >
-                  <Send size={16} />
-                </button>
+              {/* Composer Input Bar */}
+              <div className="mt-4 flex flex-col gap-2">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="text"
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={`Write a message to ${selectedProfile.username}...`}
+                    className="flex-1 rounded-2xl border border-emerald-500/20 bg-background px-4 py-3.5 text-sm font-medium text-foreground outline-none transition placeholder:text-muted focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 shadow-sm"
+                  />
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!draft.trim()}
+                    className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white transition hover:bg-emerald-500 disabled:opacity-40 disabled:hover:bg-emerald-600 shadow-md shadow-emerald-600/20"
+                  >
+                    <Send size={18} />
+                  </button>
+                </div>
+                <span className="text-[11px] text-muted self-end pr-1">Press Enter to send</span>
               </div>
             </>
           ) : (
-            <div className="flex flex-1 items-center justify-center rounded-xl border border-dashed border-green-500/10 text-center">
-              <div>
-                <UserCircle2 size={36} className="mx-auto mb-3 text-green-500/20" />
-                <p className="text-sm text-green-100/20">Select an HR contact to start chatting.</p>
-              </div>
+            <div className="flex flex-1 flex-col items-center justify-center py-20 text-center text-muted space-y-3">
+              <MessageSquare size={40} className="text-emerald-500/30" />
+              <p className="text-sm font-semibold">Select an HR contact from the left list to begin messaging.</p>
             </div>
           )}
         </section>
