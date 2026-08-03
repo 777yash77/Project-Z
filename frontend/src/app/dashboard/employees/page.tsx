@@ -214,47 +214,55 @@ export default function EmployeesPage() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-2xl rounded-2xl border border-green-500/15 bg-[#060e09] p-6 shadow-[0_40px_100px_rgba(0,0,0,0.8)]">
-            <div className="mb-6 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md overflow-y-auto">
+          <div className="relative my-auto w-full max-w-xl max-h-[85vh] overflow-y-auto rounded-3xl border border-emerald-500/30 bg-slate-900 p-6 sm:p-8 shadow-[0_25px_70px_rgba(0,0,0,0.8)]">
+            <div className="mb-6 flex items-center justify-between border-b border-slate-800 pb-4">
               <div>
                 <h2 className="text-xl font-bold text-white">{editingId ? 'Edit Employee' : 'Add Employee'}</h2>
-                <p className="mt-0.5 text-xs text-green-100/30">All entries are risk-scored before persisting.</p>
+                <p className="mt-1 text-xs text-slate-400">All entries are risk-scored before persisting.</p>
               </div>
-              <button onClick={() => setShowModal(false)} className="rounded-lg border border-green-500/10 p-2 text-green-100/40 hover:text-white">
-                <X size={16} />
+              <button
+                onClick={() => setShowModal(false)}
+                className="rounded-xl border border-slate-700 bg-slate-800/80 p-2 text-slate-400 hover:border-emerald-500/50 hover:text-white transition"
+              >
+                <X size={18} />
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2">
+            <form onSubmit={handleSubmit} className="grid gap-5 sm:grid-cols-2">
               {[
-                { placeholder: 'Full name', key: 'name', type: 'text' },
-                { placeholder: 'Age', key: 'age', type: 'number' },
-                { placeholder: 'Salary (e.g. 75000)', key: 'salary', type: 'text' },
-                { placeholder: 'Years at company', key: 'yearsAtCompany', type: 'number' },
-                { placeholder: 'Performance rating (1–10)', key: 'performanceRating', type: 'number' },
-                { placeholder: 'Department', key: 'department', type: 'text' },
+                { label: 'Full Name', placeholder: 'e.g. Michael Chen', key: 'name', type: 'text' },
+                { label: 'Age', placeholder: 'e.g. 35', key: 'age', type: 'number' },
+                { label: 'Annual Salary ($)', placeholder: 'e.g. 75000', key: 'salary', type: 'text' },
+                { label: 'Years at Company', placeholder: 'e.g. 5', key: 'yearsAtCompany', type: 'number' },
+                { label: 'Performance Rating (1.0 – 5.0)', placeholder: 'e.g. 4.2', key: 'performanceRating', type: 'number', step: '0.1' },
+                { label: 'Department', placeholder: 'e.g. Engineering', key: 'department', type: 'text' },
               ].map((field) => (
-                <input
-                  key={field.key}
-                  type={field.type}
-                  className="rounded-xl border border-green-500/12 bg-black/50 px-4 py-3 text-sm text-white outline-none transition placeholder:text-green-100/20 focus:border-green-500/40 focus:ring-2 focus:ring-green-500/8"
-                  placeholder={field.placeholder}
-                  value={(form as any)[field.key]}
-                  onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
-                  required
-                />
+                <div key={field.key} className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                    {field.label}
+                  </label>
+                  <input
+                    type={field.type}
+                    step={field.step}
+                    className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm font-medium text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"
+                    placeholder={field.placeholder}
+                    value={(form as any)[field.key]}
+                    onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
+                    required
+                  />
+                </div>
               ))}
-              <div className="sm:col-span-2 flex justify-end gap-3 pt-2">
+              <div className="sm:col-span-2 flex justify-end gap-3 pt-4 border-t border-slate-800 mt-2">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="rounded-xl border border-green-500/10 px-5 py-2.5 text-sm text-green-100/40 transition hover:border-green-500/25 hover:text-white"
+                  className="rounded-xl border border-slate-700 bg-slate-800/60 px-5 py-2.5 text-sm font-semibold text-slate-300 transition hover:bg-slate-800 hover:text-white"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-green-500 px-5 py-2.5 text-sm font-bold text-black transition hover:bg-green-400 hover:shadow-[0_0_16px_rgba(0,255,136,0.3)]"
+                  className="rounded-xl bg-emerald-500 px-6 py-2.5 text-sm font-extrabold text-slate-950 transition hover:bg-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.3)]"
                 >
                   Save Employee
                 </button>
