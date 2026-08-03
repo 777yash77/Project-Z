@@ -141,96 +141,7 @@ export default function ExecutiveDashboardPage() {
         ))}
       </div>
 
-      {/* Analytics & Gemini Copilot Row */}
-      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        
-        {/* Department Risk Breakdown */}
-        <section className="rounded-3xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
-          <div className="flex items-center justify-between mb-5">
-            <div>
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
-                <BarChart3 size={18} className="text-green-400" />
-                Department-wise Risk Concentration
-              </h2>
-              <p className="mt-0.5 text-xs text-green-100/30">Average predicted flight probability per department</p>
-            </div>
-            <span className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em]" style={{ backgroundColor: 'var(--accent-glow)', color: 'var(--accent)' }}>
-              Live
-            </span>
-          </div>
-
-          <div className="space-y-4">
-            {deptRiskMap.map((d) => (
-              <div key={d.dept} className="rounded-2xl border p-4 backdrop-blur-sm" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-white">{d.dept} ({d.count} staff)</span>
-                  <div className="flex items-center gap-3">
-                    <span className="text-red-400 font-semibold">{d.highCount} High Risk</span>
-                    <span className="font-mono font-bold text-white">{d.avgProb}% Avg Risk</span>
-                  </div>
-                </div>
-                <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-black/40">
-                  <div
-                    className={`h-full rounded-full transition-all duration-700 ${
-                      d.avgProb >= 60 ? 'bg-red-500' : d.avgProb >= 40 ? 'bg-amber-400' : 'bg-green-500'
-                    }`}
-                    style={{ width: `${d.avgProb}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* AI Executive Summary Panel */}
-        <section className="rounded-3xl border border-emerald-500/20 bg-card p-6 shadow-lg">
-          <div className="flex items-center justify-between border-b border-emerald-500/15 pb-4 mb-4">
-            <div className="flex items-center gap-2 text-emerald-500">
-              <Sparkles size={18} />
-              <h2 className="text-base font-extrabold uppercase tracking-widest text-foreground">Gemini AI Executive Workforce Strategy</h2>
-            </div>
-            <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-500">
-              Gemini 1.5 Flash
-            </span>
-          </div>
-
-          <div className="rounded-2xl border border-emerald-500/15 bg-background/60 p-5 text-xs">
-            {aiWorkforceReport ? (
-              <AiReportRenderer reportText={aiWorkforceReport} />
-            ) : (
-              <div className="space-y-4">
-                <div>
-                  <p className="font-bold text-foreground text-sm">Key Organizational Insights</p>
-                  <p className="mt-2 text-muted leading-relaxed">
-                    {highestRiskDept !== 'N/A'
-                      ? `${highestRiskDept} department exhibits the highest risk density. Top contributing flight drivers are promotion delays (>3 years), salary gaps against market median, and overtime load.`
-                      : 'Workforce risk levels are within stable parameters across departments.'}
-                  </p>
-                </div>
-
-                <div className="h-px w-full bg-emerald-500/15" />
-
-                <div className="space-y-2">
-                  <p className="font-bold text-foreground">Recommended Executive Actions</p>
-                  {[
-                    'Execute targeted stay-interviews for High Risk employees.',
-                    'Initiate 12-month promotion ladder review in Sales & Tech.',
-                    'Audit overtime load and evaluate work-life balance feedback.',
-                  ].map((rec) => (
-                    <div key={rec} className="flex items-start gap-2 text-muted">
-                      <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
-                      <span>{rec}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-
-      </div>
-
-      {/* Stock Watchlist Style Employee Risk Monitor */}
+      {/* Stock Watchlist Style Employee Risk Monitor — DIRECTLY BELOW KPI CARDS */}
       <section className="rounded-3xl border p-6 sm:p-8" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
           <div>
@@ -294,11 +205,12 @@ export default function ExecutiveDashboardPage() {
                 <th className="px-5 py-4">Employee Name</th>
                 <th className="px-5 py-4">Department</th>
                 <th className="px-5 py-4">Salary</th>
-                <th className="px-5 py-4">Performance</th>
-                <th className="px-5 py-4">Attrition Prob.</th>
-                <th className="px-5 py-4">Risk Level</th>
+                <th className="px-5 py-4">Tenure</th>
+                <th className="px-5 py-4">Rating</th>
+                <th className="px-5 py-4">Attrition Risk</th>
+                <th className="px-5 py-4">Risk Status</th>
                 <th className="px-5 py-4">Timeline</th>
-                <th className="px-5 py-4">Action</th>
+                <th className="px-5 py-4">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y" style={{ borderColor: 'var(--border-subtle)' }}>
@@ -308,22 +220,23 @@ export default function ExecutiveDashboardPage() {
                   <tr
                     key={emp.id}
                     onClick={() => setSelectedEmployeeId(emp.id)}
-                    className="group cursor-pointer transition hover:bg-green-500/5"
+                    className="cursor-pointer transition hover:bg-emerald-500/5"
                   >
-                    <td className="px-5 py-4 font-mono text-green-100/40">#{emp.id}</td>
-                    <td className="px-5 py-4 font-bold text-white group-hover:text-green-400 transition">{emp.name}</td>
-                    <td className="px-5 py-4 text-green-100/60">{emp.department}</td>
-                    <td className="px-5 py-4 font-mono text-green-100/60">${Number(emp.salary).toLocaleString()}</td>
-                    <td className="px-5 py-4 font-semibold text-white">{emp.performanceRating} / 5.0</td>
+                    <td className="px-5 py-4 font-mono text-green-100/30">#{emp.id}</td>
+                    <td className="px-5 py-4 font-extrabold text-white">{emp.name}</td>
+                    <td className="px-5 py-4 text-green-100/60 font-medium">{emp.department}</td>
+                    <td className="px-5 py-4 text-white font-semibold">${Number(emp.salary).toLocaleString()}</td>
+                    <td className="px-5 py-4 text-green-100/60">{emp.yearsAtCompany} yrs</td>
+                    <td className="px-5 py-4 font-mono text-emerald-400 font-bold">{emp.performanceRating} / 5.0</td>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-white w-9">{prob}%</span>
                         <div className="h-1.5 w-16 overflow-hidden rounded-full bg-black/40">
                           <div
-                            className={`h-full rounded-full ${emp.riskLevel === 'High' ? 'bg-red-500' : emp.riskLevel === 'Medium' ? 'bg-amber-400' : 'bg-green-500'}`}
+                            className={`h-full rounded-full ${prob >= 70 ? 'bg-red-500' : prob >= 40 ? 'bg-amber-400' : 'bg-green-500'}`}
                             style={{ width: `${prob}%` }}
                           />
                         </div>
+                        <span className="font-mono text-xs font-bold text-white">{prob}%</span>
                       </div>
                     </td>
                     <td className="px-5 py-4">
@@ -354,7 +267,7 @@ export default function ExecutiveDashboardPage() {
 
               {filteredEmployees.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-5 py-12 text-center text-xs text-green-100/30">
+                  <td colSpan={10} className="px-5 py-12 text-center text-xs text-green-100/30">
                     No employee records match the current filter criteria.
                   </td>
                 </tr>
@@ -363,6 +276,79 @@ export default function ExecutiveDashboardPage() {
           </table>
         </div>
       </section>
+
+      {/* Analytics & Gemini Copilot Row */}
+      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+        
+        {/* Department Risk Breakdown */}
+        <section className="rounded-3xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-base font-bold text-white flex items-center gap-2">
+                <BarChart3 size={18} className="text-green-400" />
+                Department-wise Risk Concentration
+              </h2>
+              <p className="mt-0.5 text-xs text-green-100/30">Average predicted flight probability per department</p>
+            </div>
+            <span className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em]" style={{ backgroundColor: 'var(--accent-glow)', color: 'var(--accent)' }}>
+              Live
+            </span>
+          </div>
+
+          <div className="space-y-4">
+            {deptRiskMap.map((d) => (
+              <div key={d.dept} className="rounded-2xl border p-4 backdrop-blur-sm" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-white">{d.dept} ({d.count} staff)</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-red-400 font-semibold">{d.highCount} High Risk</span>
+                    <span className="font-mono font-bold text-white">{d.avgProb}% Avg Risk</span>
+                  </div>
+                </div>
+                <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-black/40">
+                  <div
+                    className={`h-full rounded-full transition-all duration-700 ${
+                      d.avgProb >= 60 ? 'bg-red-500' : d.avgProb >= 40 ? 'bg-amber-400' : 'bg-green-500'
+                    }`}
+                    style={{ width: `${d.avgProb}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* AI Executive Summary Panel */}
+        <section className="rounded-3xl border border-emerald-500/20 bg-card p-6 shadow-lg">
+          <div className="flex items-center justify-between border-b border-emerald-500/15 pb-4 mb-4">
+            <div className="flex items-center gap-2 text-emerald-500">
+              <Sparkles size={18} />
+              <h2 className="text-base font-extrabold uppercase tracking-widest text-foreground">Gemini AI Executive Strategy</h2>
+            </div>
+            <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-500">
+              Gemini 1.5 Flash
+            </span>
+          </div>
+
+          <div className="rounded-2xl border border-emerald-500/15 bg-background/60 p-4 text-xs">
+            {aiWorkforceReport ? (
+              <AiReportRenderer reportText={aiWorkforceReport} />
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <p className="font-bold text-foreground text-sm">Key Organizational Insights</p>
+                  <p className="mt-2 text-muted leading-relaxed">
+                    {highestRiskDept !== 'N/A'
+                      ? `${highestRiskDept} department exhibits the highest risk density.`
+                      : 'Workforce risk levels are within stable parameters across departments.'}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+      </div>
 
       {/* Detail & Simulator Modal */}
       {selectedEmployeeId && (
