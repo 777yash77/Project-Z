@@ -6,12 +6,11 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
 /**
- * Sends OTP verification emails via Gmail SMTP.
- * Falls back to console logging if mail is misconfigured (dev mode).
+ * Sends OTP verification emails and chat notification emails via Gmail SMTP.
+ * Falls back gracefully to logging if mail is misconfigured.
  */
 @Service
 public class EmailService {
@@ -92,8 +91,63 @@ public class EmailService {
             mailSender.send(message);
             log.info("OTP email sent to {} for purpose={}", toEmail, purpose);
         } catch (Exception e) {
-            // Dev fallback: print OTP to console so dev can proceed without SMTP configured
             log.error("Failed to send OTP email to {}. DEV FALLBACK — OTP is: {}", toEmail, otp, e);
+        }
+    }
+
+    public void sendChatNotificationEmail(String recipientEmail, String senderUsername, String senderOrgName, String messagePreview) {
+        String subject = "HR Intelligence — New Message from " + senderUsername + " (" + senderOrgName + ")";
+        String html = String.format("""
+                <!DOCTYPE html>
+                <html>
+                <head><meta charset="UTF-8"/></head>
+                <body style="margin:0;padding:0;background:#020805;font-family:Inter,sans-serif;">
+                  <table width="100%%" cellpadding="0" cellspacing="0" style="background:#020805;padding:40px 0;">
+                    <tr><td align="center">
+                      <table width="520" cellpadding="0" cellspacing="0"
+                             style="background:#060e09;border-radius:20px;border:1px solid rgba(0,255,136,0.12);overflow:hidden;">
+                        <tr>
+                          <td style="background:linear-gradient(135deg,#001a0a,#030e06);padding:28px 40px;text-align:center;">
+                            <div style="display:inline-block;background:#00ff88;border-radius:12px;padding:8px 16px;">
+                              <span style="font-weight:900;font-size:14px;color:#000;letter-spacing:1px;">HR INTELLIGENCE MESSAGING</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding:36px;">
+                            <h2 style="color:#ffffff;font-size:20px;margin:0 0 12px;">This Organisation's HR wants to chat</h2>
+                            <p style="color:rgba(232,245,238,0.55);font-size:14px;margin:0 0 24px;line-height:1.6;">
+                              <strong style="color:#00ff88;">%s</strong> from <strong>%s</strong> sent you a new message on HR Intelligence:
+                            </p>
+                            <div style="background:#000;border-radius:14px;border:1px solid rgba(0,255,136,0.15);padding:20px;margin-bottom:28px;color:#e8f5ee;font-size:14px;font-style:italic;">
+                              "%s"
+                            </div>
+                            <div style="text-align:center;">
+                              <a href="http://localhost:3000/dashboard/messages"
+                                 style="background:#00ff88;color:#000;padding:12px 28px;border-radius:12px;font-weight:bold;text-decoration:none;display:inline-block;font-size:14px;">
+                                Reply to %s
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+                    </td></tr>
+                  </table>
+                </body>
+                </html>
+                """, senderUsername, senderOrgName, messagePreview, senderUsername);
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom("eaplabsindia@gmail.com", "HR Intelligence");
+            helper.setTo(recipientEmail);
+            helper.setSubject(subject);
+            helper.setText(html, true);
+            mailSender.send(message);
+            log.info("Chat notification email sent to {} for message from {}", recipientEmail, senderUsername);
+        } catch (Exception e) {
+            log.error("Failed to send chat notification email to {}", recipientEmail, e);
         }
     }
 }

@@ -28,25 +28,32 @@ import com.employee.system.repository.MessageRepository;
 import com.employee.system.repository.OrganizationRepository;
 import com.employee.system.repository.TradeListingRepository;
 import com.employee.system.repository.UserRepository;
+import com.employee.system.service.EmailService;
 
 @RestController
 @RequestMapping("/api/hr")
 @CrossOrigin(origins = "*")
 public class HrMarketplaceController {
+
     private final UserRepository userRepository;
     private final OrganizationRepository organizationRepository;
     private final EmployeeRepository employeeRepository;
     private final TradeListingRepository tradeListingRepository;
     private final MessageRepository messageRepository;
+    private final EmailService emailService;
 
-    public HrMarketplaceController(UserRepository userRepository, OrganizationRepository organizationRepository,
-                                   EmployeeRepository employeeRepository, TradeListingRepository tradeListingRepository,
-                                   MessageRepository messageRepository) {
+    public HrMarketplaceController(UserRepository userRepository,
+                                  OrganizationRepository organizationRepository,
+                                  EmployeeRepository employeeRepository,
+                                  TradeListingRepository tradeListingRepository,
+                                  MessageRepository messageRepository,
+                                  EmailService emailService) {
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
         this.employeeRepository = employeeRepository;
         this.tradeListingRepository = tradeListingRepository;
         this.messageRepository = messageRepository;
+        this.emailService = emailService;
     }
 
     private User getCurrentUser() {
@@ -202,10 +209,21 @@ public class HrMarketplaceController {
         Long recipientId = ((Number) payload.get("recipientId")).longValue();
         User recipient = userRepository.findById(recipientId).orElse(null);
         if (recipient == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
         Message message = new Message();
         message.setSender(sender);
         message.setRecipient(recipient);
         message.setContent(String.valueOf(payload.get("content")));
-        return ResponseEntity.status(HttpStatus.CREATED).body(messageRepository.save(message));
+        Message saved = messageRepository.save(message);
+
+        // Send email notification to recipient HR: "This Organisation's HR wants to chat"
+        String senderOrg = sender.getOrganization() != null ? sender.getOrganization().getName() : "Partner Organization";
+        if (recipient.getEmail() != null && !recipient.getEmail().isBlank()) {
+            new Thread(() -> emailService.sendChatNotificationEmail(
+                    recipient.getEmail(), sender.getUsername(), senderOrg, saved.getContent()
+            )).start();
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 }
