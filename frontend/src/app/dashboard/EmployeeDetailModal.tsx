@@ -139,36 +139,49 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
               </div>
 
               {/* Gemini HR Copilot Panel */}
-              <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
-                <div className="flex items-center gap-2 text-green-400 mb-3">
-                  <Sparkles size={16} />
-                  <h3 className="text-sm font-bold uppercase tracking-[0.2em]">Gemini HR Copilot</h3>
+              <div className="rounded-2xl border border-emerald-500/20 bg-card p-6 shadow-md">
+                <div className="flex items-center justify-between border-b border-emerald-500/15 pb-3 mb-4">
+                  <div className="flex items-center gap-2 text-emerald-500">
+                    <Sparkles size={18} />
+                    <h3 className="text-sm font-extrabold uppercase tracking-widest text-foreground">Gemini AI Employee Analytics</h3>
+                  </div>
+                  <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold text-emerald-500">
+                    Gemini 1.5 Flash
+                  </span>
                 </div>
 
-                <div className="space-y-4 text-xs">
-                  <div>
-                    <p className="font-semibold text-white">Executive Summary</p>
-                    <p className="mt-1 text-green-100/50 leading-relaxed">{data.riskAnalysis.geminiCopilot?.executiveSummary}</p>
+                {data.riskAnalysis?.fullAiReport ? (
+                  <div className="space-y-4 text-xs">
+                    <div className="prose prose-invert max-w-none text-xs text-foreground/90 whitespace-pre-wrap leading-relaxed">
+                      {data.riskAnalysis.fullAiReport}
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold text-white">Root Cause Analysis</p>
-                    <p className="mt-1 text-green-100/50 leading-relaxed">{data.riskAnalysis.geminiCopilot?.rootCauseAnalysis}</p>
+                ) : (
+                  <div className="space-y-4 text-xs">
+                    <div>
+                      <p className="font-bold text-foreground">Executive Summary</p>
+                      <p className="mt-1 text-muted leading-relaxed">{data.riskAnalysis.geminiCopilot?.executiveSummary}</p>
+                    </div>
+                    <div>
+                      <p className="font-bold text-foreground">Root Cause Analysis</p>
+                      <p className="mt-1 text-muted leading-relaxed">{data.riskAnalysis.geminiCopilot?.rootCauseAnalysis}</p>
+                    </div>
+                    <div>
+                      <p className="font-bold text-foreground">Immediate HR Actions</p>
+                      <ul className="mt-1.5 space-y-1">
+                        {data.riskAnalysis.geminiCopilot?.immediateHrActions?.map((act: string) => (
+                          <li key={act} className="flex items-center gap-2 text-muted">
+                            <CheckCircle2 size={12} className="text-emerald-500 flex-shrink-0" />
+                            {act}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-[11px]">
+                      <p className="font-bold text-emerald-600 dark:text-emerald-400">{data.riskAnalysis.geminiCopilot?.businessImpact}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold text-white">Immediate HR Actions</p>
-                    <ul className="mt-1.5 space-y-1">
-                      {data.riskAnalysis.geminiCopilot?.immediateHrActions?.map((act: string) => (
-                        <li key={act} className="flex items-center gap-2 text-green-100/60">
-                          <CheckCircle2 size={12} className="text-green-400 flex-shrink-0" />
-                          {act}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="rounded-xl border p-3 text-[11px]" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'rgba(0,135,74,0.06)' }}>
-                    <p className="font-semibold text-green-400">{data.riskAnalysis.geminiCopilot?.businessImpact}</p>
-                  </div>
-                </div>
+                )}
               </div>
 
             </div>

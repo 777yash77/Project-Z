@@ -12,8 +12,14 @@ import java.util.Map;
 @Service
 public class RetentionRiskService {
 
+    private final GeminiService geminiService;
+
+    public RetentionRiskService(GeminiService geminiService) {
+        this.geminiService = geminiService;
+    }
+
     public Map<String, Object> predictRetentionRisk(Employee employee) {
-        return calculateRisk(
+        Map<String, Object> response = calculateRisk(
                 employee.getSalary() != null ? employee.getSalary().doubleValue() : 70000.0,
                 employee.getYearsAtCompany(),
                 employee.getPerformanceRating(),
@@ -23,6 +29,13 @@ public class RetentionRiskService {
                 3,     // workLifeBalance default (1-5)
                 employee.getYearsAtCompany() > 3 ? 3 : 1 // promotionGap default
         );
+
+        if (employee != null && geminiService != null) {
+            String aiReport = geminiService.generateIndividualEmployeeAnalysis(employee, response);
+            response.put("fullAiReport", aiReport);
+        }
+
+        return response;
     }
 
     public Map<String, Object> calculateRisk(double salary, int yearsAtCompany, double rating, int age,

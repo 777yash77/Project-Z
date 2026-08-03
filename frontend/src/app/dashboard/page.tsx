@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, DollarSign, Users as UsersIcon, BarChart3, TrendingUp, Activity, Filter, Search, Sparkles, PieChart, ShieldAlert, ArrowUpRight, ChevronRight, BarChart2 } from 'lucide-react';
-import { fetchEmployees, getCurrentUserProfile } from './api';
+import { fetchEmployees, fetchWorkforceAiAnalytics, getCurrentUserProfile } from './api';
 import EmployeeDetailModal from './EmployeeDetailModal';
 
 interface Employee {
@@ -21,6 +21,7 @@ export default function ExecutiveDashboardPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [organizationName, setOrganizationName] = useState('Your Organization');
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
+  const [aiWorkforceReport, setAiWorkforceReport] = useState<string>('');
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -30,10 +31,13 @@ export default function ExecutiveDashboardPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   useEffect(() => {
-    Promise.all([fetchEmployees(), getCurrentUserProfile()])
-      .then(([empRes, profileRes]) => {
+    Promise.all([fetchEmployees(), getCurrentUserProfile(), fetchWorkforceAiAnalytics()])
+      .then(([empRes, profileRes, aiRes]) => {
         setEmployees(empRes.data);
         setOrganizationName(profileRes.data.organization || 'Your Organization');
+        if (aiRes.data?.aiWorkforceReport) {
+          setAiWorkforceReport(aiRes.data.aiWorkforceReport);
+        }
       })
       .catch(() => setEmployees([]));
   }, []);
@@ -178,37 +182,50 @@ export default function ExecutiveDashboardPage() {
         </section>
 
         {/* AI Executive Summary Panel */}
-        <section className="rounded-3xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
-          <div className="flex items-center gap-2 text-green-400 mb-4">
-            <Sparkles size={18} />
-            <h2 className="text-base font-bold uppercase tracking-[0.2em]">Gemini AI Org Summary</h2>
+        <section className="rounded-3xl border border-emerald-500/20 bg-card p-6 shadow-lg">
+          <div className="flex items-center justify-between border-b border-emerald-500/15 pb-4 mb-4">
+            <div className="flex items-center gap-2 text-emerald-500">
+              <Sparkles size={18} />
+              <h2 className="text-base font-extrabold uppercase tracking-widest text-foreground">Gemini AI Executive Workforce Strategy</h2>
+            </div>
+            <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-500">
+              Gemini 1.5 Flash
+            </span>
           </div>
 
-          <div className="rounded-2xl border p-5 space-y-4 text-xs" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
-            <div>
-              <p className="font-bold text-white text-sm">Key Organizational Insights</p>
-              <p className="mt-2 text-green-100/50 leading-relaxed">
-                {highestRiskDept !== 'N/A'
-                  ? `${highestRiskDept} department exhibits the highest risk density. Top contributing flight drivers are promotion delays (>3 years), salary gaps against market median, and overtime load.`
-                  : 'Workforce risk levels are within stable parameters across departments.'}
-              </p>
-            </div>
-
-            <div className="h-px w-full" style={{ backgroundColor: 'var(--border-subtle)' }} />
-
-            <div className="space-y-2">
-              <p className="font-bold text-white">Recommended Executive Actions</p>
-              {[
-                'Execute targeted stay-interviews for High Risk employees.',
-                'Initiate 12-month promotion ladder review in Sales & Tech.',
-                'Audit overtime load and evaluate work-life balance feedback.',
-              ].map((rec) => (
-                <div key={rec} className="flex items-start gap-2 text-green-100/60">
-                  <span className="mt-1 h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: 'var(--accent)' }} />
-                  <span>{rec}</span>
+          <div className="rounded-2xl border border-emerald-500/15 bg-background/60 p-5 text-xs">
+            {aiWorkforceReport ? (
+              <div className="prose prose-invert max-w-none text-xs text-foreground/90 whitespace-pre-wrap leading-relaxed">
+                {aiWorkforceReport}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <p className="font-bold text-foreground text-sm">Key Organizational Insights</p>
+                  <p className="mt-2 text-muted leading-relaxed">
+                    {highestRiskDept !== 'N/A'
+                      ? `${highestRiskDept} department exhibits the highest risk density. Top contributing flight drivers are promotion delays (>3 years), salary gaps against market median, and overtime load.`
+                      : 'Workforce risk levels are within stable parameters across departments.'}
+                  </p>
                 </div>
-              ))}
-            </div>
+
+                <div className="h-px w-full bg-emerald-500/15" />
+
+                <div className="space-y-2">
+                  <p className="font-bold text-foreground">Recommended Executive Actions</p>
+                  {[
+                    'Execute targeted stay-interviews for High Risk employees.',
+                    'Initiate 12-month promotion ladder review in Sales & Tech.',
+                    'Audit overtime load and evaluate work-life balance feedback.',
+                  ].map((rec) => (
+                    <div key={rec} className="flex items-start gap-2 text-muted">
+                      <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                      <span>{rec}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </section>
 

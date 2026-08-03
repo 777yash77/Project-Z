@@ -58,3 +58,6 @@ export const claimTradeListing = (id: number) => api.post(`/hr/trade-listings/${
 export const fetchHrUsers = () => api.get('/hr/users');
 export const fetchMessages = () => api.get('/hr/messages');
 export const sendMessage = (payload: { recipientId: number; content: string }) => api.post('/hr/messages', payload);
+
+export const fetchIndividualEmployeeAiAnalysis = (id: number) => api.get(`/gemini/employee/${id}`);
+export const fetchWorkforceAiAnalytics = () => api.get('/gemini/workforce');
