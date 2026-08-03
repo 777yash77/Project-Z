@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { BriefcaseBusiness, Sparkles, ArrowUpRight, Building2 } from 'lucide-react';
+import { BriefcaseBusiness, Sparkles, ArrowUpRight, Building2, MessageCircleMore } from 'lucide-react';
 import { fetchTradeListings } from '../api';
 
 interface TradeListingItem {
@@ -81,12 +81,22 @@ export default function HireWindowPage() {
                 Listed by {employee.organization.name}
               </div>
 
-              {/* CTA */}
-              <button className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-green-500/15 bg-green-500/8 px-4 py-2.5 text-sm font-bold text-green-400 transition group-hover:bg-green-500/12 hover:shadow-[0_0_12px_rgba(0,255,136,0.15)]">
-                <BriefcaseBusiness size={14} />
-                Review Profile
-                <ArrowUpRight size={14} />
-              </button>
+              {/* CTA buttons */}
+              <div className="mt-4 flex items-center gap-2">
+                {employee.listedBy?.id && (
+                  <a
+                    href={`/dashboard/messages?recipientId=${employee.listedBy.id}`}
+                    className="flex items-center gap-1.5 rounded-xl border border-green-500/20 bg-green-500/8 px-3 py-2.5 text-xs font-bold text-green-400 transition hover:bg-green-500/15"
+                  >
+                    <MessageCircleMore size={14} />
+                  </a>
+                )}
+                <button className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-green-500/15 bg-green-500/8 px-4 py-2.5 text-xs font-bold text-green-400 transition group-hover:bg-green-500/12 hover:shadow-[0_0_12px_rgba(0,255,136,0.15)]">
+                  <BriefcaseBusiness size={14} />
+                  Review Candidate
+                  <ArrowUpRight size={14} />
+                </button>
+              </div>
             </div>
           ))}
         </div>

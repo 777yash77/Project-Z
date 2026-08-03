@@ -75,8 +75,10 @@ export default function RegisterPage() {
     setLoading(true);
     setMessage('');
     try {
-      await verifyRegister({ ...form, otp: code });
-      router.push('/login?registered=1');
+      const res = await verifyRegister({ ...form, otp: code });
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('currentOrganization', res.data.organization || '');
+      router.push('/dashboard');
     } catch (err: any) {
       setMessage(err.response?.data?.message || 'Invalid OTP. Please try again.');
       setOtp(['', '', '', '', '', '']);

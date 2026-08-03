@@ -34,8 +34,12 @@ export const verifyRegister = (payload: { username: string; email: string; passw
 export const getMe = () => api.get('/auth/me');
 
 export const getCurrentUserProfile = () => api.get('/hr/me');
+export const fetchHrProfile = () => api.get('/hr/me');
+export const updateOrganizationDetails = (payload: { name?: string; location?: string; industry?: string }) => api.put('/hr/organization', payload);
 
 export const fetchEmployees = () => api.get('/employees');
+export const fetchEmployeeDetails = (id: number) => api.get(`/employees/${id}/details`);
+export const simulateRisk = (payload: any) => api.post('/employees/simulate', payload);
 export const createEmployee = (payload: EmployeePayload) => api.post('/employees', payload);
 export const updateEmployee = (id: number, payload: EmployeePayload) => api.put(`/employees/${id}`, payload);
 export const deleteEmployee = (id: number) => api.delete(`/employees/${id}`);

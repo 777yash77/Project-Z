@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -57,12 +58,45 @@ public class HrMarketplaceController {
     public ResponseEntity<?> me() {
         User user = getCurrentUser();
         if (user == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        Organization org = user.getOrganization();
+        long totalEmployees = 0;
+        if (org != null) {
+            totalEmployees = employeeRepository.findAll().stream()
+                    .filter(e -> e.getOrganization() != null && e.getOrganization().getId().equals(org.getId()))
+                    .count();
+        }
         Map<String, Object> response = new HashMap<>();
         response.put("id", user.getId());
         response.put("username", user.getUsername());
+        response.put("email", user.getEmail());
         response.put("role", user.getRole());
-        response.put("organization", user.getOrganization() != null ? user.getOrganization().getName() : null);
+        response.put("hrCode", "HRC-" + String.format("%04d", user.getId()));
+        if (org != null) {
+            Map<String, Object> orgMap = new HashMap<>();
+            orgMap.put("id", org.getId());
+            orgMap.put("name", org.getName());
+            orgMap.put("industry", org.getIndustry() != null ? org.getIndustry() : "Technology & Services");
+            orgMap.put("location", org.getLocation() != null ? org.getLocation() : "Global HQ");
+            orgMap.put("createdAt", org.getCreatedAt() != null ? org.getCreatedAt().toString() : "");
+            response.put("organizationDetails", orgMap);
+            response.put("organization", org.getName());
+        }
+        response.put("totalEmployees", totalEmployees);
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/organization")
+    public ResponseEntity<?> updateOrganization(@RequestBody Map<String, String> payload) {
+        User user = getCurrentUser();
+        if (user == null || user.getOrganization() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Organization required"));
+        }
+        Organization org = user.getOrganization();
+        if (payload.containsKey("name") && !payload.get("name").isBlank()) org.setName(payload.get("name").trim());
+        if (payload.containsKey("location") && !payload.get("location").isBlank()) org.setLocation(payload.get("location").trim());
+        if (payload.containsKey("industry") && !payload.get("industry").isBlank()) org.setIndustry(payload.get("industry").trim());
+        Organization updated = organizationRepository.save(org);
+        return ResponseEntity.ok(updated);
     }
 
     @PostMapping("/organizations")
@@ -142,26 +176,22 @@ public class HrMarketplaceController {
         return ResponseEntity.ok(tradeListingRepository.save(listing));
     }
 
+    /** Returns all HR users across all partner organizations so HRs can search & message anyone */
     @GetMapping("/users")
     public List<User> getUsers() {
         User current = getCurrentUser();
-        if (current == null || current.getOrganization() == null) return List.of();
+        if (current == null) return List.of();
         return userRepository.findAll().stream()
                 .filter(user -> !user.getId().equals(current.getId()))
-                .filter(user -> user.getOrganization() != null && user.getOrganization().getId().equals(current.getOrganization().getId()))
                 .toList();
     }
 
+    /** Returns all messages involving the current user */
     @GetMapping("/messages")
     public List<Message> getMessages() {
         User user = getCurrentUser();
-        if (user == null || user.getOrganization() == null) return List.of();
-        return messageRepository.findBySenderOrRecipientOrderByCreatedAtAsc(user, user).stream()
-                .filter(message -> message.getSender().getOrganization() != null
-                        && message.getRecipient().getOrganization() != null
-                        && message.getSender().getOrganization().getId().equals(user.getOrganization().getId())
-                        && message.getRecipient().getOrganization().getId().equals(user.getOrganization().getId()))
-                .toList();
+        if (user == null) return List.of();
+        return messageRepository.findBySenderOrRecipientOrderByCreatedAtAsc(user, user);
     }
 
     @PostMapping("/messages")

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Users, UploadCloud, LogOut, ArrowRightLeft, BriefcaseBusiness, MessageCircleMore } from 'lucide-react';
+import { LayoutDashboard, Users, UploadCloud, LogOut, ArrowRightLeft, BriefcaseBusiness, MessageCircleMore, UserCheck } from 'lucide-react';
 import { ThemeToggle } from '../theme-toggle';
 
 import { useEffect, useState } from 'react';
@@ -11,6 +11,7 @@ import { getMe } from './api';
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/employees', label: 'Employee Directory', icon: Users },
+  { href: '/dashboard/profile', label: 'HR Profile', icon: UserCheck },
   { href: '/dashboard/upload', label: 'Bulk Upload', icon: UploadCloud },
   { href: '/dashboard/trade', label: 'Trade Window', icon: ArrowRightLeft },
   { href: '/dashboard/hire', label: 'Hire View', icon: BriefcaseBusiness },

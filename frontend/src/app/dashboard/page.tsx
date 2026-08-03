@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { AlertTriangle, DollarSign, Users as UsersIcon, BarChart3, TrendingUp, Activity } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { AlertTriangle, DollarSign, Users as UsersIcon, BarChart3, TrendingUp, Activity, Filter, Search, Sparkles, PieChart, ShieldAlert, ArrowUpRight, ChevronRight, BarChart2 } from 'lucide-react';
 import { fetchEmployees, getCurrentUserProfile } from './api';
+import EmployeeDetailModal from './EmployeeDetailModal';
 
 interface Employee {
   id: number;
@@ -16,97 +17,159 @@ interface Employee {
   riskLevel: string;
 }
 
-export default function DashboardPage() {
+export default function ExecutiveDashboardPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [organizationName, setOrganizationName] = useState('Your organization');
+  const [organizationName, setOrganizationName] = useState('Your Organization');
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
+
+  // Filters
+  const [searchQuery, setSearchQuery] = useState('');
+  const [deptFilter, setDeptFilter] = useState('All');
+  const [riskFilter, setRiskFilter] = useState('All');
+  const [sortField, setSortField] = useState<'riskScore' | 'name' | 'salary' | 'yearsAtCompany'>('riskScore');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   useEffect(() => {
     Promise.all([fetchEmployees(), getCurrentUserProfile()])
-      .then(([employeesRes, profileRes]) => {
-        setEmployees(employeesRes.data);
-        setOrganizationName(profileRes.data.organization || 'Your organization');
+      .then(([empRes, profileRes]) => {
+        setEmployees(empRes.data);
+        setOrganizationName(profileRes.data.organization || 'Your Organization');
       })
       .catch(() => setEmployees([]));
   }, []);
 
+  // Filtered employees list
+  const filteredEmployees = useMemo(() => {
+    return employees
+      .filter((e) => {
+        const matchesSearch = e.name.toLowerCase().includes(searchQuery.toLowerCase()) || e.department.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesDept = deptFilter === 'All' || e.department.toLowerCase() === deptFilter.toLowerCase();
+        const matchesRisk = riskFilter === 'All' || e.riskLevel === riskFilter;
+        return matchesSearch && matchesDept && matchesRisk;
+      })
+      .sort((a, b) => {
+        let valA: any = a[sortField];
+        let valB: any = b[sortField];
+        if (sortField === 'salary') { valA = Number(valA); valB = Number(valB); }
+        if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+        if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+        return 0;
+      });
+  }, [employees, searchQuery, deptFilter, riskFilter, sortField, sortOrder]);
+
+  // Aggregate metrics
   const totalEmployees = employees.length;
   const highRiskCount = employees.filter((e) => e.riskLevel === 'High').length;
   const mediumRiskCount = employees.filter((e) => e.riskLevel === 'Medium').length;
   const lowRiskCount = employees.filter((e) => e.riskLevel === 'Low').length;
-  const avgSalary = employees.length
-    ? (employees.reduce((sum, e) => sum + Number(e.salary), 0) / employees.length).toFixed(0)
-    : '0';
-  const avgRating = employees.length
-    ? (employees.reduce((sum, e) => sum + e.performanceRating, 0) / employees.length).toFixed(1)
-    : '0.0';
-  const topAtRisk = [...employees].sort((a, b) => b.riskScore - a.riskScore).slice(0, 7);
+  const avgProb = employees.length ? (employees.reduce((sum, e) => sum + e.riskScore, 0) / employees.length) * 100 : 0;
+
+  // Dept risk mapping
+  const deptRiskMap = useMemo(() => {
+    const map: Record<string, { total: number; high: number; sumProb: number }> = {};
+    employees.forEach((e) => {
+      const dept = e.department || 'General';
+      if (!map[dept]) map[dept] = { total: 0, high: 0, sumProb: 0 };
+      map[dept].total += 1;
+      if (e.riskLevel === 'High') map[dept].high += 1;
+      map[dept].sumProb += e.riskScore;
+    });
+    return Object.entries(map).map(([dept, data]) => ({
+      dept,
+      count: data.total,
+      highCount: data.high,
+      avgProb: Math.round((data.sumProb / data.total) * 100),
+    }));
+  }, [employees]);
+
+  const highestRiskDept = useMemo(() => {
+    if (!deptRiskMap.length) return 'N/A';
+    return [...deptRiskMap].sort((a, b) => b.avgProb - a.avgProb)[0]?.dept || 'N/A';
+  }, [deptRiskMap]);
+
+  const departmentsList = useMemo(() => ['All', ...Array.from(new Set(employees.map((e) => e.department)))], [employees]);
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Header */}
-      <header className="rounded-2xl border border-green-500/12 bg-[#060e09] p-6">
-        <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+      {/* Executive Header */}
+      <header className="rounded-3xl border p-6 sm:p-8" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-green-400/50">Retention Intelligence</p>
-            <h1 className="mt-2 text-3xl font-bold text-white">People Risk Overview</h1>
-            <p className="mt-1.5 max-w-xl text-sm text-green-100/35">
-              {organizationName} — real-time employee risk, retention signals, and trade opportunities.
+            <div className="flex items-center gap-2">
+              <span className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.25em]" style={{ backgroundColor: 'var(--accent-glow)', color: 'var(--accent)' }}>
+                Executive Intelligence
+              </span>
+              <span className="text-xs text-green-100/30">AI Attrition Command</span>
+            </div>
+            <h1 className="mt-3 text-3xl font-extrabold text-white sm:text-4xl">{organizationName} Workforce Overview</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-green-100/40">
+              Real-time predictive analytics, SHAP Explainable AI factors, Gemini HR Copilot insights, and Stock Watchlist-style employee risk monitoring.
             </p>
           </div>
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { label: 'Total Staff', value: totalEmployees, icon: UsersIcon, color: 'text-green-400' },
-              { label: 'High Risk', value: highRiskCount, icon: AlertTriangle, color: 'text-red-400' },
-              { label: 'Avg Salary', value: `$${Number(avgSalary).toLocaleString()}`, icon: DollarSign, color: 'text-green-400' },
-            ].map((stat) => {
-              const Icon = stat.icon;
-              return (
-                <div key={stat.label} className="rounded-xl border border-green-500/10 bg-black/40 p-4">
-                  <div className="flex items-center justify-between">
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-green-100/30">{stat.label}</p>
-                    <Icon size={14} className={stat.color} />
-                  </div>
-                  <p className="mt-3 text-2xl font-bold text-white">{stat.value}</p>
-                </div>
-              );
-            })}
+
+          <div className="flex items-center gap-3">
+            <div className="rounded-2xl border px-4 py-3 text-center" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-green-100/30">Avg Attrition Prob.</p>
+              <p className="mt-1 text-2xl font-bold text-white">{avgProb.toFixed(1)}%</p>
+            </div>
+            <div className="rounded-2xl border px-4 py-3 text-center" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-green-100/30">High Risk Dept</p>
+              <p className="mt-1 text-2xl font-bold text-red-400">{highestRiskDept}</p>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Middle row */}
-      <div className="grid gap-5 xl:grid-cols-[1.6fr_1fr]">
-        {/* Risk Distribution */}
-        <section className="rounded-2xl border border-green-500/10 bg-[#060e09] p-6">
-          <div className="flex items-center justify-between">
+      {/* KPI Cards Grid */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { label: 'Total Workforce', value: totalEmployees, sub: 'Active profiles', color: 'text-white', border: 'var(--border-subtle)' },
+          { label: 'High Attrition Risk', value: highRiskCount, sub: `${Math.round((highRiskCount / Math.max(1, totalEmployees)) * 100)}% of workforce`, color: 'text-red-400', border: 'rgba(220,38,38,0.25)' },
+          { label: 'Medium Risk', value: mediumRiskCount, sub: `${Math.round((mediumRiskCount / Math.max(1, totalEmployees)) * 100)}% of workforce`, color: 'text-amber-400', border: 'rgba(217,119,6,0.25)' },
+          { label: 'Low Risk / Stable', value: lowRiskCount, sub: `${Math.round((lowRiskCount / Math.max(1, totalEmployees)) * 100)}% of workforce`, color: 'text-green-400', border: 'var(--border-subtle)' },
+        ].map((stat) => (
+          <div key={stat.label} className="rounded-2xl border p-5 transition hover:shadow-lg" style={{ borderColor: stat.border, backgroundColor: 'var(--bg-surface)' }}>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-green-100/30">{stat.label}</p>
+            <p className={`mt-3 text-3xl font-extrabold ${stat.color}`}>{stat.value}</p>
+            <p className="mt-1.5 text-xs text-green-100/30">{stat.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Analytics & Gemini Copilot Row */}
+      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+        
+        {/* Department Risk Breakdown */}
+        <section className="rounded-3xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
+          <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-base font-semibold text-white">Risk Distribution</h2>
-              <p className="mt-0.5 text-xs text-green-100/30">Where attention is needed most</p>
+              <h2 className="text-base font-bold text-white flex items-center gap-2">
+                <BarChart3 size={18} className="text-green-400" />
+                Department-wise Risk Concentration
+              </h2>
+              <p className="mt-0.5 text-xs text-green-100/30">Average predicted flight probability per department</p>
             </div>
-            <span className="flex items-center gap-1.5 rounded-full border border-green-500/15 bg-green-500/8 px-3 py-1 text-[10px] uppercase tracking-[0.25em] text-green-400">
-              <Activity size={10} /> Live
+            <span className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em]" style={{ backgroundColor: 'var(--accent-glow)', color: 'var(--accent)' }}>
+              Live
             </span>
           </div>
-          <div className="mt-6 space-y-3">
-            {[
-              { label: 'High Risk', value: highRiskCount, barColor: 'bg-red-500', textColor: 'text-red-400', borderColor: 'border-red-500/15' },
-              { label: 'Medium Risk', value: mediumRiskCount, barColor: 'bg-amber-400', textColor: 'text-amber-400', borderColor: 'border-amber-500/15' },
-              { label: 'Low Risk', value: lowRiskCount, barColor: 'bg-green-500', textColor: 'text-green-400', borderColor: 'border-green-500/15' },
-            ].map((item) => (
-              <div key={item.label} className={`rounded-xl border ${item.borderColor} bg-black/30 p-4`}>
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-green-100/60">{item.label}</p>
+
+          <div className="space-y-4">
+            {deptRiskMap.map((d) => (
+              <div key={d.dept} className="rounded-2xl border p-4 backdrop-blur-sm" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-white">{d.dept} ({d.count} staff)</span>
                   <div className="flex items-center gap-3">
-                    <p className="text-xl font-bold text-white">{item.value}</p>
-                    <span className={`text-xs font-semibold ${item.textColor}`}>
-                      {Math.round((item.value / Math.max(totalEmployees, 1)) * 100)}%
-                    </span>
+                    <span className="text-red-400 font-semibold">{d.highCount} High Risk</span>
+                    <span className="font-mono font-bold text-white">{d.avgProb}% Avg Risk</span>
                   </div>
                 </div>
-                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-black/50">
+                <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-black/40">
                   <div
-                    className={`h-full rounded-full ${item.barColor} transition-all duration-700`}
-                    style={{ width: `${Math.round((item.value / Math.max(totalEmployees, 1)) * 100)}%` }}
+                    className={`h-full rounded-full transition-all duration-700 ${
+                      d.avgProb >= 60 ? 'bg-red-500' : d.avgProb >= 40 ? 'bg-amber-400' : 'bg-green-500'
+                    }`}
+                    style={{ width: `${d.avgProb}%` }}
                   />
                 </div>
               </div>
@@ -114,87 +177,181 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* Performance Summary */}
-        <section className="rounded-2xl border border-green-500/10 bg-[#060e09] p-6">
-          <div className="flex items-center justify-between">
+        {/* AI Executive Summary Panel */}
+        <section className="rounded-3xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
+          <div className="flex items-center gap-2 text-green-400 mb-4">
+            <Sparkles size={18} />
+            <h2 className="text-base font-bold uppercase tracking-[0.2em]">Gemini AI Org Summary</h2>
+          </div>
+
+          <div className="rounded-2xl border p-5 space-y-4 text-xs" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
             <div>
-              <h2 className="text-base font-semibold text-white">HR Performance</h2>
-              <p className="mt-0.5 text-xs text-green-100/30">Aggregate workforce metrics</p>
+              <p className="font-bold text-white text-sm">Key Organizational Insights</p>
+              <p className="mt-2 text-green-100/50 leading-relaxed">
+                {highestRiskDept !== 'N/A'
+                  ? `${highestRiskDept} department exhibits the highest risk density. Top contributing flight drivers are promotion delays (>3 years), salary gaps against market median, and overtime load.`
+                  : 'Workforce risk levels are within stable parameters across departments.'}
+              </p>
             </div>
-            <TrendingUp size={18} className="text-green-400" />
-          </div>
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            {[
-              { label: 'Avg Rating', value: avgRating },
-              { label: 'Total Analyzed', value: totalEmployees },
-              { label: 'Low Risk', value: lowRiskCount },
-              { label: 'Med Risk', value: mediumRiskCount },
-            ].map((item) => (
-              <div key={item.label} className="rounded-xl border border-green-500/8 bg-black/30 p-4">
-                <p className="text-xs text-green-100/30">{item.label}</p>
-                <p className="mt-2 text-2xl font-bold text-white">{item.value}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 rounded-xl border border-green-500/10 bg-green-500/5 p-4">
-            <p className="text-xs text-green-400/60">
-              All entries are scored using the built-in retention algorithm and synced to the backend automatically.
-            </p>
+
+            <div className="h-px w-full" style={{ backgroundColor: 'var(--border-subtle)' }} />
+
+            <div className="space-y-2">
+              <p className="font-bold text-white">Recommended Executive Actions</p>
+              {[
+                'Execute targeted stay-interviews for High Risk employees.',
+                'Initiate 12-month promotion ladder review in Sales & Tech.',
+                'Audit overtime load and evaluate work-life balance feedback.',
+              ].map((rec) => (
+                <div key={rec} className="flex items-start gap-2 text-green-100/60">
+                  <span className="mt-1 h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: 'var(--accent)' }} />
+                  <span>{rec}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
+
       </div>
 
-      {/* Top At Risk Table */}
-      <section className="rounded-2xl border border-green-500/10 bg-[#060e09] p-6">
-        <div className="mb-5 flex items-center justify-between">
+      {/* Stock Watchlist Style Employee Risk Monitor */}
+      <section className="rounded-3xl border p-6 sm:p-8" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
           <div>
-            <h2 className="text-base font-semibold text-white">Top Employees by Risk</h2>
-            <p className="mt-0.5 text-xs text-green-100/30">Sorted by risk score — highest first</p>
+            <h2 className="text-xl font-extrabold text-white flex items-center gap-2">
+              <ShieldAlert size={20} className="text-green-400" />
+              Employee Risk Monitor Watchlist
+            </h2>
+            <p className="mt-1 text-xs text-green-100/40">Stock-market style watchlist — Click any row to view Explainable AI (XAI) factors & What-If simulator.</p>
           </div>
-          <div className="flex items-center gap-1.5 rounded-full border border-green-500/15 bg-green-500/8 px-3 py-1 text-[10px] uppercase tracking-[0.25em] text-green-400">
-            <BarChart3 size={10} /> Sorted by score
+
+          {/* Controls */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 rounded-xl border px-3 py-2 text-xs" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'rgba(0,0,0,0.3)' }}>
+              <Search size={14} className="text-green-400" />
+              <input
+                type="text"
+                placeholder="Search name or dept..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-transparent text-white outline-none placeholder:text-green-100/30 w-36 sm:w-48"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 rounded-xl border px-3 py-2 text-xs" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'rgba(0,0,0,0.3)' }}>
+              <Filter size={14} className="text-green-400" />
+              <select
+                value={deptFilter}
+                onChange={(e) => setDeptFilter(e.target.value)}
+                className="bg-transparent text-white outline-none"
+              >
+                {departmentsList.map((d) => (
+                  <option key={d} value={d} className="bg-black text-white">{d} Dept</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2 rounded-xl border px-3 py-2 text-xs" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'rgba(0,0,0,0.3)' }}>
+              <select
+                value={riskFilter}
+                onChange={(e) => setRiskFilter(e.target.value)}
+                className="bg-transparent text-white outline-none"
+              >
+                <option value="All" className="bg-black text-white">All Risks</option>
+                <option value="High" className="bg-black text-white">High Risk</option>
+                <option value="Medium" className="bg-black text-white">Medium Risk</option>
+                <option value="Low" className="bg-black text-white">Low Risk</option>
+              </select>
+            </div>
           </div>
         </div>
-        <div className="overflow-x-auto rounded-xl border border-green-500/8">
-          <table className="min-w-full text-left text-sm">
+
+        {/* Watchlist Table */}
+        <div className="overflow-x-auto rounded-2xl border" style={{ borderColor: 'var(--border-subtle)' }}>
+          <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-green-500/8 bg-black/30">
-                <th className="px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-green-400/40">Name</th>
-                <th className="px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-green-400/40">Department</th>
-                <th className="px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-green-400/40">Score</th>
-                <th className="px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-green-400/40">Risk Level</th>
-                <th className="px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-green-400/40">Salary</th>
+              <tr className="border-b bg-black/40 text-[10px] font-bold uppercase tracking-[0.2em] text-green-100/40" style={{ borderColor: 'var(--border-subtle)' }}>
+                <th className="px-5 py-4">ID</th>
+                <th className="px-5 py-4">Employee Name</th>
+                <th className="px-5 py-4">Department</th>
+                <th className="px-5 py-4">Salary</th>
+                <th className="px-5 py-4">Performance</th>
+                <th className="px-5 py-4">Attrition Prob.</th>
+                <th className="px-5 py-4">Risk Level</th>
+                <th className="px-5 py-4">Timeline</th>
+                <th className="px-5 py-4">Action</th>
               </tr>
             </thead>
-            <tbody>
-              {topAtRisk.map((employee, i) => (
-                <tr key={employee.id} className="border-t border-green-500/5 transition hover:bg-green-500/3">
-                  <td className="px-5 py-3.5 font-medium text-white">{employee.name}</td>
-                  <td className="px-5 py-3.5 text-green-100/50">{employee.department}</td>
-                  <td className="px-5 py-3.5 font-mono text-green-100/70">{employee.riskScore.toFixed(2)}</td>
-                  <td className="px-5 py-3.5">
-                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                      employee.riskLevel === 'High'
-                        ? 'bg-red-500/12 text-red-400'
-                        : employee.riskLevel === 'Medium'
-                        ? 'bg-amber-500/12 text-amber-400'
-                        : 'bg-green-500/12 text-green-400'
-                    }`}>
-                      {employee.riskLevel}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3.5 font-mono text-green-100/50">${Number(employee.salary).toLocaleString()}</td>
-                </tr>
-              ))}
-              {topAtRisk.length === 0 && (
+            <tbody className="divide-y" style={{ borderColor: 'var(--border-subtle)' }}>
+              {filteredEmployees.map((emp) => {
+                const prob = Math.round(emp.riskScore * 100);
+                return (
+                  <tr
+                    key={emp.id}
+                    onClick={() => setSelectedEmployeeId(emp.id)}
+                    className="group cursor-pointer transition hover:bg-green-500/5"
+                  >
+                    <td className="px-5 py-4 font-mono text-green-100/40">#{emp.id}</td>
+                    <td className="px-5 py-4 font-bold text-white group-hover:text-green-400 transition">{emp.name}</td>
+                    <td className="px-5 py-4 text-green-100/60">{emp.department}</td>
+                    <td className="px-5 py-4 font-mono text-green-100/60">${Number(emp.salary).toLocaleString()}</td>
+                    <td className="px-5 py-4 font-semibold text-white">{emp.performanceRating} / 5.0</td>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-white w-9">{prob}%</span>
+                        <div className="h-1.5 w-16 overflow-hidden rounded-full bg-black/40">
+                          <div
+                            className={`h-full rounded-full ${emp.riskLevel === 'High' ? 'bg-red-500' : emp.riskLevel === 'Medium' ? 'bg-amber-400' : 'bg-green-500'}`}
+                            style={{ width: `${prob}%` }}
+                          />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] ${
+                        emp.riskLevel === 'High'
+                          ? 'bg-red-500/15 text-red-400 border border-red-500/30'
+                          : emp.riskLevel === 'Medium'
+                          ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                          : 'bg-green-500/15 text-green-400 border border-green-500/30'
+                      }`}>
+                        {emp.riskLevel}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 text-green-100/50 font-medium">
+                      {emp.riskLevel === 'High' ? '1–3 Months' : emp.riskLevel === 'Medium' ? '3–6 Months' : '> 1 Year'}
+                    </td>
+                    <td className="px-5 py-4">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setSelectedEmployeeId(emp.id); }}
+                        className="inline-flex items-center gap-1 rounded-lg border border-green-500/20 bg-green-500/10 px-3 py-1 text-[11px] font-bold text-green-400 transition hover:bg-green-500/20"
+                      >
+                        Inspect <ChevronRight size={13} />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+
+              {filteredEmployees.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-5 py-8 text-center text-sm text-green-100/25">No employee data yet.</td>
+                  <td colSpan={9} className="px-5 py-12 text-center text-xs text-green-100/30">
+                    No employee records match the current filter criteria.
+                  </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
       </section>
+
+      {/* Detail & Simulator Modal */}
+      {selectedEmployeeId && (
+        <EmployeeDetailModal
+          employeeId={selectedEmployeeId}
+          onClose={() => setSelectedEmployeeId(null)}
+        />
+      )}
     </div>
   );
 }

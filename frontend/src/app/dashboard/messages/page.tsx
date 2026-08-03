@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Send, MessageCircleMore, UserCircle2 } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { Send, MessageCircleMore, UserCircle2, Search, Building2 } from 'lucide-react';
 import { fetchHrUsers, fetchMessages, sendMessage } from '../api';
 
 interface HrContact {
@@ -20,18 +21,37 @@ interface MessageItem {
 }
 
 export default function MessagesPage() {
+  const searchParams = useSearchParams();
+  const initialRecipientId = searchParams.get('recipientId') ? Number(searchParams.get('recipientId')) : null;
+
   const [profiles, setProfiles] = useState<HrContact[]>([]);
   const [threads, setThreads] = useState<MessageItem[]>([]);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(initialRecipientId);
+  const [searchQuery, setSearchQuery] = useState('');
   const [draft, setDraft] = useState('');
 
   useEffect(() => {
     Promise.all([fetchHrUsers(), fetchMessages()]).then(([usersRes, messagesRes]) => {
       setProfiles(usersRes.data);
       setThreads(messagesRes.data);
-      if (usersRes.data.length) setSelectedId(usersRes.data[0].id);
+      if (initialRecipientId && usersRes.data.some((u: any) => u.id === initialRecipientId)) {
+        setSelectedId(initialRecipientId);
+      } else if (usersRes.data.length && !selectedId) {
+        setSelectedId(usersRes.data[0].id);
+      }
     }).catch(() => { setProfiles([]); setThreads([]); });
-  }, []);
+  }, [initialRecipientId]);
+
+  // Filtered HR contacts
+  const filteredProfiles = useMemo(() => {
+    return profiles.filter((p) => {
+      const query = searchQuery.toLowerCase();
+      const matchName = p.username.toLowerCase().includes(query);
+      const matchOrg = (p.organization || '').toLowerCase().includes(query);
+      const matchRole = (p.role || '').toLowerCase().includes(query);
+      return matchName || matchOrg || matchRole;
+    });
+  }, [profiles, searchQuery]);
 
   const selectedProfile = useMemo(() => profiles.find((p) => p.id === selectedId), [profiles, selectedId]);
   const currentThread = useMemo(() => threads.filter((m) => m.sender.id === selectedId || m.recipient.id === selectedId), [threads, selectedId]);
@@ -55,24 +75,41 @@ export default function MessagesPage() {
       <div className="rounded-2xl border border-green-500/12 bg-[#060e09] p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-green-400/50">Messaging</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-green-400/50">Cross-HR Messaging</p>
             <h1 className="mt-2 text-3xl font-bold text-white">Private HR Conversations</h1>
-            <p className="mt-1 text-sm text-green-100/35">Coordinate with HR professionals and keep trade updates flowing.</p>
+            <p className="mt-1 text-sm text-green-100/35">Search and chat directly with HR professionals across all partner organizations.</p>
           </div>
           <div className="flex items-center gap-2 rounded-xl border border-green-500/15 bg-green-500/8 px-4 py-2.5">
             <MessageCircleMore size={15} className="text-green-400" />
-            <span className="text-sm text-green-100/40">{profiles.length} HR contacts</span>
+            <span className="text-sm text-green-100/40">{profiles.length} Total HR Contacts</span>
           </div>
         </div>
       </div>
 
       {/* Chat layout */}
-      <div className="grid gap-5 xl:grid-cols-[300px_1fr]">
+      <div className="grid gap-5 xl:grid-cols-[320px_1fr]">
         {/* Contacts sidebar */}
-        <aside className="rounded-2xl border border-green-500/10 bg-[#060e09] p-5">
-          <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-green-400/40">HR Contacts</h2>
-          <div className="space-y-2">
-            {profiles.map((profile) => {
+        <aside className="rounded-2xl border border-green-500/10 bg-[#060e09] p-5 flex flex-col space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-semibold uppercase tracking-[0.25em] text-green-400/40">HR Contacts</h2>
+            <span className="text-[10px] text-green-100/30">{filteredProfiles.length} available</span>
+          </div>
+
+          {/* Search Bar for HRs */}
+          <div className="flex items-center gap-2 rounded-xl border border-green-500/15 bg-black/40 px-3 py-2 text-xs">
+            <Search size={14} className="text-green-400" />
+            <input
+              type="text"
+              placeholder="Search HR by name or company..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-transparent text-white outline-none placeholder:text-green-100/20 w-full"
+            />
+          </div>
+
+          {/* HR Contacts List */}
+          <div className="space-y-2 overflow-y-auto max-h-[480px]">
+            {filteredProfiles.map((profile) => {
               const isActive = profile.id === selectedId;
               return (
                 <button
@@ -89,14 +126,17 @@ export default function MessagesPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-white">{profile.username}</p>
-                    <p className="truncate text-[11px] text-green-100/30">{profile.role} · {profile.organization || 'Independent HR'}</p>
+                    <p className="truncate text-[11px] text-green-100/30 flex items-center gap-1">
+                      <Building2 size={11} className="text-green-400 flex-shrink-0" />
+                      {profile.organization || 'Independent HR'}
+                    </p>
                   </div>
                   {isActive && <span className="ml-auto h-1.5 w-1.5 flex-shrink-0 rounded-full bg-green-400 shadow-[0_0_6px_rgba(0,255,136,0.8)]" />}
                 </button>
               );
             })}
-            {profiles.length === 0 && (
-              <p className="py-6 text-center text-xs text-green-100/20">No contacts found.</p>
+            {filteredProfiles.length === 0 && (
+              <p className="py-8 text-center text-xs text-green-100/20">No HR professionals found matching &quot;{searchQuery}&quot;.</p>
             )}
           </div>
         </aside>
@@ -116,7 +156,7 @@ export default function MessagesPage() {
                 </div>
                 <div className="ml-auto flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-green-400 shadow-[0_0_6px_rgba(0,255,136,0.8)]" />
-                  <span className="text-[10px] text-green-400/50">Active</span>
+                  <span className="text-[10px] text-green-400/50">Active HR Contact</span>
                 </div>
               </div>
 
@@ -140,7 +180,7 @@ export default function MessagesPage() {
                   );
                 }) : (
                   <div className="flex h-full items-center justify-center text-xs text-green-100/20">
-                    No messages yet. Start the conversation!
+                    No messages yet with {selectedProfile.username}. Send a message to start the conversation!
                   </div>
                 )}
               </div>
@@ -152,7 +192,7 @@ export default function MessagesPage() {
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Write a message... (Enter to send)"
+                  placeholder={`Write a message to ${selectedProfile.username}... (Enter to send)`}
                   className="min-h-[72px] flex-1 resize-none rounded-xl border border-green-500/12 bg-black/40 px-4 py-3 text-sm text-white outline-none transition placeholder:text-green-100/20 focus:border-green-500/30 focus:ring-2 focus:ring-green-500/8"
                 />
                 <button

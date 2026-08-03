@@ -38,6 +38,7 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/employees")
 @CrossOrigin(origins = "*")
 public class EmployeeController {
+
     private final EmployeeRepository employeeRepository;
     private final UserRepository userRepository;
     private final RetentionRiskService retentionRiskService;
@@ -69,6 +70,42 @@ public class EmployeeController {
                 .filter(employee -> employee.getOrganization() != null && employee.getOrganization().getId().equals(user.getOrganization().getId()))
                 .sorted(Comparator.comparing(Employee::getRiskScore).reversed())
                 .toList();
+    }
+
+    @GetMapping("/{id}/details")
+    public ResponseEntity<?> getEmployeeDetails(@PathVariable Long id) {
+        Employee existing = employeeRepository.findById(id).orElse(null);
+        User currentUser = getCurrentUser();
+        if (existing == null) {
+            return ResponseEntity.notFound().build();
+        }
+        if (currentUser == null || currentUser.getOrganization() == null || existing.getOrganization() == null
+                || !existing.getOrganization().getId().equals(currentUser.getOrganization().getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Not authorized"));
+        }
+
+        Map<String, Object> riskDetails = retentionRiskService.predictRetentionRisk(existing);
+        return ResponseEntity.ok(Map.of(
+                "employee", existing,
+                "riskAnalysis", riskDetails
+        ));
+    }
+
+    @PostMapping("/simulate")
+    public ResponseEntity<?> simulateRisk(@RequestBody Map<String, Object> payload) {
+        double salary = ((Number) payload.getOrDefault("salary", 75000)).doubleValue();
+        int yearsAtCompany = ((Number) payload.getOrDefault("yearsAtCompany", 3)).intValue();
+        double rating = ((Number) payload.getOrDefault("performanceRating", 3.5)).doubleValue();
+        int age = ((Number) payload.getOrDefault("age", 30)).intValue();
+        String department = (String) payload.getOrDefault("department", "Engineering");
+        boolean overtime = Boolean.TRUE.equals(payload.get("overtime"));
+        int workLifeBalance = ((Number) payload.getOrDefault("workLifeBalance", 3)).intValue();
+        int promotionGap = ((Number) payload.getOrDefault("promotionGap", 2)).intValue();
+
+        Map<String, Object> result = retentionRiskService.calculateRisk(
+                salary, yearsAtCompany, rating, age, department, overtime, workLifeBalance, promotionGap
+        );
+        return ResponseEntity.ok(result);
     }
 
     @PutMapping("/{id}")

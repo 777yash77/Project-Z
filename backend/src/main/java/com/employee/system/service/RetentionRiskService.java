@@ -4,30 +4,126 @@ import com.employee.system.entity.Employee;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
 public class RetentionRiskService {
 
     public Map<String, Object> predictRetentionRisk(Employee employee) {
-        double score = 0.15;
-        if (employee.getYearsAtCompany() > 5) score += 0.15;
-        if (employee.getPerformanceRating() < 3.0) score += 0.2;
-        if (employee.getSalary().compareTo(new BigDecimal("80000")) < 0) score += 0.1;
-        if (employee.getAge() > 45) score += 0.1;
-        if (employee.getDepartment().equalsIgnoreCase("Sales")) score += 0.1;
+        return calculateRisk(
+                employee.getSalary() != null ? employee.getSalary().doubleValue() : 70000.0,
+                employee.getYearsAtCompany(),
+                employee.getPerformanceRating(),
+                employee.getAge(),
+                employee.getDepartment(),
+                false, // overtime default
+                3,     // workLifeBalance default (1-5)
+                employee.getYearsAtCompany() > 3 ? 3 : 1 // promotionGap default
+        );
+    }
 
-        score = Math.min(0.95, Math.max(0.05, score));
-        String level = score >= 0.75 ? "High" : score >= 0.45 ? "Medium" : "Low";
+    public Map<String, Object> calculateRisk(double salary, int yearsAtCompany, double rating, int age,
+                                              String department, boolean overtime, int workLifeBalance, int promotionGap) {
+        double score = 0.15;
+        List<Map<String, Object>> shapFactors = new ArrayList<>();
+
+        if (rating < 3.0) {
+            score += 0.22;
+            shapFactors.add(Map.of("factor", "Low Performance Rating", "impact", "+22%", "direction", "increase"));
+        }
+        if (overtime) {
+            score += 0.18;
+            shapFactors.add(Map.of("factor", "Excessive Overtime Work", "impact", "+18%", "direction", "increase"));
+        }
+        if (promotionGap >= 3) {
+            score += 0.16;
+            shapFactors.add(Map.of("factor", "Promotion Delay (" + promotionGap + " yrs)", "impact", "+16%", "direction", "increase"));
+        }
+        if (salary < 80000) {
+            score += 0.14;
+            shapFactors.add(Map.of("factor", "Below Benchmark Salary", "impact", "+14%", "direction", "increase"));
+        }
+        if (workLifeBalance <= 2) {
+            score += 0.12;
+            shapFactors.add(Map.of("factor", "Poor Work-Life Balance (" + workLifeBalance + "/5)", "impact", "+12%", "direction", "increase"));
+        }
+        if (yearsAtCompany > 5 && promotionGap >= 2) {
+            score += 0.10;
+            shapFactors.add(Map.of("factor", "High Tenure without Mobility", "impact", "+10%", "direction", "increase"));
+        }
+        if (department != null && department.equalsIgnoreCase("Sales")) {
+            score += 0.08;
+            shapFactors.add(Map.of("factor", "High-Stress Department (Sales)", "impact", "+8%", "direction", "increase"));
+        }
+
+        // Positive buffers
+        if (rating >= 4.5) {
+            score -= 0.12;
+            shapFactors.add(Map.of("factor", "Top Performer Distinction", "impact", "-12%", "direction", "decrease"));
+        }
+        if (workLifeBalance >= 4) {
+            score -= 0.08;
+            shapFactors.add(Map.of("factor", "Strong Work-Life Satisfaction", "impact", "-8%", "direction", "decrease"));
+        }
+
+        score = Math.min(0.96, Math.max(0.04, score));
+        double roundedScore = Math.round(score * 100.0) / 100.0;
+
+        String level = roundedScore >= 0.70 ? "High" : roundedScore >= 0.40 ? "Medium" : "Low";
+        String timeline = roundedScore >= 0.75 ? "1–3 Months" : roundedScore >= 0.50 ? "3–6 Months" : roundedScore >= 0.30 ? "6–12 Months" : "> 1 Year";
+        int priorityScore = (int) Math.round(roundedScore * 100);
+
+        Map<String, Object> geminiCopilot = new HashMap<>();
+        geminiCopilot.put("executiveSummary", getExecutiveSummary(level, department, shapFactors));
+        geminiCopilot.put("rootCauseAnalysis", getRootCauseAnalysis(shapFactors));
+        geminiCopilot.put("immediateHrActions", getImmediateActions(level, shapFactors));
+        geminiCopilot.put("longTermPlan", getLongTermPlan(promotionGap, salary));
+        geminiCopilot.put("businessImpact", "Estimated replacement cost: $" + (int)(salary * 0.45) + " + project delay risk.");
 
         Map<String, Object> response = new HashMap<>();
-        response.put("retentionRiskScore", round(score));
+        response.put("retentionRiskScore", roundedScore);
+        response.put("attritionProbability", roundedScore);
         response.put("riskLevel", level);
+        response.put("timeline", timeline);
+        response.put("priorityScore", priorityScore);
+        response.put("shapFactors", shapFactors);
+        response.put("geminiCopilot", geminiCopilot);
+
         return response;
     }
 
-    private double round(double value) {
-        return Math.round(value * 100.0) / 100.0;
+    private String getExecutiveSummary(String level, String department, List<Map<String, Object>> factors) {
+        String primaryFactor = factors.isEmpty() ? "general market movement" : (String) factors.get(0).get("factor");
+        return String.format("%s attrition risk detected in %s department. Primary contributing driver: %s.",
+                level, department != null ? department : "organization", primaryFactor);
+    }
+
+    private String getRootCauseAnalysis(List<Map<String, Object>> factors) {
+        if (factors.isEmpty()) return "Employee shows stable retention indicators with balanced tenure and performance metrics.";
+        StringBuilder sb = new StringBuilder("Key flight risk drivers identified: ");
+        for (int i = 0; i < Math.min(3, factors.size()); i++) {
+            if (i > 0) sb.append(", ");
+            sb.append(factors.get(i).get("factor"));
+        }
+        return sb.toString() + ".";
+    }
+
+    private List<String> getImmediateActions(String level, List<Map<String, Object>> factors) {
+        List<String> actions = new ArrayList<>();
+        actions.add("Schedule 1-on-1 stay interview within 5 business days.");
+        if (level.equalsIgnoreCase("High")) {
+            actions.add("Conduct compensation & title alignment audit.");
+            actions.add("Review workload distribution and eliminate forced overtime.");
+        } else {
+            actions.add("Discuss career milestone progression map for next 12 months.");
+        }
+        return actions;
+    }
+
+    private String getLongTermPlan(int promotionGap, double salary) {
+        return String.format("Establish clear quarterly promotion milestones. Target 12-month salary adjustment toward market baseline ($%.0f).", salary * 1.12);
     }
 }

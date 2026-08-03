@@ -213,16 +213,7 @@ public class AuthController {
         }
 
         User savedUser = createAndSaveUser(username, email, password, organizationName);
-        Organization org = savedUser.getOrganization();
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("id", savedUser.getId());
-        response.put("username", savedUser.getUsername());
-        response.put("email", savedUser.getEmail());
-        response.put("role", savedUser.getRole());
-        response.put("organization", org != null ? org.getName() : null);
-        response.put("message", "Account created successfully. Please sign in.");
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(buildTokenResponse(savedUser));
     }
 
     // ─── Token Validation ────────────────────────────────────────────────────

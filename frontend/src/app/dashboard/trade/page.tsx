@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowRightLeft, BellRing, ShieldCheck, Eye } from 'lucide-react';
+import { ArrowRightLeft, BellRing, ShieldCheck, Eye, MessageCircleMore } from 'lucide-react';
 import { claimTradeListing, fetchTradeListings } from '../api';
 
 interface TradeListingItem {
@@ -82,17 +82,27 @@ export default function TradeWindowPage() {
                       Listed by {employee.organization.name} · {employee.commissionPercent}% commission · {employee.notes || 'No notes'}
                     </p>
                   </div>
-                  <button
-                    onClick={() => claimListing(employee.id)}
-                    disabled={employee.status !== 'OPEN'}
-                    className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
-                      employee.status === 'OPEN'
-                        ? 'bg-green-500 text-black hover:bg-green-400 hover:shadow-[0_0_12px_rgba(0,255,136,0.3)]'
-                        : 'cursor-not-allowed bg-black/40 text-green-100/20'
-                    }`}
-                  >
-                    {employee.status === 'OPEN' ? 'Claim Listing' : 'Claimed'}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {employee.listedBy?.id && (
+                      <a
+                        href={`/dashboard/messages?recipientId=${employee.listedBy.id}`}
+                        className="flex items-center gap-1.5 rounded-xl border border-green-500/20 bg-green-500/8 px-3 py-2 text-xs font-semibold text-green-400 transition hover:bg-green-500/15"
+                      >
+                        <MessageCircleMore size={14} /> Message HR
+                      </a>
+                    )}
+                    <button
+                      onClick={() => claimListing(employee.id)}
+                      disabled={employee.status !== 'OPEN'}
+                      className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
+                        employee.status === 'OPEN'
+                          ? 'bg-green-500 text-black hover:bg-green-400 hover:shadow-[0_0_12px_rgba(0,255,136,0.3)]'
+                          : 'cursor-not-allowed bg-black/40 text-green-100/20'
+                      }`}
+                    >
+                      {employee.status === 'OPEN' ? 'Claim Listing' : 'Claimed'}
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
