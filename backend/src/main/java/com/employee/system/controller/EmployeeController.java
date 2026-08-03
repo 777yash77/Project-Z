@@ -34,6 +34,8 @@ import com.employee.system.service.RetentionRiskService;
 
 import jakarta.validation.Valid;
 
+import com.employee.system.service.GeminiService;
+
 @RestController
 @RequestMapping("/api/employees")
 @CrossOrigin(origins = "*")
@@ -42,12 +44,14 @@ public class EmployeeController {
     private final EmployeeRepository employeeRepository;
     private final UserRepository userRepository;
     private final RetentionRiskService retentionRiskService;
+    private final GeminiService geminiService;
 
     public EmployeeController(EmployeeRepository employeeRepository, UserRepository userRepository,
-                              RetentionRiskService retentionRiskService) {
+                              RetentionRiskService retentionRiskService, GeminiService geminiService) {
         this.employeeRepository = employeeRepository;
         this.userRepository = userRepository;
         this.retentionRiskService = retentionRiskService;
+        this.geminiService = geminiService;
     }
 
     @PostMapping
@@ -108,6 +112,22 @@ public class EmployeeController {
         Map<String, Object> result = retentionRiskService.calculateRisk(
                 salary, yearsAtCompany, rating, age, department, overtime, workLifeBalance, promotionGap
         );
+
+        Employee tempEmp = new Employee();
+        tempEmp.setName((String) payload.getOrDefault("name", "Employee"));
+        tempEmp.setSalary(BigDecimal.valueOf(salary));
+        tempEmp.setYearsAtCompany(yearsAtCompany);
+        tempEmp.setPerformanceRating(rating);
+        tempEmp.setAge(age);
+        tempEmp.setDepartment(department);
+        tempEmp.setRiskScore(((Number) result.get("retentionRiskScore")).doubleValue());
+        tempEmp.setRiskLevel((String) result.get("riskLevel"));
+
+        if (geminiService != null) {
+            String simulatedAiReport = geminiService.generateIndividualEmployeeAnalysis(tempEmp, result);
+            result.put("fullAiReport", simulatedAiReport);
+        }
+
         return ResponseEntity.ok(result);
     }
 

@@ -97,92 +97,89 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
           <div className="mt-6 space-y-6">
 
             {/* KPI Overview Cards */}
-            <div className="grid gap-3 sm:grid-cols-4">
-              {[
-                { label: 'Risk Level', value: data.riskAnalysis.riskLevel, color: data.riskAnalysis.riskLevel === 'High' ? 'text-red-400' : data.riskAnalysis.riskLevel === 'Medium' ? 'text-amber-400' : 'text-green-400' },
-                { label: 'Attrition Probability', value: `${Math.round(data.riskAnalysis.attritionProbability * 100)}%`, color: 'text-white' },
-                { label: 'Predicted Timeline', value: data.riskAnalysis.timeline || '3–6 Months', color: 'text-green-400' },
-                { label: 'Priority HR Score', value: `${data.riskAnalysis.priorityScore}/100`, color: 'text-amber-400' },
-              ].map((kpi) => (
-                <div key={kpi.label} className="rounded-2xl border p-4 backdrop-blur-sm" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-green-100/30">{kpi.label}</p>
-                  <p className={`mt-2 text-2xl font-bold ${kpi.color}`}>{kpi.value}</p>
-                </div>
-              ))}
-            </div>
+            {(() => {
+              const activeAnalysis = simulationResult ? {
+                riskLevel: simulationResult.riskLevel,
+                attritionProbability: simulationResult.retentionRiskScore,
+                timeline: simulationResult.riskLevel === 'High' ? '1–3 Months' : simulationResult.riskLevel === 'Medium' ? '3–6 Months' : '> 1 Year',
+                priorityScore: Math.round(simulationResult.retentionRiskScore * 100),
+                shapFactors: simulationResult.shapFactors,
+                fullAiReport: simulationResult.fullAiReport || data.riskAnalysis?.fullAiReport
+              } : data.riskAnalysis;
 
-            <div className="grid gap-6 lg:grid-cols-2">
-
-              {/* Explainable AI (XAI) - SHAP Factors */}
-              <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                    <BarChart2 size={16} className="text-green-400" />
-                    Explainable AI — Top Flight Risk Factors
-                  </h3>
-                  <span className="text-[10px] text-green-100/30 uppercase tracking-[0.2em]">SHAP Values</span>
-                </div>
-                <div className="mt-4 space-y-3">
-                  {data.riskAnalysis.shapFactors?.map((f: any) => (
-                    <div key={f.factor} className="rounded-xl border p-3" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'rgba(0,0,0,0.2)' }}>
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-semibold text-white">{f.factor}</span>
-                        <span className={`font-mono font-bold ${f.direction === 'increase' ? 'text-red-400' : 'text-green-400'}`}>{f.impact}</span>
+              return (
+                <>
+                  <div className="grid gap-3 sm:grid-cols-4">
+                    {[
+                      { label: 'Risk Level', value: activeAnalysis.riskLevel, color: activeAnalysis.riskLevel === 'High' ? 'text-red-400' : activeAnalysis.riskLevel === 'Medium' ? 'text-amber-400' : 'text-green-400' },
+                      { label: 'Attrition Probability', value: `${Math.round(activeAnalysis.attritionProbability * 100)}%`, color: 'text-white' },
+                      { label: 'Predicted Timeline', value: activeAnalysis.timeline || '3–6 Months', color: 'text-green-400' },
+                      { label: 'Priority HR Score', value: `${activeAnalysis.priorityScore}/100`, color: 'text-amber-400' },
+                    ].map((kpi) => (
+                      <div key={kpi.label} className="rounded-2xl border p-4 backdrop-blur-sm" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-green-100/30">{kpi.label}</p>
+                        <p className={`mt-2 text-2xl font-bold ${kpi.color}`}>{kpi.value}</p>
                       </div>
-                      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-black/40">
-                        <div
-                          className={`h-full rounded-full ${f.direction === 'increase' ? 'bg-red-500' : 'bg-green-500'}`}
-                          style={{ width: `${Math.min(100, Math.abs(parseInt(f.impact)) * 4)}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Gemini HR Copilot Panel */}
-              <div className="rounded-2xl border border-emerald-500/20 bg-card p-6 shadow-md">
-                <div className="flex items-center justify-between border-b border-emerald-500/15 pb-3 mb-4">
-                  <div className="flex items-center gap-2 text-emerald-500">
-                    <Sparkles size={18} />
-                    <h3 className="text-sm font-extrabold uppercase tracking-widest text-foreground">Gemini AI Employee Analytics</h3>
+                    ))}
                   </div>
-                  <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold text-emerald-500">
-                    Gemini 1.5 Flash
-                  </span>
-                </div>
 
-                {data.riskAnalysis?.fullAiReport ? (
-                  <AiReportRenderer reportText={data.riskAnalysis.fullAiReport} />
-                ) : (
-                  <div className="space-y-4 text-xs">
-                    <div>
-                      <p className="font-bold text-foreground">Executive Summary</p>
-                      <p className="mt-1 text-muted leading-relaxed">{data.riskAnalysis.geminiCopilot?.executiveSummary}</p>
-                    </div>
-                    <div>
-                      <p className="font-bold text-foreground">Root Cause Analysis</p>
-                      <p className="mt-1 text-muted leading-relaxed">{data.riskAnalysis.geminiCopilot?.rootCauseAnalysis}</p>
-                    </div>
-                    <div>
-                      <p className="font-bold text-foreground">Immediate HR Actions</p>
-                      <ul className="mt-1.5 space-y-1">
-                        {data.riskAnalysis.geminiCopilot?.immediateHrActions?.map((act: string) => (
-                          <li key={act} className="flex items-center gap-2 text-muted">
-                            <CheckCircle2 size={12} className="text-emerald-500 flex-shrink-0" />
-                            {act}
-                          </li>
+                  <div className="grid gap-6 lg:grid-cols-2">
+
+                    {/* Explainable AI (XAI) - SHAP Factors */}
+                    <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                          <BarChart2 size={16} className="text-green-400" />
+                          Explainable AI — Top Flight Risk Factors
+                        </h3>
+                        <span className="text-[10px] text-green-100/30 uppercase tracking-[0.2em]">SHAP Values</span>
+                      </div>
+                      <div className="mt-4 space-y-3">
+                        {activeAnalysis.shapFactors?.map((f: any) => (
+                          <div key={f.factor} className="rounded-xl border p-3" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'rgba(0,0,0,0.2)' }}>
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="font-semibold text-white">{f.factor}</span>
+                              <span className={`font-mono font-bold ${f.direction === 'increase' ? 'text-red-400' : 'text-green-400'}`}>{f.impact}</span>
+                            </div>
+                            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-black/40">
+                              <div
+                                className={`h-full rounded-full ${f.direction === 'increase' ? 'bg-red-500' : 'bg-green-500'}`}
+                                style={{ width: `${Math.min(100, Math.abs(parseInt(f.impact)) * 4)}%` }}
+                              />
+                            </div>
+                          </div>
                         ))}
-                      </ul>
+                      </div>
                     </div>
-                    <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-[11px]">
-                      <p className="font-bold text-emerald-600 dark:text-emerald-400">{data.riskAnalysis.geminiCopilot?.businessImpact}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
 
-            </div>
+                    {/* Gemini HR Copilot Panel */}
+                    <div className="rounded-2xl border border-emerald-500/20 bg-card p-6 shadow-md">
+                      <div className="flex items-center justify-between border-b border-emerald-500/15 pb-3 mb-4">
+                        <div className="flex items-center gap-2 text-emerald-500">
+                          <Sparkles size={18} />
+                          <h3 className="text-sm font-extrabold uppercase tracking-widest text-foreground">Gemini AI Employee Analytics</h3>
+                        </div>
+                        <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold text-emerald-500">
+                          {simulationResult ? 'Simulation Active' : 'Live Analysis'}
+                        </span>
+                      </div>
+
+                      {activeAnalysis.fullAiReport ? (
+                        <AiReportRenderer reportText={activeAnalysis.fullAiReport} />
+                      ) : (
+                        <div className="space-y-4 text-xs">
+                          <div>
+                            <p className="font-bold text-foreground">Executive Summary</p>
+                            <p className="mt-1 text-muted leading-relaxed">{data.riskAnalysis.geminiCopilot?.executiveSummary}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+                </>
+              );
+            })()}
 
             {/* What-If Simulator */}
             <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>

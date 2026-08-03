@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { AlertTriangle, DollarSign, Users as UsersIcon, BarChart3, TrendingUp, Activity, Filter, Search, Sparkles, PieChart, ShieldAlert, ArrowUpRight, ChevronRight, BarChart2 } from 'lucide-react';
 import { fetchEmployees, fetchWorkforceAiAnalytics, getCurrentUserProfile } from './api';
 import EmployeeDetailModal from './EmployeeDetailModal';
@@ -31,7 +31,7 @@ export default function ExecutiveDashboardPage() {
   const [sortField, setSortField] = useState<'riskScore' | 'name' | 'salary' | 'yearsAtCompany'>('riskScore');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  useEffect(() => {
+  const loadDashboardData = useCallback(() => {
     Promise.all([fetchEmployees(), getCurrentUserProfile(), fetchWorkforceAiAnalytics()])
       .then(([empRes, profileRes, aiRes]) => {
         setEmployees(empRes.data);
@@ -42,6 +42,10 @@ export default function ExecutiveDashboardPage() {
       })
       .catch(() => setEmployees([]));
   }, []);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
 
   // Filtered employees list
   const filteredEmployees = useMemo(() => {
@@ -354,7 +358,10 @@ export default function ExecutiveDashboardPage() {
       {selectedEmployeeId && (
         <EmployeeDetailModal
           employeeId={selectedEmployeeId}
-          onClose={() => setSelectedEmployeeId(null)}
+          onClose={() => {
+            setSelectedEmployeeId(null);
+            loadDashboardData();
+          }}
         />
       )}
     </div>

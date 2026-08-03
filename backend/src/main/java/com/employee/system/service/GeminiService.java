@@ -69,6 +69,9 @@ public class GeminiService {
     }
 
     public String generateIndividualEmployeeAnalysis(Employee emp, Map<String, Object> risk) {
+        double normalizedScore = emp.getRiskScore() <= 1.0 ? emp.getRiskScore() * 100 : emp.getRiskScore();
+        String riskLevel = emp.getRiskLevel() != null ? emp.getRiskLevel() : (normalizedScore >= 60 ? "High" : normalizedScore >= 30 ? "Medium" : "Low");
+
         String prompt = String.format(
             "You are a Principal HR Data Scientist and Talent Retention Specialist. Analyze this employee and provide a detailed executive report.\n" +
             "Employee Details:\n" +
@@ -86,7 +89,7 @@ public class GeminiService {
             "### 3. Recommended Compensation & Retention Interventions\n" +
             "### 4. B2B Talent Mobility & Internal Career Pathing",
             emp.getName(), emp.getAge(), emp.getDepartment(), emp.getSalary(),
-            emp.getYearsAtCompany(), emp.getPerformanceRating(), emp.getRiskScore(), emp.getRiskLevel()
+            emp.getYearsAtCompany(), emp.getPerformanceRating(), normalizedScore, riskLevel
         );
 
         String response = generateContent(prompt);
@@ -97,8 +100,8 @@ public class GeminiService {
     }
 
     private String buildIndividualFallbackReport(Employee emp, Map<String, Object> risk) {
-        double score = emp.getRiskScore();
-        String level = emp.getRiskLevel();
+        double score = emp.getRiskScore() <= 1.0 ? emp.getRiskScore() * 100 : emp.getRiskScore();
+        String level = emp.getRiskLevel() != null ? emp.getRiskLevel() : (score >= 60 ? "High" : score >= 30 ? "Medium" : "Low");
         double rating = emp.getPerformanceRating();
         int years = emp.getYearsAtCompany();
 
@@ -131,9 +134,17 @@ public class GeminiService {
 
     public String generateWorkforceAnalytics(List<Employee> employees, Map<String, Object> metrics) {
         int total = employees.size();
-        long highCount = employees.stream().filter(e -> e.getRiskScore() >= 60).count();
-        long medCount = employees.stream().filter(e -> e.getRiskScore() >= 30 && e.getRiskScore() < 60).count();
-        long lowCount = employees.stream().filter(e -> e.getRiskScore() < 30).count();
+        long highCount = employees.stream().filter(e -> {
+            double s = e.getRiskScore() <= 1.0 ? e.getRiskScore() * 100 : e.getRiskScore();
+            return "High".equalsIgnoreCase(e.getRiskLevel()) || s >= 60;
+        }).count();
+
+        long medCount = employees.stream().filter(e -> {
+            double s = e.getRiskScore() <= 1.0 ? e.getRiskScore() * 100 : e.getRiskScore();
+            return "Medium".equalsIgnoreCase(e.getRiskLevel()) || (s >= 30 && s < 60);
+        }).count();
+
+        long lowCount = total - (highCount + medCount);
 
         String prompt = String.format(
             "You are an Enterprise Workforce Analytics & HR Strategy Leader. Analyze this workforce dataset:\n" +
