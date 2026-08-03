@@ -45,7 +45,11 @@ export default function MessagesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [draft, setDraft] = useState('');
   const [myUserId, setMyUserId] = useState<number | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const selectedIdRef = useRef<number | null>(selectedId);
+
+  useEffect(() => {
+    selectedIdRef.current = selectedId;
+  }, [selectedId]);
 
   const loadData = () => {
     Promise.all([fetchHrUsers(), fetchMessages(), fetchHrProfile()])
@@ -53,10 +57,13 @@ export default function MessagesPage() {
         setProfiles(usersRes.data);
         setThreads(messagesRes.data);
         if (profileRes.data?.id) setMyUserId(profileRes.data.id);
-        if (initialRecipientId && usersRes.data.some((u: any) => u.id === initialRecipientId)) {
-          setSelectedId(initialRecipientId);
-        } else if (usersRes.data.length && !selectedId) {
-          setSelectedId(usersRes.data[0].id);
+
+        if (selectedIdRef.current === null && usersRes.data.length > 0) {
+          const defaultId = initialRecipientId && usersRes.data.some((u: any) => u.id === initialRecipientId)
+            ? initialRecipientId
+            : usersRes.data[0].id;
+          setSelectedId(defaultId);
+          selectedIdRef.current = defaultId;
         }
       })
       .catch(() => {
