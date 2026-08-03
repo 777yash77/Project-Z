@@ -85,6 +85,7 @@ public class HrMarketplaceController {
         response.put("username", user.getUsername());
         response.put("email", user.getEmail());
         response.put("role", user.getRole());
+        response.put("avatarUrl", user.getAvatarUrl() != null ? user.getAvatarUrl() : "");
         response.put("hrCode", "HRC-" + String.format("%04d", user.getId()));
         if (org != null) {
             Map<String, Object> orgMap = new HashMap<>();
@@ -98,6 +99,33 @@ public class HrMarketplaceController {
         }
         response.put("totalEmployees", totalEmployees);
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@RequestBody Map<String, String> payload) {
+        User user = getCurrentUser();
+        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        if (payload.containsKey("avatarUrl")) {
+            user.setAvatarUrl(payload.get("avatarUrl"));
+        }
+        if (payload.containsKey("role") && !payload.get("role").isBlank()) {
+            user.setRole(payload.get("role"));
+        }
+        User saved = userRepository.save(user);
+        return ResponseEntity.ok(Map.of(
+                "message", "Profile updated successfully",
+                "avatarUrl", saved.getAvatarUrl() != null ? saved.getAvatarUrl() : ""
+        ));
+    }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        User current = getCurrentUser();
+        if (current == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        User target = userRepository.findById(id).orElse(null);
+        if (target == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        userRepository.delete(target);
+        return ResponseEntity.ok(Map.of("message", "User deleted successfully"));
     }
 
     @PutMapping("/organization")

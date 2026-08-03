@@ -10,6 +10,7 @@ interface HrContact {
   username: string;
   role: string;
   organization: string | object | null;
+  avatarUrl?: string | null;
 }
 
 interface MessageItem {
@@ -64,6 +65,9 @@ export default function MessagesPage() {
 
   useEffect(() => {
     loadData();
+    // Real-time auto polling every 3 seconds for new messages
+    const interval = setInterval(loadData, 3000);
+    return () => clearInterval(interval);
   }, [initialRecipientId]);
 
   useEffect(() => {
@@ -175,12 +179,20 @@ export default function MessagesPage() {
                       : 'border border-transparent hover:bg-emerald-500/5'
                   }`}
                 >
-                  <div className="relative">
-                    <div
-                      className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${avatarStyle} text-sm font-extrabold shadow-md`}
-                    >
-                      {(profile.username || 'HR').slice(0, 2).toUpperCase()}
-                    </div>
+                  <div className="relative flex-shrink-0">
+                    {profile.avatarUrl ? (
+                      <img
+                        src={profile.avatarUrl}
+                        alt={profile.username}
+                        className="h-11 w-11 rounded-2xl object-cover border border-emerald-500/30 shadow-md"
+                      />
+                    ) : (
+                      <div
+                        className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${avatarStyle} text-sm font-extrabold shadow-md`}
+                      >
+                        {(profile.username || 'HR').slice(0, 2).toUpperCase()}
+                      </div>
+                    )}
                     <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card bg-emerald-500" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -210,12 +222,22 @@ export default function MessagesPage() {
               {/* Active Contact Header */}
               <div className="flex items-center justify-between border-b border-emerald-500/15 pb-4 mb-4">
                 <div className="flex items-center gap-3.5">
-                  <div
-                    className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${getAvatarColor(
-                      selectedProfile.username
-                    )} text-sm font-extrabold shadow-md`}
-                  >
-                    {(selectedProfile.username || 'HR').slice(0, 2).toUpperCase()}
+                  <div className="relative flex-shrink-0">
+                    {selectedProfile.avatarUrl ? (
+                      <img
+                        src={selectedProfile.avatarUrl}
+                        alt={selectedProfile.username}
+                        className="h-12 w-12 rounded-2xl object-cover border border-emerald-500/30 shadow-md"
+                      />
+                    ) : (
+                      <div
+                        className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${getAvatarColor(
+                          selectedProfile.username
+                        )} text-sm font-extrabold shadow-md`}
+                      >
+                        {(selectedProfile.username || 'HR').slice(0, 2).toUpperCase()}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <h2 className="text-base font-extrabold text-foreground">{selectedProfile.username}</h2>

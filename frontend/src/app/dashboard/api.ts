@@ -35,6 +35,8 @@ export const getMe = () => api.get('/auth/me');
 
 export const getCurrentUserProfile = () => api.get('/hr/me');
 export const fetchHrProfile = () => api.get('/hr/me');
+export const updateHrProfile = (payload: { avatarUrl?: string; role?: string }) => api.put('/hr/profile', payload);
+export const deleteHrUser = (id: number) => api.delete(`/hr/users/${id}`);
 export const updateOrganizationDetails = (payload: { name?: string; location?: string; industry?: string }) => api.put('/hr/organization', payload);
 
 export const fetchEmployees = () => api.get('/employees');
