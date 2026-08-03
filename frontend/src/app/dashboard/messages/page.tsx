@@ -125,6 +125,22 @@ export default function MessagesPage() {
     }
   };
 
+  const getFormattedDateLabel = (dateStr: string) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const msgDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+    if (msgDate.getTime() === today.getTime()) return 'Today';
+    if (msgDate.getTime() === yesterday.getTime()) return 'Yesterday';
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Top Banner */}
@@ -156,7 +172,7 @@ export default function MessagesPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-extrabold uppercase tracking-widest text-foreground">HR Contacts</h2>
             <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-500">
-              {filteredProfiles.length} Available
+              {filteredProfiles.length} Online
             </span>
           </div>
 
@@ -208,6 +224,10 @@ export default function MessagesPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
                       <p className="truncate text-sm font-bold text-foreground">{profile.username}</p>
+                      <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 text-[9px] font-extrabold text-emerald-500 flex items-center gap-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        Online
+                      </span>
                     </div>
                     <p className="truncate text-xs text-muted flex items-center gap-1 mt-0.5">
                       <Building2 size={12} className="text-emerald-500 flex-shrink-0" />
@@ -248,6 +268,7 @@ export default function MessagesPage() {
                         {(selectedProfile.username || 'HR').slice(0, 2).toUpperCase()}
                       </div>
                     )}
+                    <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-card bg-emerald-500" />
                   </div>
                   <div>
                     <h2 className="text-base font-extrabold text-foreground">{selectedProfile.username}</h2>
@@ -260,36 +281,58 @@ export default function MessagesPage() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                  <UserCheck size={14} />
-                  <span>Verified HR</span>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-extrabold text-emerald-500">
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    </span>
+                    <span>Online</span>
+                  </div>
+                  <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                    <UserCheck size={14} />
+                    <span>Verified HR</span>
+                  </div>
                 </div>
               </div>
 
               {/* Chat Messages History */}
               <div className="flex-1 space-y-4 overflow-y-auto rounded-2xl border border-emerald-500/10 bg-background/60 p-4 max-h-[380px] min-h-[300px]">
                 {currentThread.length > 0 ? (
-                  currentThread.map((message) => {
+                  currentThread.map((message, index) => {
                     const isMine = myUserId ? message.sender?.id === myUserId : message.sender?.id !== selectedId;
+                    const dateLabel = getFormattedDateLabel(message.createdAt);
+                    const prevDateLabel = index > 0 ? getFormattedDateLabel(currentThread[index - 1].createdAt) : null;
+                    const showDateHeader = dateLabel && dateLabel !== prevDateLabel;
+
                     return (
-                      <div key={message.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                        <div className="flex flex-col max-w-[80%] sm:max-w-[70%]">
-                          <div
-                            className={`rounded-2xl px-4 py-3 text-sm shadow-sm transition ${
-                              isMine
-                                ? 'bg-emerald-600 text-white font-medium rounded-tr-xs shadow-emerald-900/10'
-                                : 'bg-card border border-emerald-500/20 text-foreground font-medium rounded-tl-xs'
-                            }`}
-                          >
-                            <p className="whitespace-pre-wrap break-words leading-relaxed">{message.content}</p>
+                      <div key={message.id || index} className="space-y-3">
+                        {showDateHeader && (
+                          <div className="my-4 flex items-center justify-center">
+                            <span className="rounded-full border border-emerald-500/20 bg-card px-3.5 py-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 shadow-xs">
+                              {dateLabel}
+                            </span>
                           </div>
-                          <span
-                            className={`mt-1 text-[10px] font-semibold tracking-wide ${
-                              isMine ? 'text-right text-emerald-600 dark:text-emerald-400' : 'text-left text-muted'
-                            }`}
-                          >
-                            {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
+                        )}
+                        <div className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                          <div className="flex flex-col max-w-[80%] sm:max-w-[70%]">
+                            <div
+                              className={`rounded-2xl px-4 py-3 text-sm shadow-sm transition ${
+                                isMine
+                                  ? 'bg-emerald-600 text-white font-medium rounded-tr-xs shadow-emerald-900/10'
+                                  : 'bg-card border border-emerald-500/20 text-foreground font-medium rounded-tl-xs'
+                              }`}
+                            >
+                              <p className="whitespace-pre-wrap break-words leading-relaxed">{message.content}</p>
+                            </div>
+                            <span
+                              className={`mt-1 text-[10px] font-semibold tracking-wide ${
+                                isMine ? 'text-right text-emerald-600 dark:text-emerald-400' : 'text-left text-muted'
+                              }`}
+                            >
+                              {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     );
@@ -301,6 +344,21 @@ export default function MessagesPage() {
                     <p>Send a message below to start your private HR conversation!</p>
                   </div>
                 )}
+
+                {/* Animated Typing Indicator Symbol when user is typing */}
+                {draft.trim().length > 0 && (
+                  <div className="flex justify-end my-2 animate-fade-in">
+                    <div className="flex items-center gap-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 px-4 py-2.5 text-xs text-emerald-500 font-semibold shadow-xs">
+                      <span>Typing...</span>
+                      <div className="flex items-center gap-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div ref={messagesEndRef} />
               </div>
 
