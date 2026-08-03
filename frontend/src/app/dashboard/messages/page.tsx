@@ -46,6 +46,7 @@ export default function MessagesPage() {
   const [draft, setDraft] = useState('');
   const [myUserId, setMyUserId] = useState<number | null>(null);
   const selectedIdRef = useRef<number | null>(selectedId);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     selectedIdRef.current = selectedId;
