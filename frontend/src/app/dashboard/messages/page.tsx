@@ -44,13 +44,15 @@ export default function MessagesPage() {
   const [selectedId, setSelectedId] = useState<number | null>(initialRecipientId);
   const [searchQuery, setSearchQuery] = useState('');
   const [draft, setDraft] = useState('');
+  const [myUserId, setMyUserId] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const loadData = () => {
-    Promise.all([fetchHrUsers(), fetchMessages()])
-      .then(([usersRes, messagesRes]) => {
+    Promise.all([fetchHrUsers(), fetchMessages(), fetchHrProfile()])
+      .then(([usersRes, messagesRes, profileRes]) => {
         setProfiles(usersRes.data);
         setThreads(messagesRes.data);
+        if (profileRes.data?.id) setMyUserId(profileRes.data.id);
         if (initialRecipientId && usersRes.data.some((u: any) => u.id === initialRecipientId)) {
           setSelectedId(initialRecipientId);
         } else if (usersRes.data.length && !selectedId) {
@@ -260,7 +262,7 @@ export default function MessagesPage() {
               <div className="flex-1 space-y-4 overflow-y-auto rounded-2xl border border-emerald-500/10 bg-background/60 p-4 max-h-[380px] min-h-[300px]">
                 {currentThread.length > 0 ? (
                   currentThread.map((message) => {
-                    const isMine = message.sender?.id !== selectedId;
+                    const isMine = myUserId ? message.sender?.id === myUserId : message.sender?.id !== selectedId;
                     return (
                       <div key={message.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
                         <div className="flex flex-col max-w-[80%] sm:max-w-[70%]">
@@ -317,9 +319,18 @@ export default function MessagesPage() {
               </div>
             </>
           ) : (
-            <div className="flex flex-1 flex-col items-center justify-center py-20 text-center text-muted space-y-3">
-              <MessageSquare size={40} className="text-emerald-500/30" />
-              <p className="text-sm font-semibold">Select an HR contact from the left list to begin messaging.</p>
+            <div className="flex flex-1 flex-col items-center justify-center py-20 text-center text-muted space-y-3 p-6">
+              <MessageSquare size={40} className="text-emerald-500/30 mb-2" />
+              {profiles.length > 0 ? (
+                <p className="text-sm font-semibold">Select an HR contact from the left list to begin messaging.</p>
+              ) : (
+                <div className="max-w-md space-y-2">
+                  <p className="text-sm font-bold text-foreground">No Other HR Accounts Registered Yet</p>
+                  <p className="text-xs text-muted">
+                    To test messaging between HR accounts, register a second HR user in an Incognito window! Once registered, their account will instantly appear in your HR Contacts list here.
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </section>

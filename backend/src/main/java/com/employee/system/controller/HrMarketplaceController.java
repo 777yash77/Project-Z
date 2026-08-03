@@ -239,10 +239,26 @@ public class HrMarketplaceController {
     @PostMapping("/messages")
     public ResponseEntity<?> sendMessage(@RequestBody Map<String, Object> payload) {
         User sender = getCurrentUser();
-        if (sender == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        Long recipientId = ((Number) payload.get("recipientId")).longValue();
+        if (sender == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "User not logged in"));
+        }
+        
+        Object recipientObj = payload.get("recipientId");
+        if (recipientObj == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "recipientId is required"));
+        }
+        
+        Long recipientId;
+        try {
+            recipientId = Long.parseLong(String.valueOf(recipientObj));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Invalid recipientId format"));
+        }
+
         User recipient = userRepository.findById(recipientId).orElse(null);
-        if (recipient == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        if (recipient == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Recipient HR user not found"));
+        }
 
         Message message = new Message();
         message.setSender(sender);
@@ -250,13 +266,19 @@ public class HrMarketplaceController {
         message.setContent(String.valueOf(payload.get("content")));
         Message saved = messageRepository.save(message);
 
-        // Send email notification to recipient HR: "This Organisation's HR wants to chat"
-        String senderOrg = sender.getOrganization() != null ? sender.getOrganization().getName() : "Partner Organization";
-        if (recipient.getEmail() != null && !recipient.getEmail().isBlank()) {
-            new Thread(() -> emailService.sendChatNotificationEmail(
-                    recipient.getEmail(), sender.getUsername(), senderOrg, saved.getContent()
-            )).start();
-        }
+        // Send email notification safely in background thread
+        try {
+            String senderOrg = sender.getOrganization() != null ? sender.getOrganization().getName() : "Partner Organization";
+            if (recipient.getEmail() != null && !recipient.getEmail().isBlank()) {
+                new Thread(() -> {
+                    try {
+                        emailService.sendChatNotificationEmail(
+                                recipient.getEmail(), sender.getUsername(), senderOrg, saved.getContent()
+                        );
+                    } catch (Exception ignored) {}
+                }).start();
+            }
+        } catch (Exception ignored) {}
 
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
