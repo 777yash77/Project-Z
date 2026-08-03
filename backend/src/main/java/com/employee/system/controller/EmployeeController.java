@@ -53,7 +53,11 @@ public class EmployeeController {
     @PostMapping
     public ResponseEntity<?> createEmployee(@Valid @RequestBody Employee employee) {
         User user = getCurrentUser();
-        if (user != null && user.getOrganization() != null) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Authentication required"));
+        }
+        employee.setCreatedBy(user);
+        if (user.getOrganization() != null) {
             employee.setOrganization(user.getOrganization());
         }
         applyRisk(employee);
@@ -64,17 +68,11 @@ public class EmployeeController {
     @GetMapping
     public List<Employee> getAllEmployees() {
         User user = getCurrentUser();
-        if (user != null && user.getOrganization() != null) {
-            Long orgId = user.getOrganization().getId();
-            List<Employee> orgEmployees = employeeRepository.findAll().stream()
-                    .filter(employee -> employee.getOrganization() != null && orgId.equals(employee.getOrganization().getId()))
-                    .sorted(Comparator.comparing(Employee::getRiskScore).reversed())
-                    .toList();
-            if (!orgEmployees.isEmpty()) {
-                return orgEmployees;
-            }
+        if (user == null) {
+            return List.of();
         }
-        return employeeRepository.findAllByOrderByRiskScoreDesc();
+        // Strict Per-HR User Isolation: Return ONLY employees created by/belonging to this HR user
+        return employeeRepository.findByCreatedByOrderByRiskScoreDesc(user);
     }
 
     @GetMapping("/{id}/details")
@@ -82,6 +80,11 @@ public class EmployeeController {
         Employee existing = employeeRepository.findById(id).orElse(null);
         if (existing == null) {
             return ResponseEntity.notFound().build();
+        }
+
+        User currentUser = getCurrentUser();
+        if (currentUser == null || existing.getCreatedBy() == null || !existing.getCreatedBy().getId().equals(currentUser.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Not authorized to access this employee profile"));
         }
 
         Map<String, Object> riskDetails = retentionRiskService.predictRetentionRisk(existing);
@@ -114,16 +117,18 @@ public class EmployeeController {
         if (existing == null) {
             return ResponseEntity.notFound().build();
         }
+
         User currentUser = getCurrentUser();
+        if (currentUser == null || existing.getCreatedBy() == null || !existing.getCreatedBy().getId().equals(currentUser.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Not authorized to update this employee"));
+        }
+
         existing.setName(employeeDetails.getName());
         existing.setAge(employeeDetails.getAge());
         existing.setSalary(employeeDetails.getSalary());
         existing.setYearsAtCompany(employeeDetails.getYearsAtCompany());
         existing.setPerformanceRating(employeeDetails.getPerformanceRating());
         existing.setDepartment(employeeDetails.getDepartment());
-        if (currentUser != null && currentUser.getOrganization() != null) {
-            existing.setOrganization(currentUser.getOrganization());
-        }
         applyRisk(existing);
         return ResponseEntity.ok(employeeRepository.save(existing));
     }
@@ -134,6 +139,12 @@ public class EmployeeController {
         if (existing == null) {
             return ResponseEntity.notFound().build();
         }
+
+        User currentUser = getCurrentUser();
+        if (currentUser == null || existing.getCreatedBy() == null || !existing.getCreatedBy().getId().equals(currentUser.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Not authorized to delete this employee"));
+        }
+
         employeeRepository.delete(existing);
         return ResponseEntity.ok(Map.of("message", "Employee deleted"));
     }
@@ -145,6 +156,9 @@ public class EmployeeController {
         }
 
         User user = getCurrentUser();
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Authentication required. Please log in again."));
+        }
 
         try (CSVParser parser = CSVFormat.DEFAULT.builder()
                 .setHeader()
@@ -163,14 +177,15 @@ public class EmployeeController {
                 employee.setYearsAtCompany(Integer.parseInt(record.get("yearsAtCompany")));
                 employee.setPerformanceRating(Double.parseDouble(record.get("performanceRating")));
                 employee.setDepartment(record.get("department"));
-                if (user != null && user.getOrganization() != null) {
+                employee.setCreatedBy(user);
+                if (user.getOrganization() != null) {
                     employee.setOrganization(user.getOrganization());
                 }
                 applyRisk(employee);
                 employees.add(employee);
             }
             employeeRepository.saveAll(employees);
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Imported " + employees.size() + " employees successfully."));
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Imported " + employees.size() + " employees successfully into your account."));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "CSV import failed: " + e.getMessage()));
         }

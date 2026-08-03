@@ -32,7 +32,7 @@ public class Message {
     @Column(nullable = false, length = 2000)
     private String content;
 
-    @Column(nullable = false)
+    @Column(name = "is_read", nullable = false)
     private boolean read = false;
 
     @Column(nullable = false, updatable = false)

@@ -93,16 +93,20 @@ public class DataSeeder {
             }
 
             if (employeeRepository.count() == 0) {
-                Organization northwind = organizationRepository.findByName("Northwind HR").orElseThrow();
-                Organization contoso = organizationRepository.findByName("Contoso Talent").orElseThrow();
-                Organization gveng = organizationRepository.findByName("GvenG Enterprise").orElseThrow();
+                User alex = userRepository.findByUsername("alex").orElse(null);
+                User maya = userRepository.findByUsername("maya").orElse(null);
+                User gvengUser = userRepository.findByUsername("GvenG").orElse(null);
+
+                Organization northwind = organizationRepository.findByName("Northwind HR").orElse(null);
+                Organization contoso = organizationRepository.findByName("Contoso Talent").orElse(null);
+                Organization gveng = organizationRepository.findByName("GvenG Enterprise").orElse(null);
 
                 List<Employee> employees = List.of(
-                    createEmployee("Mina Patel", 34, new BigDecimal("84000"), 6, 4.6, "Operations", northwind, retentionRiskService),
-                    createEmployee("Jon Rivera", 41, new BigDecimal("96200"), 9, 3.1, "Sales", northwind, retentionRiskService),
-                    createEmployee("Taylor Kim", 29, new BigDecimal("91000"), 2, 4.8, "Engineering", contoso, retentionRiskService),
-                    createEmployee("Nina Chen", 38, new BigDecimal("103000"), 7, 3.7, "Design", contoso, retentionRiskService),
-                    createEmployee("Marcus Vance", 32, new BigDecimal("115000"), 4, 4.2, "Engineering", gveng, retentionRiskService)
+                    createEmployee("Mina Patel", 34, new BigDecimal("84000"), 6, 4.6, "Operations", northwind, alex, retentionRiskService),
+                    createEmployee("Jon Rivera", 41, new BigDecimal("96200"), 9, 3.1, "Sales", northwind, alex, retentionRiskService),
+                    createEmployee("Taylor Kim", 29, new BigDecimal("91000"), 2, 4.8, "Engineering", contoso, maya, retentionRiskService),
+                    createEmployee("Nina Chen", 38, new BigDecimal("103000"), 7, 3.7, "Design", contoso, maya, retentionRiskService),
+                    createEmployee("Marcus Vance", 32, new BigDecimal("115000"), 4, 4.2, "Engineering", gveng, gvengUser, retentionRiskService)
                 );
                 employeeRepository.saveAll(employees);
             }
@@ -110,7 +114,7 @@ public class DataSeeder {
     }
 
     private Employee createEmployee(String name, int age, BigDecimal salary, int yearsAtCompany, double performanceRating,
-                                    String department, Organization organization, RetentionRiskService retentionRiskService) {
+                                    String department, Organization organization, User createdBy, RetentionRiskService retentionRiskService) {
         Employee employee = new Employee();
         employee.setName(name);
         employee.setAge(age);
@@ -119,6 +123,7 @@ public class DataSeeder {
         employee.setPerformanceRating(performanceRating);
         employee.setDepartment(department);
         employee.setOrganization(organization);
+        employee.setCreatedBy(createdBy);
         Map<String, Object> prediction = retentionRiskService.predictRetentionRisk(employee);
         employee.setRiskScore(((Number) prediction.get("retentionRiskScore")).doubleValue());
         employee.setRiskLevel((String) prediction.get("riskLevel"));
