@@ -35,8 +35,9 @@ public class User {
     @Column(nullable = false)
     private String role = "USER";
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "organization_id")
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Organization organization;
 
     public Long getId() { return id; }

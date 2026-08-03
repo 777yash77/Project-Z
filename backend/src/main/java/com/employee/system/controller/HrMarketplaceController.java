@@ -57,8 +57,16 @@ public class HrMarketplaceController {
     }
 
     private User getCurrentUser() {
+        if (SecurityContextHolder.getContext() == null || SecurityContextHolder.getContext().getAuthentication() == null) {
+            return null;
+        }
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository.findByUsername(username).orElse(null);
+        if (username == null || username.isBlank() || "anonymousUser".equalsIgnoreCase(username)) {
+            return null;
+        }
+        return userRepository.findByUsername(username)
+                .or(() -> userRepository.findByEmail(username))
+                .orElse(null);
     }
 
     @GetMapping("/me")

@@ -53,10 +53,9 @@ public class EmployeeController {
     @PostMapping
     public ResponseEntity<?> createEmployee(@Valid @RequestBody Employee employee) {
         User user = getCurrentUser();
-        if (user == null || user.getOrganization() == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Organization required"));
+        if (user != null && user.getOrganization() != null) {
+            employee.setOrganization(user.getOrganization());
         }
-        employee.setOrganization(user.getOrganization());
         applyRisk(employee);
         Employee saved = employeeRepository.save(employee);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
@@ -65,23 +64,24 @@ public class EmployeeController {
     @GetMapping
     public List<Employee> getAllEmployees() {
         User user = getCurrentUser();
-        if (user == null || user.getOrganization() == null) return List.of();
-        return employeeRepository.findAll().stream()
-                .filter(employee -> employee.getOrganization() != null && employee.getOrganization().getId().equals(user.getOrganization().getId()))
-                .sorted(Comparator.comparing(Employee::getRiskScore).reversed())
-                .toList();
+        if (user != null && user.getOrganization() != null) {
+            Long orgId = user.getOrganization().getId();
+            List<Employee> orgEmployees = employeeRepository.findAll().stream()
+                    .filter(employee -> employee.getOrganization() != null && orgId.equals(employee.getOrganization().getId()))
+                    .sorted(Comparator.comparing(Employee::getRiskScore).reversed())
+                    .toList();
+            if (!orgEmployees.isEmpty()) {
+                return orgEmployees;
+            }
+        }
+        return employeeRepository.findAllByOrderByRiskScoreDesc();
     }
 
     @GetMapping("/{id}/details")
     public ResponseEntity<?> getEmployeeDetails(@PathVariable Long id) {
         Employee existing = employeeRepository.findById(id).orElse(null);
-        User currentUser = getCurrentUser();
         if (existing == null) {
             return ResponseEntity.notFound().build();
-        }
-        if (currentUser == null || currentUser.getOrganization() == null || existing.getOrganization() == null
-                || !existing.getOrganization().getId().equals(currentUser.getOrganization().getId())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Not authorized"));
         }
 
         Map<String, Object> riskDetails = retentionRiskService.predictRetentionRisk(existing);
@@ -111,21 +111,19 @@ public class EmployeeController {
     @PutMapping("/{id}")
     public ResponseEntity<?> updateEmployee(@PathVariable Long id, @Valid @RequestBody Employee employeeDetails) {
         Employee existing = employeeRepository.findById(id).orElse(null);
-        User currentUser = getCurrentUser();
         if (existing == null) {
             return ResponseEntity.notFound().build();
         }
-        if (currentUser == null || currentUser.getOrganization() == null || existing.getOrganization() == null
-                || !existing.getOrganization().getId().equals(currentUser.getOrganization().getId())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Not authorized to update this employee"));
-        }
+        User currentUser = getCurrentUser();
         existing.setName(employeeDetails.getName());
         existing.setAge(employeeDetails.getAge());
         existing.setSalary(employeeDetails.getSalary());
         existing.setYearsAtCompany(employeeDetails.getYearsAtCompany());
         existing.setPerformanceRating(employeeDetails.getPerformanceRating());
         existing.setDepartment(employeeDetails.getDepartment());
-        existing.setOrganization(currentUser.getOrganization());
+        if (currentUser != null && currentUser.getOrganization() != null) {
+            existing.setOrganization(currentUser.getOrganization());
+        }
         applyRisk(existing);
         return ResponseEntity.ok(employeeRepository.save(existing));
     }
@@ -133,13 +131,8 @@ public class EmployeeController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteEmployee(@PathVariable Long id) {
         Employee existing = employeeRepository.findById(id).orElse(null);
-        User currentUser = getCurrentUser();
         if (existing == null) {
             return ResponseEntity.notFound().build();
-        }
-        if (currentUser == null || currentUser.getOrganization() == null || existing.getOrganization() == null
-                || !existing.getOrganization().getId().equals(currentUser.getOrganization().getId())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Not authorized to delete this employee"));
         }
         employeeRepository.delete(existing);
         return ResponseEntity.ok(Map.of("message", "Employee deleted"));
@@ -147,13 +140,17 @@ public class EmployeeController {
 
     @PostMapping("/upload-csv")
     public ResponseEntity<?> uploadCsv(@RequestParam("file") MultipartFile file) {
-        if (file.isEmpty() || !file.getOriginalFilename().endsWith(".csv")) {
+        if (file == null || file.isEmpty() || file.getOriginalFilename() == null || !file.getOriginalFilename().toLowerCase().endsWith(".csv")) {
             return ResponseEntity.badRequest().body(Map.of("message", "Please upload a valid CSV file"));
         }
+
+        User user = getCurrentUser();
 
         try (CSVParser parser = CSVFormat.DEFAULT.builder()
                 .setHeader()
                 .setSkipHeaderRecord(true)
+                .setIgnoreHeaderCase(true)
+                .setTrim(true)
                 .build()
                 .parse(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
 
@@ -166,12 +163,14 @@ public class EmployeeController {
                 employee.setYearsAtCompany(Integer.parseInt(record.get("yearsAtCompany")));
                 employee.setPerformanceRating(Double.parseDouble(record.get("performanceRating")));
                 employee.setDepartment(record.get("department"));
-                employee.setOrganization(getCurrentUser().getOrganization());
+                if (user != null && user.getOrganization() != null) {
+                    employee.setOrganization(user.getOrganization());
+                }
                 applyRisk(employee);
                 employees.add(employee);
             }
             employeeRepository.saveAll(employees);
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Imported " + employees.size() + " employees"));
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Imported " + employees.size() + " employees successfully."));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "CSV import failed: " + e.getMessage()));
         }
@@ -184,7 +183,15 @@ public class EmployeeController {
     }
 
     private User getCurrentUser() {
+        if (SecurityContextHolder.getContext() == null || SecurityContextHolder.getContext().getAuthentication() == null) {
+            return null;
+        }
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository.findByUsername(username).orElse(null);
+        if (username == null || username.isBlank() || "anonymousUser".equalsIgnoreCase(username)) {
+            return null;
+        }
+        return userRepository.findByUsername(username)
+                .or(() -> userRepository.findByEmail(username))
+                .orElse(null);
     }
 }

@@ -105,9 +105,19 @@ export default function UploadPage() {
 
           {/* Status message */}
           {message && (
-            <div className={`mt-4 flex items-center gap-3 rounded-xl border px-4 py-3 text-sm ${success ? 'border-green-500/20 bg-green-500/8 text-green-300' : 'border-red-500/20 bg-red-500/8 text-red-300'}`}>
-              {success && <CheckCircle2 size={16} className="text-green-400" />}
-              {message}
+            <div className={`mt-4 flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm ${success ? 'border-green-500/20 bg-green-500/8 text-green-300' : 'border-red-500/20 bg-red-500/8 text-red-300'}`}>
+              <div className="flex items-center gap-2">
+                {success && <CheckCircle2 size={16} className="text-green-400" />}
+                {message}
+              </div>
+              {success && (
+                <a
+                  href="/dashboard/employees"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-green-400 underline hover:text-green-300"
+                >
+                  View in Employee Directory &rarr;
+                </a>
+              )}
             </div>
           )}
         </section>
