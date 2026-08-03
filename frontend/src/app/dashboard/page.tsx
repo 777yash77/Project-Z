@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import axios from 'axios';
-import { AlertTriangle, DollarSign, Users as UsersIcon, BarChart3, TrendingUp } from 'lucide-react';
+import { AlertTriangle, DollarSign, Users as UsersIcon, BarChart3, TrendingUp, Activity } from 'lucide-react';
+import { fetchEmployees, getCurrentUserProfile } from './api';
 
 interface Employee {
   id: number;
@@ -18,11 +18,14 @@ interface Employee {
 
 export default function DashboardPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [organizationName, setOrganizationName] = useState('Your organization');
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    axios.get('http://localhost:8080/api/employees', { headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => setEmployees(res.data))
+    Promise.all([fetchEmployees(), getCurrentUserProfile()])
+      .then(([employeesRes, profileRes]) => {
+        setEmployees(employeesRes.data);
+        setOrganizationName(profileRes.data.organization || 'Your organization');
+      })
       .catch(() => setEmployees([]));
   }, []);
 
@@ -30,132 +33,164 @@ export default function DashboardPage() {
   const highRiskCount = employees.filter((e) => e.riskLevel === 'High').length;
   const mediumRiskCount = employees.filter((e) => e.riskLevel === 'Medium').length;
   const lowRiskCount = employees.filter((e) => e.riskLevel === 'Low').length;
-  const avgSalary = employees.length ? (employees.reduce((sum, e) => sum + Number(e.salary), 0) / employees.length).toFixed(2) : '0.00';
-  const avgRating = employees.length ? (employees.reduce((sum, e) => sum + e.performanceRating, 0) / employees.length).toFixed(1) : '0.0';
-  const topAtRisk = employees.slice(0, 7);
+  const avgSalary = employees.length
+    ? (employees.reduce((sum, e) => sum + Number(e.salary), 0) / employees.length).toFixed(0)
+    : '0';
+  const avgRating = employees.length
+    ? (employees.reduce((sum, e) => sum + e.performanceRating, 0) / employees.length).toFixed(1)
+    : '0.0';
+  const topAtRisk = [...employees].sort((a, b) => b.riskScore - a.riskScore).slice(0, 7);
 
   return (
-    <div className="space-y-8">
-      <header className="rounded-[2rem] border border-slate-800 bg-slate-900/90 p-8 shadow-2xl shadow-slate-950/20">
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <header className="rounded-2xl border border-green-500/12 bg-[#060e09] p-6">
+        <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-cyan-400/80">Retention Intelligence</p>
-            <h1 className="mt-3 text-4xl font-semibold text-white">People risk and retention overview</h1>
-            <p className="mt-2 max-w-2xl text-slate-400">A unified dashboard that ranks employees by retention risk and makes CSV-driven imports part of your HR workflow.</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-green-400/50">Retention Intelligence</p>
+            <h1 className="mt-2 text-3xl font-bold text-white">People Risk Overview</h1>
+            <p className="mt-1.5 max-w-xl text-sm text-green-100/35">
+              {organizationName} — real-time employee risk, retention signals, and trade opportunities.
+            </p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-3xl bg-slate-950/90 p-4 ring-1 ring-slate-800">
-              <div className="flex items-center justify-between text-slate-400">
-                <p className="text-xs uppercase tracking-[0.28em]">Total staff</p>
-                <UsersIcon size={18} className="text-cyan-400" />
-              </div>
-              <p className="mt-4 text-3xl font-semibold text-white">{totalEmployees}</p>
-            </div>
-            <div className="rounded-3xl bg-slate-950/90 p-4 ring-1 ring-slate-800">
-              <div className="flex items-center justify-between text-slate-400">
-                <p className="text-xs uppercase tracking-[0.28em]">High risk</p>
-                <AlertTriangle size={18} className="text-rose-400" />
-              </div>
-              <p className="mt-4 text-3xl font-semibold text-white">{highRiskCount}</p>
-            </div>
-            <div className="rounded-3xl bg-slate-950/90 p-4 ring-1 ring-slate-800">
-              <div className="flex items-center justify-between text-slate-400">
-                <p className="text-xs uppercase tracking-[0.28em]">Average salary</p>
-                <DollarSign size={18} className="text-emerald-400" />
-              </div>
-              <p className="mt-4 text-3xl font-semibold text-white">${avgSalary}</p>
-            </div>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: 'Total Staff', value: totalEmployees, icon: UsersIcon, color: 'text-green-400' },
+              { label: 'High Risk', value: highRiskCount, icon: AlertTriangle, color: 'text-red-400' },
+              { label: 'Avg Salary', value: `$${Number(avgSalary).toLocaleString()}`, icon: DollarSign, color: 'text-green-400' },
+            ].map((stat) => {
+              const Icon = stat.icon;
+              return (
+                <div key={stat.label} className="rounded-xl border border-green-500/10 bg-black/40 p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-green-100/30">{stat.label}</p>
+                    <Icon size={14} className={stat.color} />
+                  </div>
+                  <p className="mt-3 text-2xl font-bold text-white">{stat.value}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </header>
 
-      <div className="grid gap-5 xl:grid-cols-[1.5fr_1fr]">
-        <section className="rounded-[2rem] border border-slate-800 bg-slate-900/90 p-6 shadow-xl shadow-slate-950/20">
-          <div className="flex items-center justify-between gap-4">
+      {/* Middle row */}
+      <div className="grid gap-5 xl:grid-cols-[1.6fr_1fr]">
+        {/* Risk Distribution */}
+        <section className="rounded-2xl border border-green-500/10 bg-[#060e09] p-6">
+          <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-semibold">Risk distribution</h2>
-              <p className="mt-1 text-sm text-slate-400">Understand where attention is needed most.</p>
+              <h2 className="text-base font-semibold text-white">Risk Distribution</h2>
+              <p className="mt-0.5 text-xs text-green-100/30">Where attention is needed most</p>
             </div>
-            <span className="rounded-full bg-slate-800 px-3 py-1 text-xs uppercase tracking-[0.25em] text-slate-300">Live</span>
+            <span className="flex items-center gap-1.5 rounded-full border border-green-500/15 bg-green-500/8 px-3 py-1 text-[10px] uppercase tracking-[0.25em] text-green-400">
+              <Activity size={10} /> Live
+            </span>
           </div>
-          <div className="mt-6 space-y-4">
+          <div className="mt-6 space-y-3">
             {[
-              { label: 'High risk', value: highRiskCount, accent: 'bg-rose-500/20 text-rose-300' },
-              { label: 'Medium risk', value: mediumRiskCount, accent: 'bg-amber-500/20 text-amber-300' },
-              { label: 'Low risk', value: lowRiskCount, accent: 'bg-emerald-500/20 text-emerald-300' },
+              { label: 'High Risk', value: highRiskCount, barColor: 'bg-red-500', textColor: 'text-red-400', borderColor: 'border-red-500/15' },
+              { label: 'Medium Risk', value: mediumRiskCount, barColor: 'bg-amber-400', textColor: 'text-amber-400', borderColor: 'border-amber-500/15' },
+              { label: 'Low Risk', value: lowRiskCount, barColor: 'bg-green-500', textColor: 'text-green-400', borderColor: 'border-green-500/15' },
             ].map((item) => (
-              <div key={item.label} className="rounded-3xl bg-slate-950/80 p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm text-slate-400">{item.label}</p>
-                    <p className="mt-2 text-2xl font-semibold text-white">{item.value}</p>
+              <div key={item.label} className={`rounded-xl border ${item.borderColor} bg-black/30 p-4`}>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-green-100/60">{item.label}</p>
+                  <div className="flex items-center gap-3">
+                    <p className="text-xl font-bold text-white">{item.value}</p>
+                    <span className={`text-xs font-semibold ${item.textColor}`}>
+                      {Math.round((item.value / Math.max(totalEmployees, 1)) * 100)}%
+                    </span>
                   </div>
-                  <span className={`rounded-full px-3 py-1 text-sm ${item.accent}`}>{Math.round((item.value / Math.max(totalEmployees, 1)) * 100)}%</span>
                 </div>
-                <div className="mt-3 h-3 overflow-hidden rounded-full bg-slate-800">
-                  <div className={`h-full rounded-full ${item.accent.split(' ')[0]}`} style={{ width: `${Math.min(100, Math.round((item.value / Math.max(totalEmployees, 1)) * 100))}%` }} />
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-black/50">
+                  <div
+                    className={`h-full rounded-full ${item.barColor} transition-all duration-700`}
+                    style={{ width: `${Math.round((item.value / Math.max(totalEmployees, 1)) * 100)}%` }}
+                  />
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="rounded-[2rem] border border-slate-800 bg-slate-900/90 p-6 shadow-xl shadow-slate-950/20">
-          <div className="flex items-center justify-between gap-4">
+        {/* Performance Summary */}
+        <section className="rounded-2xl border border-green-500/10 bg-[#060e09] p-6">
+          <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-semibold">HR performance summary</h2>
-              <p className="mt-1 text-sm text-slate-400">Manual entries and CSV imports save automatically on the backend.</p>
+              <h2 className="text-base font-semibold text-white">HR Performance</h2>
+              <p className="mt-0.5 text-xs text-green-100/30">Aggregate workforce metrics</p>
             </div>
-            <TrendingUp size={24} className="text-cyan-400" />
+            <TrendingUp size={18} className="text-green-400" />
           </div>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-3xl bg-slate-950/80 p-5">
-              <p className="text-sm text-slate-400">Average rating</p>
-              <p className="mt-3 text-3xl font-semibold text-white">{avgRating}</p>
-            </div>
-            <div className="rounded-3xl bg-slate-950/80 p-5">
-              <p className="text-sm text-slate-400">Employees analyzed</p>
-              <p className="mt-3 text-3xl font-semibold text-white">{totalEmployees}</p>
-            </div>
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            {[
+              { label: 'Avg Rating', value: avgRating },
+              { label: 'Total Analyzed', value: totalEmployees },
+              { label: 'Low Risk', value: lowRiskCount },
+              { label: 'Med Risk', value: mediumRiskCount },
+            ].map((item) => (
+              <div key={item.label} className="rounded-xl border border-green-500/8 bg-black/30 p-4">
+                <p className="text-xs text-green-100/30">{item.label}</p>
+                <p className="mt-2 text-2xl font-bold text-white">{item.value}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 rounded-xl border border-green-500/10 bg-green-500/5 p-4">
+            <p className="text-xs text-green-400/60">
+              All entries are scored using the built-in retention algorithm and synced to the backend automatically.
+            </p>
           </div>
         </section>
       </div>
 
-      <section className="rounded-[2rem] border border-slate-800 bg-slate-900/90 p-6 shadow-xl shadow-slate-950/20">
-        <div className="mb-6 flex items-center justify-between gap-4">
+      {/* Top At Risk Table */}
+      <section className="rounded-2xl border border-green-500/10 bg-[#060e09] p-6">
+        <div className="mb-5 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold">Top employees by risk</h2>
-            <p className="mt-1 text-sm text-slate-400">Review, edit, or export the most at-risk profiles.</p>
+            <h2 className="text-base font-semibold text-white">Top Employees by Risk</h2>
+            <p className="mt-0.5 text-xs text-green-100/30">Sorted by risk score — highest first</p>
           </div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-slate-950/80 px-4 py-2 text-sm text-slate-300">
-            <BarChart3 size={16} /> Sorted by risk score
+          <div className="flex items-center gap-1.5 rounded-full border border-green-500/15 bg-green-500/8 px-3 py-1 text-[10px] uppercase tracking-[0.25em] text-green-400">
+            <BarChart3 size={10} /> Sorted by score
           </div>
         </div>
-        <div className="overflow-x-auto rounded-3xl border border-slate-800 bg-slate-950/70">
+        <div className="overflow-x-auto rounded-xl border border-green-500/8">
           <table className="min-w-full text-left text-sm">
-            <thead className="bg-slate-900 text-slate-400">
-              <tr>
-                <th className="px-5 py-4">Name</th>
-                <th className="px-5 py-4">Department</th>
-                <th className="px-5 py-4">Score</th>
-                <th className="px-5 py-4">Risk Level</th>
-                <th className="px-5 py-4">Salary</th>
+            <thead>
+              <tr className="border-b border-green-500/8 bg-black/30">
+                <th className="px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-green-400/40">Name</th>
+                <th className="px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-green-400/40">Department</th>
+                <th className="px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-green-400/40">Score</th>
+                <th className="px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-green-400/40">Risk Level</th>
+                <th className="px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-green-400/40">Salary</th>
               </tr>
             </thead>
             <tbody>
-              {topAtRisk.map((employee) => (
-                <tr key={employee.id} className="border-t border-slate-800 hover:bg-slate-900/80">
-                  <td className="px-5 py-4 font-medium text-white">{employee.name}</td>
-                  <td className="px-5 py-4 text-slate-300">{employee.department}</td>
-                  <td className="px-5 py-4 text-slate-300">{employee.riskScore.toFixed(2)}</td>
-                  <td className="px-5 py-4">
-                    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${employee.riskLevel === 'High' ? 'bg-rose-500/20 text-rose-300' : employee.riskLevel === 'Medium' ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'}`}>
+              {topAtRisk.map((employee, i) => (
+                <tr key={employee.id} className="border-t border-green-500/5 transition hover:bg-green-500/3">
+                  <td className="px-5 py-3.5 font-medium text-white">{employee.name}</td>
+                  <td className="px-5 py-3.5 text-green-100/50">{employee.department}</td>
+                  <td className="px-5 py-3.5 font-mono text-green-100/70">{employee.riskScore.toFixed(2)}</td>
+                  <td className="px-5 py-3.5">
+                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                      employee.riskLevel === 'High'
+                        ? 'bg-red-500/12 text-red-400'
+                        : employee.riskLevel === 'Medium'
+                        ? 'bg-amber-500/12 text-amber-400'
+                        : 'bg-green-500/12 text-green-400'
+                    }`}>
                       {employee.riskLevel}
                     </span>
                   </td>
-                  <td className="px-5 py-4 text-slate-300">${Number(employee.salary).toLocaleString()}</td>
+                  <td className="px-5 py-3.5 font-mono text-green-100/50">${Number(employee.salary).toLocaleString()}</td>
                 </tr>
               ))}
+              {topAtRisk.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-5 py-8 text-center text-sm text-green-100/25">No employee data yet.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

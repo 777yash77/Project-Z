@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import axios from 'axios';
-import { Plus, Pencil, Trash2, Search, Filter } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Filter, ArrowRightLeft, X } from 'lucide-react';
+import { createEmployee, createTradeListing, deleteEmployee, fetchEmployees, updateEmployee } from '../api';
 
 interface Employee {
   id: number;
@@ -16,14 +16,7 @@ interface Employee {
   riskLevel: string;
 }
 
-const emptyForm = {
-  name: '',
-  age: '',
-  salary: '',
-  yearsAtCompany: '',
-  performanceRating: '',
-  department: '',
-};
+const emptyForm = { name: '', age: '', salary: '', yearsAtCompany: '', performanceRating: '', department: '' };
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -35,226 +28,233 @@ export default function EmployeesPage() {
   const [riskFilter, setRiskFilter] = useState<'All' | 'High' | 'Medium' | 'Low'>('All');
 
   const loadEmployees = () => {
-    const token = localStorage.getItem('token');
-    axios.get('http://localhost:8080/api/employees', { headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => setEmployees(res.data))
-      .catch(() => setEmployees([]));
+    fetchEmployees().then((res) => setEmployees(res.data)).catch(() => setEmployees([]));
   };
 
   useEffect(() => { loadEmployees(); }, []);
 
   const filteredEmployees = useMemo(() => {
-    return employees.filter((employee) => {
-      const matchesSearch = employee.name.toLowerCase().includes(searchQuery.toLowerCase()) || employee.department.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesRisk = riskFilter === 'All' || employee.riskLevel === riskFilter;
+    return employees.filter((e) => {
+      const matchesSearch = e.name.toLowerCase().includes(searchQuery.toLowerCase()) || e.department.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesRisk = riskFilter === 'All' || e.riskLevel === riskFilter;
       return matchesSearch && matchesRisk;
     });
   }, [employees, searchQuery, riskFilter]);
 
   const totalEmployees = employees.length;
-  const avgRisk = employees.length ? (employees.reduce((sum, item) => sum + item.riskScore, 0) / employees.length).toFixed(2) : '0.00';
-  const avgRating = employees.length ? (employees.reduce((sum, item) => sum + item.performanceRating, 0) / employees.length).toFixed(1) : '0.0';
+  const avgRisk = employees.length ? (employees.reduce((sum, e) => sum + e.riskScore, 0) / employees.length).toFixed(2) : '0.00';
+  const avgRating = employees.length ? (employees.reduce((sum, e) => sum + e.performanceRating, 0) / employees.length).toFixed(1) : '0.0';
 
-  const openCreate = () => {
-    setEditingId(null);
-    setForm(emptyForm);
-    setShowModal(true);
-  };
-
-  const openEdit = (employee: Employee) => {
-    setEditingId(employee.id);
-    setForm({
-      name: employee.name,
-      age: String(employee.age),
-      salary: employee.salary,
-      yearsAtCompany: String(employee.yearsAtCompany),
-      performanceRating: String(employee.performanceRating),
-      department: employee.department,
-    });
+  const openCreate = () => { setEditingId(null); setForm(emptyForm); setShowModal(true); };
+  const openEdit = (e: Employee) => {
+    setEditingId(e.id);
+    setForm({ name: e.name, age: String(e.age), salary: e.salary, yearsAtCompany: String(e.yearsAtCompany), performanceRating: String(e.performanceRating), department: e.department });
     setShowModal(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
-    const payload = {
-      name: form.name,
-      age: Number(form.age),
-      salary: form.salary,
-      yearsAtCompany: Number(form.yearsAtCompany),
-      performanceRating: Number(form.performanceRating),
-      department: form.department,
-    };
-
+    const payload = { name: form.name, age: Number(form.age), salary: form.salary, yearsAtCompany: Number(form.yearsAtCompany), performanceRating: Number(form.performanceRating), department: form.department };
     try {
-      if (editingId) {
-        await axios.put(`http://localhost:8080/api/employees/${editingId}`, payload, { headers: { Authorization: `Bearer ${token}` } });
-      } else {
-        await axios.post('http://localhost:8080/api/employees', payload, { headers: { Authorization: `Bearer ${token}` } });
-      }
+      if (editingId) { await updateEmployee(editingId, payload); } else { await createEmployee(payload); }
       setShowModal(false);
       setMessage('Employee saved successfully.');
       loadEmployees();
-    } catch (error: any) {
-      setMessage(error.response?.data?.message || 'Operation failed');
-    }
+    } catch (error: any) { setMessage(error.response?.data?.message || 'Operation failed'); }
   };
 
   const handleDelete = async (id: number) => {
-    const token = localStorage.getItem('token');
+    try { await deleteEmployee(id); setMessage('Employee deleted.'); loadEmployees(); }
+    catch { setMessage('Delete failed'); }
+  };
+
+  const toggleTrade = async (employee: Employee) => {
     try {
-      await axios.delete(`http://localhost:8080/api/employees/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-      setMessage('Employee deleted successfully.');
-      loadEmployees();
-    } catch (error) {
-      setMessage('Delete failed');
-    }
+      await createTradeListing({ employeeId: employee.id, commissionPercent: 8, notes: `${employee.name} is available for a trade placement.` });
+      setMessage(`${employee.name} is now listed in the trade window.`);
+    } catch { setMessage('Trade listing could not be created.'); }
   };
 
   return (
-    <div className="space-y-8">
-      <div className="rounded-[2rem] border border-slate-800 bg-slate-900/90 p-6 shadow-2xl shadow-slate-950/20">
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="rounded-2xl border border-green-500/12 bg-[#060e09] p-6">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div>
-            <h1 className="text-3xl font-semibold text-white">Employee Directory</h1>
-            <p className="mt-2 text-sm text-slate-400">Filter, edit, and save employee risk profiles with a polished HR experience.</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-green-400/50">HR Directory</p>
+            <h1 className="mt-2 text-3xl font-bold text-white">Employee Directory</h1>
+            <p className="mt-1 text-sm text-green-100/35">Filter, edit, and manage employee risk profiles.</p>
           </div>
-          <button onClick={openCreate} className="inline-flex items-center gap-2 rounded-3xl bg-gradient-to-r from-cyan-500 to-violet-500 px-5 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:brightness-110">
-            <Plus size={16} /> Add employee
+          <button
+            id="add-employee-btn"
+            onClick={openCreate}
+            className="inline-flex items-center gap-2 rounded-xl bg-green-500 px-5 py-2.5 text-sm font-bold text-black transition hover:bg-green-400 hover:shadow-[0_0_20px_rgba(0,255,136,0.3)]"
+          >
+            <Plus size={16} /> Add Employee
           </button>
         </div>
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-3">
-          <div className="rounded-3xl bg-slate-950/90 p-4 ring-1 ring-slate-800">
-            <p className="text-sm text-slate-400">Total employees</p>
-            <p className="mt-3 text-2xl font-semibold text-white">{totalEmployees}</p>
-          </div>
-          <div className="rounded-3xl bg-slate-950/90 p-4 ring-1 ring-slate-800">
-            <p className="text-sm text-slate-400">Average risk score</p>
-            <p className="mt-3 text-2xl font-semibold text-white">{avgRisk}</p>
-          </div>
-          <div className="rounded-3xl bg-slate-950/90 p-4 ring-1 ring-slate-800">
-            <p className="text-sm text-slate-400">Average rating</p>
-            <p className="mt-3 text-2xl font-semibold text-white">{avgRating}</p>
-          </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          {[
+            { label: 'Total Employees', value: totalEmployees },
+            { label: 'Average Risk Score', value: avgRisk },
+            { label: 'Average Rating', value: avgRating },
+          ].map((stat) => (
+            <div key={stat.label} className="rounded-xl border border-green-500/8 bg-black/40 p-4">
+              <p className="text-xs text-green-100/30">{stat.label}</p>
+              <p className="mt-2 text-2xl font-bold text-white">{stat.value}</p>
+            </div>
+          ))}
         </div>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[1fr_320px]">
-        <div className="rounded-[2rem] border border-slate-800 bg-slate-900/90 p-6 shadow-xl shadow-slate-950/20">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-3 rounded-3xl bg-slate-950/90 px-4 py-3">
-              <Search size={18} className="text-cyan-400" />
-              <input
-                className="w-full bg-transparent text-sm text-slate-100 outline-none placeholder:text-slate-500"
-                placeholder="Search by name or department"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <div className="flex items-center gap-3 rounded-3xl bg-slate-950/90 px-4 py-3">
-              <Filter size={18} className="text-amber-400" />
-              <select className="bg-transparent text-sm text-slate-100 outline-none" value={riskFilter} onChange={(e) => setRiskFilter(e.target.value as any)}>
-                <option value="All">All risks</option>
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
-              </select>
-            </div>
+      {/* Table Section */}
+      <div className="rounded-2xl border border-green-500/10 bg-[#060e09] p-6">
+        {/* Search & Filter */}
+        <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center">
+          <div className="flex flex-1 items-center gap-2 rounded-xl border border-green-500/12 bg-black/40 px-4 py-2.5">
+            <Search size={15} className="text-green-400/40" />
+            <input
+              id="employee-search"
+              className="w-full bg-transparent text-sm text-white outline-none placeholder:text-green-100/20"
+              placeholder="Search by name or department..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
+          <div className="flex items-center gap-2 rounded-xl border border-green-500/12 bg-black/40 px-4 py-2.5">
+            <Filter size={15} className="text-green-400/40" />
+            <select
+              id="risk-filter"
+              className="bg-transparent text-sm text-green-100/70 outline-none"
+              value={riskFilter}
+              onChange={(e) => setRiskFilter(e.target.value as any)}
+            >
+              <option value="All">All risks</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+        </div>
 
-          <div className="mt-6 overflow-x-auto rounded-3xl border border-slate-800 bg-slate-950/80">
-            <table className="min-w-full text-left text-sm">
-              <thead className="bg-slate-900 text-slate-400">
-                <tr>
-                  <th className="px-5 py-4">Name</th>
-                  <th className="px-5 py-4">Department</th>
-                  <th className="px-5 py-4">Risk</th>
-                  <th className="px-5 py-4">Salary</th>
-                  <th className="px-5 py-4">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredEmployees.map((employee) => (
-                  <tr key={employee.id} className="border-t border-slate-800 hover:bg-slate-900/80">
-                    <td className="px-5 py-4 font-medium text-white">{employee.name}</td>
-                    <td className="px-5 py-4 text-slate-300">{employee.department}</td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-slate-300">{employee.riskLevel}</span>
-                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-800">
-                          <div
-                            className={`h-full rounded-full ${employee.riskLevel === 'High' ? 'bg-rose-500' : employee.riskLevel === 'Medium' ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                            style={{ width: `${Math.min(100, employee.riskScore * 100)}%` }}
-                          />
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 text-slate-300">${Number(employee.salary).toLocaleString()}</td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => openEdit(employee)} className="rounded-2xl bg-slate-800 p-2 text-slate-300 transition hover:bg-cyan-500/15">
-                          <Pencil size={16} />
-                        </button>
-                        <button onClick={() => handleDelete(employee.id)} className="rounded-2xl bg-slate-800 p-2 text-slate-300 transition hover:bg-rose-500/15">
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+        <div className="overflow-x-auto rounded-xl border border-green-500/8">
+          <table className="min-w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-green-500/8 bg-black/30">
+                {['Name', 'Department', 'Risk', 'Salary', 'Actions'].map((h) => (
+                  <th key={h} className="px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-green-400/40">{h}</th>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredEmployees.map((employee) => (
+                <tr key={employee.id} className="border-t border-green-500/5 transition hover:bg-green-500/3">
+                  <td className="px-5 py-3.5 font-semibold text-white">{employee.name}</td>
+                  <td className="px-5 py-3.5 text-green-100/50">{employee.department}</td>
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-3">
+                      <span className={`w-12 text-xs font-semibold ${employee.riskLevel === 'High' ? 'text-red-400' : employee.riskLevel === 'Medium' ? 'text-amber-400' : 'text-green-400'}`}>
+                        {employee.riskLevel}
+                      </span>
+                      <div className="h-1.5 w-24 overflow-hidden rounded-full bg-black/50">
+                        <div
+                          className={`h-full rounded-full ${employee.riskLevel === 'High' ? 'bg-red-500' : employee.riskLevel === 'Medium' ? 'bg-amber-400' : 'bg-green-500'}`}
+                          style={{ width: `${Math.min(100, employee.riskScore * 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-5 py-3.5 font-mono text-green-100/50">${Number(employee.salary).toLocaleString()}</td>
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => toggleTrade(employee)}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-green-500/15 bg-green-500/8 px-3 py-1.5 text-xs font-semibold text-green-400 transition hover:bg-green-500/15"
+                      >
+                        <ArrowRightLeft size={12} /> Trade
+                      </button>
+                      <button
+                        onClick={() => openEdit(employee)}
+                        className="rounded-lg border border-green-500/10 bg-black/40 p-1.5 text-green-100/40 transition hover:border-green-500/25 hover:text-green-400"
+                      >
+                        <Pencil size={13} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(employee.id)}
+                        className="rounded-lg border border-red-500/10 bg-black/40 p-1.5 text-green-100/30 transition hover:border-red-500/25 hover:text-red-400"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {filteredEmployees.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-5 py-10 text-center text-sm text-green-100/20">
+                    No employees match your search.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
-
-        <aside className="rounded-[2rem] border border-slate-800 bg-slate-900/90 p-6 shadow-xl shadow-slate-950/20">
-          <div className="rounded-3xl bg-gradient-to-br from-cyan-500/10 to-violet-500/10 p-5 text-slate-100">
-            <p className="text-sm uppercase tracking-[0.3em] text-cyan-300/80">Employee health</p>
-            <h2 className="mt-3 text-2xl font-semibold">Save every record</h2>
-            <p className="mt-3 text-sm text-slate-300">Manual updates and CSV imports are persisted through the backend API, including risk score calculation for each entry.</p>
-          </div>
-          <div className="mt-6 space-y-4">
-            <div className="rounded-3xl bg-slate-950/80 p-4 ring-1 ring-slate-800">
-              <p className="text-sm text-slate-400">Records visible</p>
-              <p className="mt-2 text-3xl font-semibold text-white">{filteredEmployees.length}</p>
-            </div>
-            <div className="rounded-3xl bg-slate-950/80 p-4 ring-1 ring-slate-800">
-              <p className="text-sm text-slate-400">Quick tips</p>
-              <ul className="mt-3 space-y-2 text-sm text-slate-300">
-                <li>• Use CSV upload for batch imports.</li>
-                <li>• Edit any row to re-run risk scoring.</li>
-                <li>• Filter by risk level for targeted review.</li>
-              </ul>
-            </div>
-          </div>
-        </aside>
       </div>
 
-      {message && <div className="rounded-3xl border border-cyan-500/25 bg-cyan-500/10 p-4 text-sm text-cyan-200">{message}</div>}
+      {/* Message */}
+      {message && (
+        <div className="flex items-center justify-between rounded-xl border border-green-500/15 bg-green-500/8 px-4 py-3 text-sm text-green-300">
+          {message}
+          <button onClick={() => setMessage('')}><X size={14} /></button>
+        </div>
+      )}
 
+      {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
-          <div className="w-full max-w-3xl rounded-[2rem] border border-slate-800 bg-slate-900/95 p-6 shadow-2xl shadow-slate-950/40">
-            <div className="mb-4 flex items-center justify-between gap-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-2xl rounded-2xl border border-green-500/15 bg-[#060e09] p-6 shadow-[0_40px_100px_rgba(0,0,0,0.8)]">
+            <div className="mb-6 flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-semibold text-white">{editingId ? 'Edit employee' : 'Add employee'}</h2>
-                <p className="mt-1 text-sm text-slate-400">All saved entries are sent to the backend and scored before persisting.</p>
+                <h2 className="text-xl font-bold text-white">{editingId ? 'Edit Employee' : 'Add Employee'}</h2>
+                <p className="mt-0.5 text-xs text-green-100/30">All entries are risk-scored before persisting.</p>
               </div>
+              <button onClick={() => setShowModal(false)} className="rounded-lg border border-green-500/10 p-2 text-green-100/40 hover:text-white">
+                <X size={16} />
+              </button>
             </div>
             <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2">
-              <input className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400" placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-              <input className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400" placeholder="Age" type="number" value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} required />
-              <input className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400" placeholder="Salary" value={form.salary} onChange={(e) => setForm({ ...form, salary: e.target.value })} required />
-              <input className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400" placeholder="Years at company" type="number" value={form.yearsAtCompany} onChange={(e) => setForm({ ...form, yearsAtCompany: e.target.value })} required />
-              <input className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400" placeholder="Performance rating" type="number" step="0.1" value={form.performanceRating} onChange={(e) => setForm({ ...form, performanceRating: e.target.value })} required />
-              <input className="rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400" placeholder="Department" value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} required />
-              <div className="sm:col-span-2 flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
-                <button type="button" onClick={() => setShowModal(false)} className="rounded-3xl border border-slate-700 px-5 py-3 text-sm text-slate-200 transition hover:border-rose-400 hover:text-rose-300">
+              {[
+                { placeholder: 'Full name', key: 'name', type: 'text' },
+                { placeholder: 'Age', key: 'age', type: 'number' },
+                { placeholder: 'Salary (e.g. 75000)', key: 'salary', type: 'text' },
+                { placeholder: 'Years at company', key: 'yearsAtCompany', type: 'number' },
+                { placeholder: 'Performance rating (1–10)', key: 'performanceRating', type: 'number' },
+                { placeholder: 'Department', key: 'department', type: 'text' },
+              ].map((field) => (
+                <input
+                  key={field.key}
+                  type={field.type}
+                  className="rounded-xl border border-green-500/12 bg-black/50 px-4 py-3 text-sm text-white outline-none transition placeholder:text-green-100/20 focus:border-green-500/40 focus:ring-2 focus:ring-green-500/8"
+                  placeholder={field.placeholder}
+                  value={(form as any)[field.key]}
+                  onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
+                  required
+                />
+              ))}
+              <div className="sm:col-span-2 flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="rounded-xl border border-green-500/10 px-5 py-2.5 text-sm text-green-100/40 transition hover:border-green-500/25 hover:text-white"
+                >
                   Cancel
                 </button>
-                <button type="submit" className="rounded-3xl bg-gradient-to-r from-cyan-500 to-violet-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:brightness-110">
-                  Save employee
+                <button
+                  type="submit"
+                  className="rounded-xl bg-green-500 px-5 py-2.5 text-sm font-bold text-black transition hover:bg-green-400 hover:shadow-[0_0_16px_rgba(0,255,136,0.3)]"
+                >
+                  Save Employee
                 </button>
               </div>
             </form>

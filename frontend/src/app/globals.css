@@ -2,42 +2,227 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ─── Dark Mode (default) ─────────────────────────────── */
+:root,
+[data-theme="dark"] {
+  --bg-base:        #020805;
+  --bg-surface:     #060e09;
+  --bg-card:        #0a160d;
+  --border-subtle:  rgba(0, 255, 136, 0.10);
+  --border-mid:     rgba(0, 255, 136, 0.20);
+  --accent:         #00ff88;
+  --accent-mid:     #00c96a;
+  --accent-dark:    #00874a;
+  --accent-glow:    rgba(0, 255, 136, 0.20);
+  --text-primary:   #e8f5ee;
+  --text-muted:     rgba(232, 245, 238, 0.40);
+  --text-faint:     rgba(232, 245, 238, 0.20);
+  --dot-color:      rgba(0, 255, 136, 0.06);
   color-scheme: dark;
 }
 
+/* ─── Light Mode ──────────────────────────────────────── */
+[data-theme="light"] {
+  --bg-base:        #f0faf4;
+  --bg-surface:     #ffffff;
+  --bg-card:        #f4fbf7;
+  --border-subtle:  rgba(0, 135, 74, 0.18);
+  --border-mid:     rgba(0, 135, 74, 0.28);
+  --accent:         #00874a;
+  --accent-mid:     #00c96a;
+  --accent-dark:    #005c32;
+  --accent-glow:    rgba(0, 135, 74, 0.15);
+  --text-primary:   #0d1f14;
+  --text-muted:     rgba(13, 31, 20, 0.55);
+  --text-faint:     rgba(13, 31, 20, 0.35);
+  --dot-color:      rgba(0, 135, 74, 0.07);
+  color-scheme: light;
+}
+
+/* ─── Base ─────────────────────────────────────────────── */
 html {
   scroll-behavior: smooth;
+  font-family: 'Inter', sans-serif;
 }
 
 body {
-  @apply min-h-screen text-slate-100 antialiased;
-  background-image: radial-gradient(circle at top left, rgba(56, 189, 248, 0.22), transparent 22%),
-    radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.18), transparent 20%),
-    linear-gradient(135deg, #040b18 0%, #0f172a 35%, #1f2937 100%);
-}
-.modal-backdrop {
-  background: rgba(15, 23, 42, 0.88);
+  min-height: 100vh;
+  color: var(--text-primary);
+  background-color: var(--bg-base);
+  background-image:
+    radial-gradient(ellipse at 0% 0%, var(--accent-glow) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 100%, var(--accent-glow) 0%, transparent 50%);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.35s ease, color 0.35s ease;
 }
 
+::selection {
+  background: rgba(0, 200, 100, 0.30);
+  color: #fff;
+}
+
+/* ─── Dot Pattern ──────────────────────────────────────── */
+.dot-pattern {
+  background-image: radial-gradient(circle, var(--dot-color) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* ─── Scrollbar ────────────────────────────────────────── */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(148, 163, 184, 0.6) transparent;
+  scrollbar-color: var(--border-mid) transparent;
 }
-
-*::-webkit-scrollbar {
-  width: 10px;
-}
-
-*::-webkit-scrollbar-track {
-  background: transparent;
-}
-
+*::-webkit-scrollbar { width: 6px; }
+*::-webkit-scrollbar-track { background: transparent; }
 *::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.32);
+  background: var(--border-subtle);
   border-radius: 9999px;
 }
+*::-webkit-scrollbar-thumb:hover { background: var(--border-mid); }
 
-*::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.5);
+/* ─── Animations ───────────────────────────────────────── */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px var(--accent-glow); }
+  50%       { box-shadow: 0 0 36px var(--accent-glow); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in { animation: fade-in 0.4s ease forwards; }
+.glow-green      { animation: pulse-glow 3s ease-in-out infinite; }
+
+/* ═══════════════════════════════════════════════════════
+   LIGHT MODE — comprehensive overrides for hardcoded dark
+   Tailwind classes used across all pages
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Page backgrounds ── */
+[data-theme="light"] .bg-\[\#020805\]  { background-color: #f0faf4 !important; }
+[data-theme="light"] .bg-\[\#060e09\]  { background-color: #ffffff !important; }
+[data-theme="light"] .bg-\[\#040d07\]  { background-color: #f7fdf9 !important; }
+[data-theme="light"] .bg-\[\#030e06\]  { background-color: #eaf6ef !important; }
+[data-theme="light"] .bg-\[\#0a160d\]  { background-color: #f0faf4 !important; }
+
+/* ── Black overlay cards ── */
+[data-theme="light"] .bg-black\/10 { background-color: rgba(0,100,50,0.04) !important; }
+[data-theme="light"] .bg-black\/20 { background-color: rgba(0,100,50,0.05) !important; }
+[data-theme="light"] .bg-black\/30 { background-color: rgba(0,100,50,0.06) !important; }
+[data-theme="light"] .bg-black\/40 { background-color: rgba(0,100,50,0.07) !important; }
+[data-theme="light"] .bg-black\/50 { background-color: rgba(0,100,50,0.08) !important; }
+[data-theme="light"] .bg-black\/80 { background-color: rgba(0,0,0,0.08)   !important; }
+
+/* ── Text: white → dark green ── */
+[data-theme="light"] .text-white { color: #0d1f14 !important; }
+
+/* ── Text: low-opacity green-100 → readable dark green ── */
+[data-theme="light"] .text-green-100\/15 { color: rgba(13,31,20,0.20) !important; }
+[data-theme="light"] .text-green-100\/20 { color: rgba(13,31,20,0.28) !important; }
+[data-theme="light"] .text-green-100\/25 { color: rgba(13,31,20,0.32) !important; }
+[data-theme="light"] .text-green-100\/30 { color: rgba(13,31,20,0.40) !important; }
+[data-theme="light"] .text-green-100\/35 { color: rgba(13,31,20,0.45) !important; }
+[data-theme="light"] .text-green-100\/40 { color: rgba(13,31,20,0.50) !important; }
+[data-theme="light"] .text-green-100\/50 { color: rgba(13,31,20,0.60) !important; }
+[data-theme="light"] .text-green-100\/60 { color: rgba(13,31,20,0.70) !important; }
+[data-theme="light"] .text-green-100\/70 { color: rgba(13,31,20,0.78) !important; }
+
+/* ── Accent text: neon → forest green ── */
+[data-theme="light"] .text-green-400    { color: #006b38 !important; }
+[data-theme="light"] .text-green-300    { color: #00874a !important; }
+[data-theme="light"] .text-green-400\/40 { color: rgba(0,107,56,0.50) !important; }
+[data-theme="light"] .text-green-400\/50 { color: rgba(0,107,56,0.55) !important; }
+[data-theme="light"] .text-green-400\/60 { color: rgba(0,107,56,0.65) !important; }
+[data-theme="light"] .text-green-500\/30 { color: rgba(0,107,56,0.40) !important; }
+[data-theme="light"] .text-green-500\/40 { color: rgba(0,107,56,0.50) !important; }
+
+/* ── Accent backgrounds: neon → forest ── */
+[data-theme="light"] .bg-green-500      { background-color: #00874a !important; }
+[data-theme="light"] .bg-green-400      { background-color: #009e56 !important; }
+[data-theme="light"] .bg-green-500\/3   { background-color: rgba(0,135,74,0.05) !important; }
+[data-theme="light"] .bg-green-500\/4   { background-color: rgba(0,135,74,0.07) !important; }
+[data-theme="light"] .bg-green-500\/5   { background-color: rgba(0,135,74,0.08) !important; }
+[data-theme="light"] .bg-green-500\/6   { background-color: rgba(0,135,74,0.09) !important; }
+[data-theme="light"] .bg-green-500\/8   { background-color: rgba(0,135,74,0.10) !important; }
+[data-theme="light"] .bg-green-500\/10  { background-color: rgba(0,135,74,0.12) !important; }
+[data-theme="light"] .bg-green-500\/12  { background-color: rgba(0,135,74,0.14) !important; }
+[data-theme="light"] .bg-green-500\/15  { background-color: rgba(0,135,74,0.16) !important; }
+
+/* ── Borders ── */
+[data-theme="light"] .border-green-500\/5  { border-color: rgba(0,135,74,0.12) !important; }
+[data-theme="light"] .border-green-500\/6  { border-color: rgba(0,135,74,0.14) !important; }
+[data-theme="light"] .border-green-500\/8  { border-color: rgba(0,135,74,0.16) !important; }
+[data-theme="light"] .border-green-500\/10 { border-color: rgba(0,135,74,0.18) !important; }
+[data-theme="light"] .border-green-500\/12 { border-color: rgba(0,135,74,0.20) !important; }
+[data-theme="light"] .border-green-500\/15 { border-color: rgba(0,135,74,0.22) !important; }
+[data-theme="light"] .border-green-500\/20 { border-color: rgba(0,135,74,0.28) !important; }
+[data-theme="light"] .border-green-500\/25 { border-color: rgba(0,135,74,0.32) !important; }
+
+/* ── Input fields ── */
+[data-theme="light"] input,
+[data-theme="light"] textarea,
+[data-theme="light"] select {
+  color: #0d1f14 !important;
+  border-color: rgba(0,135,74,0.25) !important;
+  background-color: rgba(255,255,255,0.80) !important;
+}
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: rgba(13,31,20,0.30) !important;
+}
+[data-theme="light"] option {
+  background-color: #ffffff;
+  color: #0d1f14;
+}
+
+/* ── Gradient panel in login/register left side ── */
+[data-theme="light"] .from-green-950\/80  { --tw-gradient-from: rgba(215,240,225,0.95) !important; }
+[data-theme="light"] .via-\[\#030e06\]    { --tw-gradient-via: #eaf6ef !important; }
+[data-theme="light"] .to-black            { --tw-gradient-to: #d4ede0 !important; }
+
+/* ── Glow shadows ── */
+[data-theme="light"] .shadow-\[0_0_20px_rgba\(0\2c 255\2c 136\2c 0\.3\)\] {
+  box-shadow: 0 0 20px rgba(0,135,74,0.25) !important;
+}
+
+/* ── Table hover ── */
+[data-theme="light"] .hover\:bg-green-500\/3:hover { background-color: rgba(0,135,74,0.06) !important; }
+
+/* ── Modal backdrop ── */
+[data-theme="light"] .bg-black\/80 { background-color: rgba(13,31,20,0.40) !important; }
+
+/* ── Card top gradient glow strip ── */
+[data-theme="light"] .from-green-500\/5   { --tw-gradient-from: rgba(0,135,74,0.08) !important; }
+[data-theme="light"] .from-green-500\/10  { --tw-gradient-from: rgba(0,135,74,0.12) !important; }
+
+/* ── Red accent stays red in both themes ── */
+[data-theme="light"] .text-red-400  { color: #dc2626 !important; }
+[data-theme="light"] .text-red-300  { color: #ef4444 !important; }
+[data-theme="light"] .bg-red-500\/8  { background-color: rgba(220,38,38,0.08) !important; }
+[data-theme="light"] .bg-red-500\/12 { background-color: rgba(220,38,38,0.10) !important; }
+[data-theme="light"] .border-red-500\/20 { border-color: rgba(220,38,38,0.22) !important; }
+
+/* ── Amber stays amber ── */
+[data-theme="light"] .text-amber-400 { color: #d97706 !important; }
+[data-theme="light"] .bg-amber-500\/12 { background-color: rgba(245,158,11,0.12) !important; }
+
+/* ── green-950 bg in login side panel ── */
+[data-theme="light"] .bg-green-950\/80   { background-color: rgba(215,240,225,0.85) !important; }
+[data-theme="light"] .bg-green-500\/10.backdrop-blur-sm { background-color: rgba(0,135,74,0.12) !important; }
+
+/* ── progress bars ── */
+[data-theme="light"] .bg-green-500 { background-color: #00874a !important; }
+[data-theme="light"] .bg-red-500   { background-color: #dc2626 !important; }
+[data-theme="light"] .bg-amber-400 { background-color: #d97706 !important; }
+
+/* ── Dashed border empty state ── */
+[data-theme="light"] .border-dashed { border-color: rgba(0,135,74,0.20) !important; }
+
+/* ── Transition all colored elements on theme switch ── */
+div, section, aside, header, main, nav, button, input, textarea, select, span, p, h1, h2, h3, h4, table, td, th, tr, a {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }

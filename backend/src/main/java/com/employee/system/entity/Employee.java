@@ -1,10 +1,19 @@
 package com.employee.system.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "employees")
@@ -33,6 +42,10 @@ public class Employee {
     @Column(nullable = false)
     private String department;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_id")
+    private Organization organization;
+
     @Column(nullable = false)
     private Double riskScore = 0.0;
 
@@ -56,6 +69,8 @@ public class Employee {
     public void setPerformanceRating(Double performanceRating) { this.performanceRating = performanceRating; }
     public String getDepartment() { return department; }
     public void setDepartment(String department) { this.department = department; }
+    public Organization getOrganization() { return organization; }
+    public void setOrganization(Organization organization) { this.organization = organization; }
     public Double getRiskScore() { return riskScore; }
     public void setRiskScore(Double riskScore) { this.riskScore = riskScore; }
     public String getRiskLevel() { return riskLevel; }
