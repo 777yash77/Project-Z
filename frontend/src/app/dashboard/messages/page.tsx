@@ -11,6 +11,7 @@ interface HrContact {
   role: string;
   organization: string | object | null;
   avatarUrl?: string | null;
+  isOnline?: boolean;
 }
 
 interface MessageItem {
@@ -219,15 +220,22 @@ export default function MessagesPage() {
                         {(profile.username || 'HR').slice(0, 2).toUpperCase()}
                       </div>
                     )}
-                    <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card bg-emerald-500" />
+                    <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card ${profile.isOnline ? 'bg-emerald-500' : 'bg-gray-400'}`} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
                       <p className="truncate text-sm font-bold text-foreground">{profile.username}</p>
-                      <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 text-[9px] font-extrabold text-emerald-500 flex items-center gap-1">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        Online
-                      </span>
+                      {profile.isOnline ? (
+                        <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 text-[9px] font-extrabold text-emerald-500 flex items-center gap-1">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          Online
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-muted/10 border border-muted/20 px-1.5 py-0.5 text-[9px] font-bold text-muted flex items-center gap-1">
+                          <span className="h-1.5 w-1.5 rounded-full bg-gray-400" />
+                          Offline
+                        </span>
+                      )}
                     </div>
                     <p className="truncate text-xs text-muted flex items-center gap-1 mt-0.5">
                       <Building2 size={12} className="text-emerald-500 flex-shrink-0" />
@@ -268,7 +276,7 @@ export default function MessagesPage() {
                         {(selectedProfile.username || 'HR').slice(0, 2).toUpperCase()}
                       </div>
                     )}
-                    <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-card bg-emerald-500" />
+                    <span className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-card ${selectedProfile.isOnline ? 'bg-emerald-500' : 'bg-gray-400'}`} />
                   </div>
                   <div>
                     <h2 className="text-base font-extrabold text-foreground">{selectedProfile.username}</h2>
@@ -282,13 +290,20 @@ export default function MessagesPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-extrabold text-emerald-500">
-                    <span className="relative flex h-2.5 w-2.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                    </span>
-                    <span>Online</span>
-                  </div>
+                  {selectedProfile.isOnline ? (
+                    <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-extrabold text-emerald-500">
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                      </span>
+                      <span>Online</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 rounded-full border border-muted/20 bg-muted/10 px-3 py-1 text-xs font-semibold text-muted">
+                      <span className="h-2 w-2 rounded-full bg-gray-400" />
+                      <span>Offline</span>
+                    </div>
+                  )}
                   <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                     <UserCheck size={14} />
                     <span>Verified HR</span>

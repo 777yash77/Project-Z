@@ -43,6 +43,9 @@ public class User {
     @Column(length = 1000)
     private String avatarUrl;
 
+    @Column(name = "last_active_at")
+    private java.time.LocalDateTime lastActiveAt;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getUsername() { return username; }
@@ -57,4 +60,11 @@ public class User {
     public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
     public Organization getOrganization() { return organization; }
     public void setOrganization(Organization organization) { this.organization = organization; }
+    public java.time.LocalDateTime getLastActiveAt() { return lastActiveAt; }
+    public void setLastActiveAt(java.time.LocalDateTime lastActiveAt) { this.lastActiveAt = lastActiveAt; }
+
+    @jakarta.persistence.Transient
+    public boolean isOnline() {
+        return lastActiveAt != null && lastActiveAt.isAfter(java.time.LocalDateTime.now().minusSeconds(12));
+    }
 }

@@ -64,9 +64,16 @@ public class HrMarketplaceController {
         if (username == null || username.isBlank() || "anonymousUser".equalsIgnoreCase(username)) {
             return null;
         }
-        return userRepository.findByUsername(username)
+        User user = userRepository.findByUsername(username)
                 .or(() -> userRepository.findByEmail(username))
                 .orElse(null);
+        if (user != null) {
+            user.setLastActiveAt(java.time.LocalDateTime.now());
+            try {
+                userRepository.save(user);
+            } catch (Exception ignored) {}
+        }
+        return user;
     }
 
     @GetMapping("/me")
