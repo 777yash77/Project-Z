@@ -27,21 +27,21 @@ export default function RegisterPage() {
 
   // ── Theme tokens ──────────────────────────────────────────────────────────
   const panelBg      = isLight ? 'linear-gradient(135deg,#d4ede0 0%,#e8f6ee 50%,#c8e8d8 100%)' : 'linear-gradient(135deg,#001a0a 0%,#030e06 50%,#000 100%)';
-  const headingColor = isLight ? '#0d1f14' : '#ffffff';
-  const subColor     = isLight ? 'rgba(13,31,20,0.55)' : 'rgba(232,245,238,0.50)';
-  const cardBg       = isLight ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.30)';
-  const cardBorder   = isLight ? 'rgba(0,135,74,0.20)' : 'rgba(0,255,136,0.10)';
+  const headingColor = isLight ? '#0f172a' : '#ffffff';
+  const subColor     = isLight ? '#1e293b' : '#cbd5e1';
+  const cardBg       = isLight ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.30)';
+  const cardBorder   = isLight ? 'rgba(0,135,74,0.25)' : 'rgba(0,255,136,0.20)';
   const dotColor     = isLight ? '#006b38' : '#00ff88';
-  const accentText   = isLight ? '#006b38' : '#00ff88';
-  const inputBg      = isLight ? 'rgba(255,255,255,0.80)' : 'rgba(0,0,0,0.50)';
-  const inputText    = isLight ? '#0d1f14' : '#ffffff';
-  const inputBorder  = isLight ? 'rgba(0,135,74,0.30)' : 'rgba(0,255,136,0.15)';
-  const labelColor   = isLight ? 'rgba(0,107,56,0.65)' : 'rgba(0,255,136,0.60)';
-  const dividerBg    = isLight ? 'rgba(0,135,74,0.15)' : 'rgba(0,255,136,0.10)';
-  const dividerText  = isLight ? 'rgba(0,107,56,0.45)' : 'rgba(0,255,136,0.40)';
+  const accentText   = isLight ? '#046c38' : '#00ff88';
+  const inputBg      = isLight ? 'rgba(255,255,255,0.90)' : 'rgba(0,0,0,0.50)';
+  const inputText    = isLight ? '#0f172a' : '#ffffff';
+  const inputBorder  = isLight ? 'rgba(0,135,74,0.35)' : 'rgba(0,255,136,0.25)';
+  const labelColor   = isLight ? '#046c38' : '#34d399';
+  const dividerBg    = isLight ? 'rgba(0,135,74,0.25)' : 'rgba(0,255,136,0.20)';
+  const dividerText  = isLight ? '#334155' : '#cbd5e1';
   const btnBg        = isLight ? '#00874a' : '#00ff88';
   const btnHoverBg   = isLight ? '#006b38' : '#00e07a';
-  const footerText   = isLight ? 'rgba(13,31,20,0.40)' : 'rgba(232,245,238,0.30)';
+  const footerText   = isLight ? '#334155' : '#cbd5e1';
   const otpBoxBg     = isLight ? '#ffffff' : '#000000';
   const otpBoxBorder = isLight ? 'rgba(0,135,74,0.30)' : 'rgba(0,255,136,0.20)';
   const otpFocusBorder = isLight ? '#00874a' : '#00ff88';

@@ -10,15 +10,15 @@
   --bg-base:        #020805;
   --bg-surface:     #060e09;
   --bg-card:        #0a160d;
-  --border-subtle:  rgba(0, 255, 136, 0.10);
-  --border-mid:     rgba(0, 255, 136, 0.20);
+  --border-subtle:  rgba(0, 255, 136, 0.15);
+  --border-mid:     rgba(0, 255, 136, 0.30);
   --accent:         #00ff88;
   --accent-mid:     #00c96a;
   --accent-dark:    #00874a;
   --accent-glow:    rgba(0, 255, 136, 0.20);
-  --text-primary:   #e8f5ee;
-  --text-muted:     rgba(232, 245, 238, 0.40);
-  --text-faint:     rgba(232, 245, 238, 0.20);
+  --text-primary:   #ffffff;
+  --text-muted:     #e2e8f0;
+  --text-faint:     #cbd5e1;
   --dot-color:      rgba(0, 255, 136, 0.06);
   color-scheme: dark;
 }
@@ -28,15 +28,15 @@
   --bg-base:        #f0faf4;
   --bg-surface:     #ffffff;
   --bg-card:        #f4fbf7;
-  --border-subtle:  rgba(0, 135, 74, 0.18);
-  --border-mid:     rgba(0, 135, 74, 0.28);
+  --border-subtle:  rgba(0, 135, 74, 0.22);
+  --border-mid:     rgba(0, 135, 74, 0.35);
   --accent:         #00874a;
   --accent-mid:     #00c96a;
   --accent-dark:    #005c32;
   --accent-glow:    rgba(0, 135, 74, 0.15);
-  --text-primary:   #0d1f14;
-  --text-muted:     rgba(13, 31, 20, 0.55);
-  --text-faint:     rgba(13, 31, 20, 0.35);
+  --text-primary:   #0f172a;
+  --text-muted:     #1e293b;
+  --text-faint:     #334155;
   --dot-color:      rgba(0, 135, 74, 0.07);
   color-scheme: light;
 }
@@ -117,28 +117,67 @@ body {
 [data-theme="light"] .bg-black\/50 { background-color: rgba(0,100,50,0.08) !important; }
 [data-theme="light"] .bg-black\/80 { background-color: rgba(0,0,0,0.08)   !important; }
 
-/* ── Text: white → dark green ── */
-[data-theme="light"] .text-white { color: #0d1f14 !important; }
+/* ── Text: white → dark slate ── */
+[data-theme="light"] .text-white { color: #0f172a !important; }
 
-/* ── Text: low-opacity green-100 → readable dark green ── */
-[data-theme="light"] .text-green-100\/15 { color: rgba(13,31,20,0.20) !important; }
-[data-theme="light"] .text-green-100\/20 { color: rgba(13,31,20,0.28) !important; }
-[data-theme="light"] .text-green-100\/25 { color: rgba(13,31,20,0.32) !important; }
-[data-theme="light"] .text-green-100\/30 { color: rgba(13,31,20,0.40) !important; }
-[data-theme="light"] .text-green-100\/35 { color: rgba(13,31,20,0.45) !important; }
-[data-theme="light"] .text-green-100\/40 { color: rgba(13,31,20,0.50) !important; }
-[data-theme="light"] .text-green-100\/50 { color: rgba(13,31,20,0.60) !important; }
-[data-theme="light"] .text-green-100\/60 { color: rgba(13,31,20,0.70) !important; }
-[data-theme="light"] .text-green-100\/70 { color: rgba(13,31,20,0.78) !important; }
+/* ── Text overrides for LEGIBILITY in Dark Mode ── */
+:root, [data-theme="dark"] {
+  .text-green-100\/15,
+  .text-green-100\/20,
+  .text-green-100\/25,
+  .text-green-100\/30,
+  .text-green-100\/35,
+  .text-green-100\/40,
+  .text-green-100\/50,
+  .text-green-100\/60,
+  .text-green-100\/70 {
+    color: #cbd5e1 !important;
+  }
 
-/* ── Accent text: neon → forest green ── */
-[data-theme="light"] .text-green-400    { color: #006b38 !important; }
-[data-theme="light"] .text-green-300    { color: #00874a !important; }
-[data-theme="light"] .text-green-400\/40 { color: rgba(0,107,56,0.50) !important; }
-[data-theme="light"] .text-green-400\/50 { color: rgba(0,107,56,0.55) !important; }
-[data-theme="light"] .text-green-400\/60 { color: rgba(0,107,56,0.65) !important; }
-[data-theme="light"] .text-green-500\/30 { color: rgba(0,107,56,0.40) !important; }
-[data-theme="light"] .text-green-500\/40 { color: rgba(0,107,56,0.50) !important; }
+  .text-green-400\/30,
+  .text-green-400\/40,
+  .text-green-400\/50,
+  .text-green-400\/60,
+  .text-green-400\/70,
+  .text-green-500\/30,
+  .text-green-500\/40,
+  .text-green-500\/50 {
+    color: #34d399 !important;
+  }
+}
+
+/* ── Text overrides for LEGIBILITY in Light Mode ── */
+[data-theme="light"] .text-green-100\/15,
+[data-theme="light"] .text-green-100\/20,
+[data-theme="light"] .text-green-100\/25,
+[data-theme="light"] .text-green-100\/30,
+[data-theme="light"] .text-green-100\/35,
+[data-theme="light"] .text-green-100\/40,
+[data-theme="light"] .text-green-100\/50,
+[data-theme="light"] .text-green-100\/60,
+[data-theme="light"] .text-green-100\/70 {
+  color: #334155 !important;
+}
+
+[data-theme="light"] .text-green-400,
+[data-theme="light"] .text-green-300,
+[data-theme="light"] .text-green-400\/30,
+[data-theme="light"] .text-green-400\/40,
+[data-theme="light"] .text-green-400\/50,
+[data-theme="light"] .text-green-400\/60,
+[data-theme="light"] .text-green-400\/70,
+[data-theme="light"] .text-green-500\/30,
+[data-theme="light"] .text-green-500\/40,
+[data-theme="light"] .text-green-500\/50 {
+  color: #046c38 !important;
+  font-weight: 600;
+}
+
+[data-theme="light"] .font-mono.text-green-400\/70,
+[data-theme="light"] .font-mono.text-green-400 {
+  color: #044e32 !important;
+  font-weight: 700 !important;
+}
 
 /* ── Accent backgrounds: neon → forest ── */
 [data-theme="light"] .bg-green-500      { background-color: #00874a !important; }
@@ -162,21 +201,45 @@ body {
 [data-theme="light"] .border-green-500\/20 { border-color: rgba(0,135,74,0.28) !important; }
 [data-theme="light"] .border-green-500\/25 { border-color: rgba(0,135,74,0.32) !important; }
 
-/* ── Input fields ── */
-[data-theme="light"] input,
-[data-theme="light"] textarea,
-[data-theme="light"] select {
-  color: #0d1f14 !important;
-  border-color: rgba(0,135,74,0.25) !important;
-  background-color: rgba(255,255,255,0.80) !important;
+/* ── Input & Select controls styling ── */
+input.bg-transparent,
+textarea.bg-transparent,
+select.bg-transparent {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
+
+[data-theme="light"] input:not(.bg-transparent),
+[data-theme="light"] textarea:not(.bg-transparent),
+[data-theme="light"] select:not(.bg-transparent) {
+  color: #0f172a !important;
+  border-color: rgba(0, 135, 74, 0.25) !important;
+  background-color: #ffffff !important;
+}
+
+[data-theme="light"] input.bg-transparent,
+[data-theme="light"] textarea.bg-transparent,
+[data-theme="light"] select.bg-transparent {
+  color: #0f172a !important;
+  background-color: transparent !important;
+  border: none !important;
+}
+
 [data-theme="light"] input::placeholder,
 [data-theme="light"] textarea::placeholder {
-  color: rgba(13,31,20,0.30) !important;
+  color: #64748b !important;
 }
+
 [data-theme="light"] option {
-  background-color: #ffffff;
-  color: #0d1f14;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+[data-theme="dark"] option {
+  background-color: #0a160d !important;
+  color: #ffffff !important;
 }
 
 /* ── Gradient panel in login/register left side ── */

@@ -227,40 +227,43 @@ export default function ExecutiveDashboardPage() {
 
           {/* Controls */}
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 rounded-xl border px-3 py-2 text-xs" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'rgba(0,0,0,0.3)' }}>
+            <div className="flex items-center gap-2 rounded-xl border px-3 py-2 text-xs transition-all shadow-sm" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
               <Search size={14} className="text-green-400" />
               <input
                 type="text"
                 placeholder="Search name or dept..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-transparent text-white outline-none placeholder:text-green-100/30 w-36 sm:w-48"
+                className="bg-transparent outline-none w-36 sm:w-48"
+                style={{ color: 'var(--text-primary)' }}
               />
             </div>
 
-            <div className="flex items-center gap-2 rounded-xl border px-3 py-2 text-xs" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'rgba(0,0,0,0.3)' }}>
+            <div className="flex items-center gap-2 rounded-xl border px-3 py-2 text-xs transition-all shadow-sm" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
               <Filter size={14} className="text-green-400" />
               <select
                 value={deptFilter}
                 onChange={(e) => setDeptFilter(e.target.value)}
-                className="bg-transparent text-white outline-none"
+                className="bg-transparent outline-none cursor-pointer"
+                style={{ color: 'var(--text-primary)' }}
               >
                 {departmentsList.map((d) => (
-                  <option key={d} value={d} className="bg-black text-white">{d} Dept</option>
+                  <option key={d} value={d} style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>{d} Dept</option>
                 ))}
               </select>
             </div>
 
-            <div className="flex items-center gap-2 rounded-xl border px-3 py-2 text-xs" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'rgba(0,0,0,0.3)' }}>
+            <div className="flex items-center gap-2 rounded-xl border px-3 py-2 text-xs transition-all shadow-sm" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
               <select
                 value={riskFilter}
                 onChange={(e) => setRiskFilter(e.target.value)}
-                className="bg-transparent text-white outline-none"
+                className="bg-transparent outline-none cursor-pointer"
+                style={{ color: 'var(--text-primary)' }}
               >
-                <option value="All" className="bg-black text-white">All Risks</option>
-                <option value="High" className="bg-black text-white">High Risk</option>
-                <option value="Medium" className="bg-black text-white">Medium Risk</option>
-                <option value="Low" className="bg-black text-white">Low Risk</option>
+                <option value="All" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>All Risks</option>
+                <option value="High" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>High Risk</option>
+                <option value="Medium" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>Medium Risk</option>
+                <option value="Low" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>Low Risk</option>
               </select>
             </div>
           </div>

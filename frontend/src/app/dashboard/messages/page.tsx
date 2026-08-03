@@ -96,14 +96,15 @@ export default function MessagesPage() {
           </div>
 
           {/* Search Bar for HRs */}
-          <div className="flex items-center gap-2 rounded-xl border border-green-500/15 bg-black/40 px-3 py-2 text-xs">
+          <div className="flex items-center gap-2 rounded-xl border px-3 py-2 text-xs transition-all shadow-sm" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
             <Search size={14} className="text-green-400" />
             <input
               type="text"
               placeholder="Search HR by name or company..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-transparent text-white outline-none placeholder:text-green-100/20 w-full"
+              className="bg-transparent outline-none w-full"
+              style={{ color: 'var(--text-primary)' }}
             />
           </div>
 

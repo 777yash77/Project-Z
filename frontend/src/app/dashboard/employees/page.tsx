@@ -109,31 +109,33 @@ export default function EmployeesPage() {
       </div>
 
       {/* Table Section */}
-      <div className="rounded-2xl border border-green-500/10 bg-[#060e09] p-6">
+      <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
         {/* Search & Filter */}
         <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center">
-          <div className="flex flex-1 items-center gap-2 rounded-xl border border-green-500/12 bg-black/40 px-4 py-2.5">
-            <Search size={15} className="text-green-400/40" />
+          <div className="flex flex-1 items-center gap-2 rounded-xl border px-4 py-2.5 transition-all shadow-sm" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
+            <Search size={15} className="text-green-400" />
             <input
               id="employee-search"
-              className="w-full bg-transparent text-sm text-white outline-none placeholder:text-green-100/20"
+              className="w-full bg-transparent text-sm outline-none"
+              style={{ color: 'var(--text-primary)' }}
               placeholder="Search by name or department..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="flex items-center gap-2 rounded-xl border border-green-500/12 bg-black/40 px-4 py-2.5">
-            <Filter size={15} className="text-green-400/40" />
+          <div className="flex items-center gap-2 rounded-xl border px-4 py-2.5 transition-all shadow-sm" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
+            <Filter size={15} className="text-green-400" />
             <select
               id="risk-filter"
-              className="bg-transparent text-sm text-green-100/70 outline-none"
+              className="bg-transparent text-sm outline-none cursor-pointer"
+              style={{ color: 'var(--text-primary)' }}
               value={riskFilter}
               onChange={(e) => setRiskFilter(e.target.value as any)}
             >
-              <option value="All">All risks</option>
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
+              <option value="All" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>All risks</option>
+              <option value="High" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>High</option>
+              <option value="Medium" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>Medium</option>
+              <option value="Low" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>Low</option>
             </select>
           </div>
         </div>

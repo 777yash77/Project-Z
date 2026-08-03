@@ -201,7 +201,7 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
                     value={simSalary}
                     onChange={(e) => setSimSalary(Number(e.target.value))}
                     className="mt-1.5 w-full rounded-xl border px-3 py-2 text-xs outline-none"
-                    style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'rgba(0,0,0,0.3)', color: '#fff' }}
+                    style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
                   />
                 </div>
 
@@ -210,14 +210,14 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
                   <select
                     value={simWlb}
                     onChange={(e) => setSimWlb(Number(e.target.value))}
-                    className="mt-1.5 w-full rounded-xl border px-3 py-2 text-xs outline-none"
-                    style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'rgba(0,0,0,0.3)', color: '#fff' }}
+                    className="mt-1.5 w-full rounded-xl border px-3 py-2 text-xs outline-none cursor-pointer"
+                    style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
                   >
-                    <option value={1}>1 - Poor</option>
-                    <option value={2}>2 - Fair</option>
-                    <option value={3}>3 - Good</option>
-                    <option value={4}>4 - Excellent</option>
-                    <option value={5}>5 - Outstanding</option>
+                    <option value={1} style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>1 - Poor</option>
+                    <option value={2} style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>2 - Fair</option>
+                    <option value={3} style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>3 - Good</option>
+                    <option value={4} style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>4 - Excellent</option>
+                    <option value={5} style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>5 - Outstanding</option>
                   </select>
                 </div>
 
@@ -226,11 +226,11 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
                   <select
                     value={simOvertime ? 'yes' : 'no'}
                     onChange={(e) => setSimOvertime(e.target.value === 'yes')}
-                    className="mt-1.5 w-full rounded-xl border px-3 py-2 text-xs outline-none"
-                    style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'rgba(0,0,0,0.3)', color: '#fff' }}
+                    className="mt-1.5 w-full rounded-xl border px-3 py-2 text-xs outline-none cursor-pointer"
+                    style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
                   >
-                    <option value="no">No Overtime</option>
-                    <option value="yes">Requires Overtime</option>
+                    <option value="no" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>No Overtime</option>
+                    <option value="yes" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>Requires Overtime</option>
                   </select>
                 </div>
 
@@ -243,7 +243,7 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
                     value={simPromotionGap}
                     onChange={(e) => setSimPromotionGap(Number(e.target.value))}
                     className="mt-1.5 w-full rounded-xl border px-3 py-2 text-xs outline-none"
-                    style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'rgba(0,0,0,0.3)', color: '#fff' }}
+                    style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
                   />
                 </div>
               </div>
