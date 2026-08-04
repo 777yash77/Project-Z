@@ -78,17 +78,18 @@ export default function EmployeesPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="rounded-2xl border border-green-500/12 bg-[#060e09] p-6">
+      <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-green-400/50">HR Directory</p>
-            <h1 className="mt-2 text-3xl font-bold text-white">Employee Directory</h1>
-            <p className="mt-1 text-sm text-green-100/35">Filter, edit, and manage employee risk profiles.</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: 'var(--accent)' }}>HR Directory</p>
+            <h1 className="mt-2 text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Employee Directory</h1>
+            <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>Filter, edit, and manage employee risk profiles.</p>
           </div>
           <button
             id="add-employee-btn"
             onClick={openCreate}
-            className="inline-flex items-center gap-2 rounded-xl bg-green-500 px-5 py-2.5 text-sm font-bold text-black transition hover:bg-green-400 hover:shadow-[0_0_20px_rgba(0,255,136,0.3)]"
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-black transition hover:opacity-90"
+            style={{ backgroundColor: 'var(--accent)' }}
           >
             <Plus size={16} /> Add Employee
           </button>
@@ -100,9 +101,9 @@ export default function EmployeesPage() {
             { label: 'Average Risk Score', value: avgRisk },
             { label: 'Average Rating', value: avgRating },
           ].map((stat) => (
-            <div key={stat.label} className="rounded-xl border border-green-500/8 bg-black/40 p-4">
-              <p className="text-xs text-green-100/30">{stat.label}</p>
-              <p className="mt-2 text-2xl font-bold text-white">{stat.value}</p>
+            <div key={stat.label} className="rounded-xl border p-4" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{stat.label}</p>
+              <p className="mt-2 text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{stat.value}</p>
             </div>
           ))}
         </div>

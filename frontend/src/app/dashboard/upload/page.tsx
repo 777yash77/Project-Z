@@ -43,15 +43,15 @@ export default function UploadPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="rounded-2xl border border-green-500/12 bg-[#060e09] p-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-green-400/50">Data Import</p>
-        <h1 className="mt-2 text-3xl font-bold text-white">Bulk CSV Upload</h1>
-        <p className="mt-1 text-sm text-green-100/35">Import employee CSV files and automatically persist risk-scored data.</p>
+      <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
+        <p className="text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: 'var(--accent)' }}>Data Import</p>
+        <h1 className="mt-2 text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Bulk CSV Upload</h1>
+        <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>Import employee CSV files and automatically persist risk-scored data.</p>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr]">
         {/* Upload Zone */}
-        <section className="rounded-2xl border border-green-500/10 bg-[#060e09] p-6">
+        <section className="rounded-2xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
           <div
             id="csv-drop-zone"
             className={`group flex min-h-[240px] flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed p-8 text-center transition-all duration-300 cursor-pointer ${

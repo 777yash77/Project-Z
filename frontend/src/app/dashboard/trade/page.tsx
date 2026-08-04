@@ -33,24 +33,24 @@ export default function TradeWindowPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="rounded-2xl border border-green-500/12 bg-[#060e09] p-6">
+      <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-green-400/50">Trade Window</p>
-            <h1 className="mt-2 text-3xl font-bold text-white">Employee Trade Visibility</h1>
-            <p className="mt-1 text-sm text-green-100/35">HR leaders can monitor talent and coordinate cross-team movement.</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: 'var(--accent)' }}>Trade Window</p>
+            <h1 className="mt-2 text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Employee Trade Visibility</h1>
+            <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>HR leaders can monitor talent and coordinate cross-team movement.</p>
           </div>
-          <div className="flex items-center gap-2 rounded-xl border border-green-500/15 bg-green-500/8 px-4 py-2.5">
-            <BellRing size={15} className="text-green-400" />
-            <span className="text-sm font-semibold text-green-300">{openForTrade.length}</span>
-            <span className="text-sm text-green-100/40">profiles open</span>
+          <div className="flex items-center gap-2 rounded-xl border px-4 py-2.5" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
+            <BellRing size={15} style={{ color: 'var(--accent)' }} />
+            <span className="text-sm font-semibold" style={{ color: 'var(--accent)' }}>{openForTrade.length}</span>
+            <span className="text-sm" style={{ color: 'var(--text-muted)' }}>profiles open</span>
           </div>
         </div>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
         {/* Listings */}
-        <section className="rounded-2xl border border-green-500/10 bg-[#060e09] p-6">
+        <section className="rounded-2xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
           <div className="mb-5 flex items-center justify-between">
             <div>
               <h2 className="text-base font-semibold text-white">Open Profiles</h2>

@@ -98,43 +98,28 @@ body {
 .glow-green      { animation: pulse-glow 3s ease-in-out infinite; }
 
 /* ═══════════════════════════════════════════════════════
-   SAFE LIGHT MODE CONTRAST OVERRIDES (PostCSS Compatible)
+   LIGHT MODE CONTRAST ENHANCEMENTS
    ═══════════════════════════════════════════════════════ */
 
-[data-theme="light"] .text-white {
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] h4,
+[data-theme="light"] th,
+[data-theme="light"] td {
   color: #0f172a !important;
 }
 
-[data-theme="light"] .text-green-100\/10,
-[data-theme="light"] .text-green-100\/15,
-[data-theme="light"] .text-green-100\/20,
-[data-theme="light"] .text-green-100\/25,
-[data-theme="light"] .text-green-100\/30,
-[data-theme="light"] .text-green-100\/35,
-[data-theme="light"] .text-green-100\/40,
-[data-theme="light"] .text-green-100\/50,
-[data-theme="light"] .text-green-100\/60,
-[data-theme="light"] .text-green-100\/70,
-[data-theme="light"] .text-green-100\/80 {
-  color: #334155 !important;
-  font-weight: 500;
+[data-theme="light"] p,
+[data-theme="light"] span,
+[data-theme="light"] label {
+  color: inherit;
 }
 
-[data-theme="light"] .text-green-400\/30,
-[data-theme="light"] .text-green-400\/40,
-[data-theme="light"] .text-green-400\/50,
-[data-theme="light"] .text-green-400\/60,
-[data-theme="light"] .text-green-400\/70,
-[data-theme="light"] .text-green-500\/30,
-[data-theme="light"] .text-green-500\/40,
-[data-theme="light"] .text-green-500\/50 {
-  color: #046c38 !important;
-  font-weight: 600;
-}
-
-[data-theme="light"] .text-slate-400,
-[data-theme="light"] .text-slate-500,
-[data-theme="light"] .text-zinc-400,
-[data-theme="light"] .text-gray-400 {
-  color: #475569 !important;
+[data-theme="light"] input:not(.bg-transparent),
+[data-theme="light"] textarea:not(.bg-transparent),
+[data-theme="light"] select:not(.bg-transparent) {
+  color: #0f172a !important;
+  border-color: rgba(0, 135, 74, 0.25) !important;
+  background-color: #ffffff !important;
 }

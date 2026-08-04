@@ -26,17 +26,17 @@ export default function HireWindowPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="rounded-2xl border border-green-500/12 bg-[#060e09] p-6">
+      <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-green-400/50">Hire View</p>
-            <h1 className="mt-2 text-3xl font-bold text-white">Candidates for Hiring</h1>
-            <p className="mt-1 text-sm text-green-100/35">HR teams can review profiles open for trade and scout talent for partner organizations.</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: 'var(--accent)' }}>Hire View</p>
+            <h1 className="mt-2 text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Candidates for Hiring</h1>
+            <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>HR teams can review profiles open for trade and scout talent for partner organizations.</p>
           </div>
-          <div className="flex items-center gap-2 rounded-xl border border-green-500/15 bg-green-500/8 px-4 py-2.5">
-            <Sparkles size={15} className="text-green-400" />
-            <span className="text-sm font-semibold text-green-300">{openProfiles.length}</span>
-            <span className="text-sm text-green-100/40">ready to review</span>
+          <div className="flex items-center gap-2 rounded-xl border px-4 py-2.5" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
+            <Sparkles size={15} style={{ color: 'var(--accent)' }} />
+            <span className="text-sm font-semibold" style={{ color: 'var(--accent)' }}>{openProfiles.length}</span>
+            <span className="text-sm" style={{ color: 'var(--text-muted)' }}>ready to review</span>
           </div>
         </div>
       </div>
@@ -45,7 +45,7 @@ export default function HireWindowPage() {
       {openProfiles.length > 0 ? (
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {openProfiles.map((employee) => (
-            <div key={employee.id} className="group rounded-2xl border border-green-500/10 bg-[#060e09] p-5 transition hover:border-green-500/20 hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
+            <div key={employee.id} className="group rounded-2xl border p-5 transition hover:shadow-lg" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
               {/* Top */}
               <div className="flex items-start justify-between gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-500/10 text-base font-bold text-green-400">
