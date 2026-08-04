@@ -48,36 +48,36 @@ export default function HireWindowPage() {
             <div key={employee.id} className="group rounded-2xl border p-5 transition hover:shadow-lg" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
               {/* Top */}
               <div className="flex items-start justify-between gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-500/10 text-base font-bold text-green-400">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl font-bold text-base" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--accent)' }}>
                   {employee.employee.name.charAt(0)}
                 </div>
-                <span className="rounded-full border border-green-500/15 bg-green-500/8 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-green-400">
+                <span className="rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)', color: 'var(--accent)' }}>
                   Hire-ready
                 </span>
               </div>
 
               {/* Name & dept */}
               <div className="mt-4">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-green-100/30">{employee.employee.department}</p>
-                <h2 className="mt-1 text-xl font-bold text-white">{employee.employee.name}</h2>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.25em]" style={{ color: 'var(--text-muted)' }}>{employee.employee.department}</p>
+                <h2 className="mt-1 text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{employee.employee.name}</h2>
               </div>
 
               {/* Stats */}
-              <div className="mt-5 rounded-xl border border-green-500/8 bg-black/30 p-3 text-xs">
+              <div className="mt-5 rounded-xl border p-3 text-xs" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
                 {[
-                  { label: 'Risk Level', value: employee.employee.riskLevel, accent: employee.employee.riskLevel === 'High' ? 'text-red-400' : employee.employee.riskLevel === 'Medium' ? 'text-amber-400' : 'text-green-400' },
-                  { label: 'Risk Score', value: employee.employee.riskScore.toFixed(2), accent: 'text-white' },
-                  { label: 'Commission', value: `${employee.commissionPercent}%`, accent: 'text-green-400' },
+                  { label: 'Risk Level', value: employee.employee.riskLevel, color: employee.employee.riskLevel === 'High' ? '#ef4444' : employee.employee.riskLevel === 'Medium' ? '#f59e0b' : 'var(--accent)' },
+                  { label: 'Risk Score', value: employee.employee.riskScore.toFixed(2), color: 'var(--text-primary)' },
+                  { label: 'Commission', value: `${employee.commissionPercent}%`, color: 'var(--accent)' },
                 ].map((row) => (
-                  <div key={row.label} className="flex items-center justify-between py-1.5 border-b border-green-500/5 last:border-0">
-                    <span className="text-green-100/30">{row.label}</span>
-                    <span className={`font-semibold ${row.accent}`}>{row.value}</span>
+                  <div key={row.label} className="flex items-center justify-between py-1.5 border-b last:border-0" style={{ borderColor: 'var(--border-subtle)' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>{row.label}</span>
+                    <span className="font-semibold" style={{ color: row.color }}>{row.value}</span>
                   </div>
                 ))}
               </div>
 
               {/* Organization */}
-              <div className="mt-3 flex items-center gap-1.5 text-xs text-green-100/25">
+              <div className="mt-3 flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
                 <Building2 size={11} />
                 Listed by {employee.organization.name}
               </div>
@@ -87,12 +87,16 @@ export default function HireWindowPage() {
                 {employee.listedBy?.id && (
                   <a
                     href={`/dashboard/messages?recipientId=${employee.listedBy.id}`}
-                    className="flex items-center gap-1.5 rounded-xl border border-green-500/20 bg-green-500/8 px-3 py-2.5 text-xs font-bold text-green-400 transition hover:bg-green-500/15"
+                    className="flex items-center gap-1.5 rounded-xl border px-3 py-2.5 text-xs font-bold transition hover:opacity-90"
+                    style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)', color: 'var(--accent)' }}
                   >
                     <MessageCircleMore size={14} />
                   </a>
                 )}
-                <button className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-green-500/15 bg-green-500/8 px-4 py-2.5 text-xs font-bold text-green-400 transition group-hover:bg-green-500/12 hover:shadow-[0_0_12px_rgba(0,255,136,0.15)]">
+                <button
+                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-bold transition hover:opacity-90"
+                  style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)', color: 'var(--accent)' }}
+                >
                   <BriefcaseBusiness size={14} />
                   Review Candidate
                   <ArrowUpRight size={14} />
@@ -102,10 +106,10 @@ export default function HireWindowPage() {
           ))}
         </div>
       ) : (
-        <div className="rounded-2xl border border-dashed border-green-500/10 bg-[#060e09] py-20 text-center">
-          <BriefcaseBusiness size={36} className="mx-auto mb-4 text-green-500/20" />
-          <p className="text-sm text-green-100/20">No hire-ready profiles yet.</p>
-          <p className="mt-1 text-xs text-green-100/15">Open employees for trade from the Employee Directory.</p>
+        <div className="rounded-2xl border border-dashed py-20 text-center" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
+          <BriefcaseBusiness size={36} className="mx-auto mb-4" style={{ color: 'var(--accent)' }} />
+          <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>No hire-ready profiles yet.</p>
+          <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>Open employees for trade from the Employee Directory.</p>
         </div>
       )}
     </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { sendOtp, verifyRegister } from '../dashboard/api';
 import { ThemeToggle } from '../theme-toggle';
@@ -22,8 +22,22 @@ export default function RegisterPage() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [mounted, setMounted] = useState(false);
+  const [regRole, setRegRole] = useState<'ORGANISATION' | 'EMPLOYEE'>('EMPLOYEE');
 
   const otpRefs = useRef<Array<HTMLInputElement | null>>([]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-8" style={{ backgroundColor: 'var(--bg-base)' }}>
+        <div className="absolute inset-0 dot-pattern" style={{ backgroundColor: 'var(--bg-base)' }} />
+      </div>
+    );
+  }
 
   // ── Theme tokens ──────────────────────────────────────────────────────────
   const panelBg      = isLight ? 'linear-gradient(135deg,#d4ede0 0%,#e8f6ee 50%,#c8e8d8 100%)' : 'linear-gradient(135deg,#001a0a 0%,#030e06 50%,#000 100%)';
@@ -46,7 +60,7 @@ export default function RegisterPage() {
   const otpBoxBorder = isLight ? 'rgba(0,135,74,0.30)' : 'rgba(0,255,136,0.20)';
   const otpFocusBorder = isLight ? '#00874a' : '#00ff88';
 
-  const [regRole, setRegRole] = useState<'ORGANISATION' | 'EMPLOYEE'>('EMPLOYEE');
+
 
   // ── Step 1: send OTP ──────────────────────────────────────────────────────
   const handleSendOtp = async (e: React.FormEvent) => {

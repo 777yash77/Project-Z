@@ -18,6 +18,10 @@ import com.employee.system.repository.UserEducationRepository;
 import com.employee.system.repository.UserExperienceRepository;
 import com.employee.system.repository.UserSkillRepository;
 import com.employee.system.repository.UserRepository;
+import com.employee.system.entity.UserAward;
+import com.employee.system.entity.UserCertification;
+import com.employee.system.repository.UserAwardRepository;
+import com.employee.system.repository.UserCertificationRepository;
 
 @Service
 public class EmployeeProfileService {
@@ -28,6 +32,8 @@ public class EmployeeProfileService {
     private final UserEducationRepository educationRepository;
     private final UserSkillRepository skillRepository;
     private final UserDocumentRepository documentRepository;
+    private final UserAwardRepository awardRepository;
+    private final UserCertificationRepository certificationRepository;
     private final AuditService auditService;
 
     public EmployeeProfileService(UserRepository userRepository,
@@ -36,6 +42,8 @@ public class EmployeeProfileService {
                                   UserEducationRepository educationRepository,
                                   UserSkillRepository skillRepository,
                                   UserDocumentRepository documentRepository,
+                                  UserAwardRepository awardRepository,
+                                  UserCertificationRepository certificationRepository,
                                   AuditService auditService) {
         this.userRepository = userRepository;
         this.employeeRepository = employeeRepository;
@@ -43,6 +51,8 @@ public class EmployeeProfileService {
         this.educationRepository = educationRepository;
         this.skillRepository = skillRepository;
         this.documentRepository = documentRepository;
+        this.awardRepository = awardRepository;
+        this.certificationRepository = certificationRepository;
         this.auditService = auditService;
     }
 
@@ -59,6 +69,8 @@ public class EmployeeProfileService {
         profile.put("educations", educationRepository.findByUser(user));
         profile.put("skills", skillRepository.findByUser(user));
         profile.put("documents", documentRepository.findByUser(user));
+        profile.put("awards", awardRepository.findByUser(user));
+        profile.put("certifications", certificationRepository.findByUser(user));
         return profile;
     }
 
@@ -100,5 +112,15 @@ public class EmployeeProfileService {
         doc.setDocumentType(docType != null ? docType : "RESUME");
         doc.setFileUrl(fileUrl);
         return documentRepository.save(doc);
+    }
+
+    public UserAward addAward(User user, UserAward award) {
+        award.setUser(user);
+        return awardRepository.save(award);
+    }
+
+    public UserCertification addCertification(User user, UserCertification cert) {
+        cert.setUser(user);
+        return certificationRepository.save(cert);
     }
 }

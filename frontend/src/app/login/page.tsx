@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { loginUser, sendOtp, verifyLogin } from '../dashboard/api';
 import { ThemeToggle } from '../theme-toggle';
@@ -23,8 +23,21 @@ export default function LoginPage() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
   const otpRefs = useRef<Array<HTMLInputElement | null>>([]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-8" style={{ backgroundColor: 'var(--bg-base)' }}>
+        <div className="absolute inset-0 dot-pattern" style={{ backgroundColor: 'var(--bg-base)' }} />
+      </div>
+    );
+  }
 
   // ── Theme tokens ──────────────────────────────────────────────────────────
   const panelBg      = isLight ? 'linear-gradient(135deg,#d4ede0 0%,#e8f6ee 50%,#c8e8d8 100%)' : 'linear-gradient(135deg,#001a0a 0%,#030e06 50%,#000 100%)';

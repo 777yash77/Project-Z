@@ -17,11 +17,11 @@ export default function OrganisationPortalPage() {
   const loadData = async () => {
     try {
       const hrRes = await fetchHrAccounts();
-      setHrAccounts(hrRes.data || []);
+      setHrAccounts(Array.isArray(hrRes?.data) ? hrRes.data : []);
       const auditRes = await fetchAuditLogs();
-      setAuditLogs(auditRes.data || []);
+      setAuditLogs(Array.isArray(auditRes?.data) ? auditRes.data : []);
       const deptRes = await fetchDepartments();
-      setDepartments(deptRes.data || []);
+      setDepartments(Array.isArray(deptRes?.data) ? deptRes.data : []);
     } catch (err) {
       console.error(err);
     }

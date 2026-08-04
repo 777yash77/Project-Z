@@ -49,10 +49,10 @@ public class User {
     @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Organization organization;
 
-    @Column(length = 1000)
+    @Column(columnDefinition = "LONGTEXT")
     private String avatarUrl;
 
-    @Column(length = 1000)
+    @Column(columnDefinition = "LONGTEXT")
     private String coverUrl;
 
     private String headline;
@@ -68,6 +68,19 @@ public class User {
 
     @Column(name = "last_active_at")
     private java.time.LocalDateTime lastActiveAt;
+
+    @jakarta.persistence.ManyToMany(fetch = FetchType.LAZY)
+    @jakarta.persistence.JoinTable(
+        name = "user_followers",
+        joinColumns = @JoinColumn(name = "following_id"),
+        inverseJoinColumns = @JoinColumn(name = "follower_id")
+    )
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private java.util.Set<User> followers = new java.util.HashSet<>();
+
+    @jakarta.persistence.ManyToMany(mappedBy = "followers", fetch = FetchType.LAZY)
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private java.util.Set<User> following = new java.util.HashSet<>();
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -107,6 +120,11 @@ public class User {
     public void setOrganization(Organization organization) { this.organization = organization; }
     public java.time.LocalDateTime getLastActiveAt() { return lastActiveAt; }
     public void setLastActiveAt(java.time.LocalDateTime lastActiveAt) { this.lastActiveAt = lastActiveAt; }
+
+    public java.util.Set<User> getFollowers() { return followers; }
+    public void setFollowers(java.util.Set<User> followers) { this.followers = followers; }
+    public java.util.Set<User> getFollowing() { return following; }
+    public void setFollowing(java.util.Set<User> following) { this.following = following; }
 
     @jakarta.persistence.Transient
     public boolean isOnline() {

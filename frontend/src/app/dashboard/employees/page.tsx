@@ -28,7 +28,7 @@ export default function EmployeesPage() {
   const [riskFilter, setRiskFilter] = useState<'All' | 'High' | 'Medium' | 'Low'>('All');
 
   const loadEmployees = () => {
-    fetchEmployees().then((res) => setEmployees(res.data)).catch(() => setEmployees([]));
+    fetchEmployees().then((res) => setEmployees(Array.isArray(res?.data) ? res.data : [])).catch(() => setEmployees([]));
   };
 
   useEffect(() => { loadEmployees(); }, []);
@@ -179,13 +179,15 @@ export default function EmployeesPage() {
                       </button>
                       <button
                         onClick={() => openEdit(employee)}
-                        className="rounded-lg border border-green-500/10 bg-black/40 p-1.5 text-green-100/40 transition hover:border-green-500/25 hover:text-green-400"
+                        className="rounded-lg border p-1.5 transition hover:opacity-90"
+                        style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)', color: 'var(--accent)' }}
                       >
                         <Pencil size={13} />
                       </button>
                       <button
                         onClick={() => handleDelete(employee.id)}
-                        className="rounded-lg border border-red-500/10 bg-black/40 p-1.5 text-green-100/30 transition hover:border-red-500/25 hover:text-red-400"
+                        className="rounded-lg border p-1.5 transition hover:opacity-90"
+                        style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)', color: '#ef4444' }}
                       >
                         <Trash2 size={13} />
                       </button>
@@ -195,7 +197,7 @@ export default function EmployeesPage() {
               ))}
               {filteredEmployees.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-5 py-10 text-center text-sm text-green-100/20">
+                  <td colSpan={5} className="px-5 py-10 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
                     No employees match your search.
                   </td>
                 </tr>
@@ -207,7 +209,7 @@ export default function EmployeesPage() {
 
       {/* Message */}
       {message && (
-        <div className="flex items-center justify-between rounded-xl border border-green-500/15 bg-green-500/8 px-4 py-3 text-sm text-green-300">
+        <div className="flex items-center justify-between rounded-xl border px-4 py-3 text-sm" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)', color: 'var(--accent)' }}>
           {message}
           <button onClick={() => setMessage('')}><X size={14} /></button>
         </div>
@@ -215,16 +217,17 @@ export default function EmployeesPage() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md overflow-y-auto">
-          <div className="relative my-auto w-full max-w-xl max-h-[85vh] overflow-y-auto rounded-3xl border border-emerald-500/30 bg-slate-900 p-6 sm:p-8 shadow-[0_25px_70px_rgba(0,0,0,0.8)]">
-            <div className="mb-6 flex items-center justify-between border-b border-slate-800 pb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md overflow-y-auto">
+          <div className="relative my-auto w-full max-w-xl max-h-[85vh] overflow-y-auto rounded-3xl border p-6 sm:p-8 shadow-2xl" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
+            <div className="mb-6 flex items-center justify-between border-b pb-4" style={{ borderColor: 'var(--border-subtle)' }}>
               <div>
-                <h2 className="text-xl font-bold text-white">{editingId ? 'Edit Employee' : 'Add Employee'}</h2>
-                <p className="mt-1 text-xs text-slate-400">All entries are risk-scored before persisting.</p>
+                <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{editingId ? 'Edit Employee' : 'Add Employee'}</h2>
+                <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>All entries are risk-scored before persisting.</p>
               </div>
               <button
                 onClick={() => setShowModal(false)}
-                className="rounded-xl border border-slate-700 bg-slate-800/80 p-2 text-slate-400 hover:border-emerald-500/50 hover:text-white transition"
+                className="rounded-xl border p-2 transition hover:opacity-90"
+                style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)', color: 'var(--text-muted)' }}
               >
                 <X size={18} />
               </button>
@@ -239,13 +242,14 @@ export default function EmployeesPage() {
                 { label: 'Department', placeholder: 'e.g. Engineering', key: 'department', type: 'text' },
               ].map((field) => (
                 <div key={field.key} className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                  <label className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--accent)' }}>
                     {field.label}
                   </label>
                   <input
                     type={field.type}
                     step={field.step}
-                    className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm font-medium text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"
+                    className="rounded-xl border px-4 py-3 text-sm font-medium outline-none transition"
+                    style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
                     placeholder={field.placeholder}
                     value={(form as any)[field.key]}
                     onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
@@ -253,17 +257,19 @@ export default function EmployeesPage() {
                   />
                 </div>
               ))}
-              <div className="sm:col-span-2 flex justify-end gap-3 pt-4 border-t border-slate-800 mt-2">
+              <div className="sm:col-span-2 flex justify-end gap-3 pt-4 border-t mt-2" style={{ borderColor: 'var(--border-subtle)' }}>
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="rounded-xl border border-slate-700 bg-slate-800/60 px-5 py-2.5 text-sm font-semibold text-slate-300 transition hover:bg-slate-800 hover:text-white"
+                  className="rounded-xl border px-5 py-2.5 text-sm font-semibold transition hover:opacity-90"
+                  style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)', color: 'var(--text-muted)' }}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-emerald-500 px-6 py-2.5 text-sm font-extrabold text-slate-950 transition hover:bg-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+                  className="rounded-xl px-6 py-2.5 text-sm font-extrabold text-black transition hover:opacity-90"
+                  style={{ backgroundColor: 'var(--accent)' }}
                 >
                   Save Employee
                 </button>

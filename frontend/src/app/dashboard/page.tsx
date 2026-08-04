@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { AlertTriangle, DollarSign, Users as UsersIcon, BarChart3, TrendingUp, Activity, Filter, Search, Sparkles, PieChart, ShieldAlert, ArrowUpRight, ChevronRight, BarChart2 } from 'lucide-react';
-import { fetchEmployees, fetchWorkforceAiAnalytics, getCurrentUserProfile } from './api';
+import { fetchEmployees, fetchWorkforceAiAnalytics, getMe } from './api';
 import EmployeeDetailModal from './EmployeeDetailModal';
 import AiReportRenderer from './AiReportRenderer';
 
@@ -23,6 +23,7 @@ export default function ExecutiveDashboardPage() {
   const [organizationName, setOrganizationName] = useState('Your Organization');
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
   const [aiWorkforceReport, setAiWorkforceReport] = useState<string>('');
+  const [role, setRole] = useState<string | null>(null);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,15 +33,24 @@ export default function ExecutiveDashboardPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const loadDashboardData = useCallback(() => {
-    Promise.all([fetchEmployees(), getCurrentUserProfile(), fetchWorkforceAiAnalytics()])
-      .then(([empRes, profileRes, aiRes]) => {
-        setEmployees(empRes.data);
-        setOrganizationName(profileRes.data.organization || 'Your Organization');
-        if (aiRes.data?.aiWorkforceReport) {
-          setAiWorkforceReport(aiRes.data.aiWorkforceReport);
+    getMe()
+      .then((res) => {
+        const userRole = res.data.role;
+        setRole(userRole);
+        setOrganizationName(res.data.organization || 'Your Organization');
+        
+        if (userRole === 'HR' || userRole === 'ORGANISATION') {
+          Promise.all([fetchEmployees(), fetchWorkforceAiAnalytics()])
+            .then(([empRes, aiRes]) => {
+              setEmployees(empRes.data);
+              if (aiRes.data?.aiWorkforceReport) {
+                setAiWorkforceReport(aiRes.data.aiWorkforceReport);
+              }
+            })
+            .catch(() => setEmployees([]));
         }
       })
-      .catch(() => setEmployees([]));
+      .catch(console.error);
   }, []);
 
   useEffect(() => {
@@ -97,6 +107,28 @@ export default function ExecutiveDashboardPage() {
   }, [deptRiskMap]);
 
   const departmentsList = useMemo(() => ['All', ...Array.from(new Set(employees.map((e) => e.department)))], [employees]);
+
+  if (role === 'EMPLOYEE') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4 animate-fade-in">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10 text-green-400 mb-4 shadow-[0_0_20px_rgba(0,255,136,0.15)]">
+          <Sparkles size={32} />
+        </div>
+        <h1 className="text-3xl font-extrabold text-white sm:text-4xl">Welcome to {organizationName}</h1>
+        <p className="max-w-md mx-auto text-sm leading-relaxed text-green-100/50">
+          Your employee portal is ready. Head over to your Enterprise Profile to update your details, or check out the LinkedIn Feed to connect with colleagues.
+        </p>
+        <div className="mt-8 flex gap-4">
+          <a href="/dashboard/my-profile" className="rounded-xl px-6 py-2.5 text-sm font-bold text-black transition hover:opacity-90" style={{ backgroundColor: 'var(--accent)' }}>
+            My Profile
+          </a>
+          <a href="/dashboard/feed" className="rounded-xl border px-6 py-2.5 text-sm font-bold transition hover:bg-green-500/20" style={{ borderColor: 'var(--border-subtle)', color: 'var(--accent)', backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)' }}>
+            Social Feed
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">

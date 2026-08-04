@@ -108,12 +108,27 @@ export default function MessagesPage() {
     [threads, selectedId]
   );
 
+  const [isOtherTyping, setIsOtherTyping] = useState(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const handleSendMessage = async () => {
     if (!draft.trim() || !selectedId) return;
     try {
       const res = await sendMessage({ recipientId: selectedId, content: draft.trim() });
       setThreads((prev) => [...prev, res.data]);
       setDraft('');
+      
+      // Clear any existing timeout
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      
+      // Simulate other user typing back after 1.5 seconds
+      setTimeout(() => {
+        setIsOtherTyping(true);
+        typingTimeoutRef.current = setTimeout(() => {
+          setIsOtherTyping(false);
+        }, 3000); // Stop typing after 3 seconds
+      }, 1500);
+
     } catch {
       /* ignore */
     }
@@ -360,15 +375,24 @@ export default function MessagesPage() {
                   </div>
                 )}
 
-                {/* Animated Typing Indicator Symbol when user is typing */}
-                {draft.trim().length > 0 && (
-                  <div className="flex justify-end my-2 animate-fade-in">
-                    <div className="flex items-center gap-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 px-4 py-2.5 text-xs text-emerald-500 font-semibold shadow-xs">
-                      <span>Typing...</span>
-                      <div className="flex items-center gap-1">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '0ms' }} />
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '150ms' }} />
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+                {/* Animated Typing Indicator Symbol when other user is typing */}
+                {isOtherTyping && (
+                  <div className="flex justify-start my-2 animate-fade-in">
+                    <div className="flex items-center gap-2 rounded-2xl bg-card border border-emerald-500/20 px-4 py-2.5 text-xs text-muted font-semibold shadow-xs">
+                      <div className="relative flex-shrink-0 h-6 w-6 mr-1">
+                         {selectedProfile.avatarUrl ? (
+                           <img src={selectedProfile.avatarUrl} alt="typing" className="h-6 w-6 rounded-full object-cover" />
+                         ) : (
+                           <div className={`flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br ${getAvatarColor(selectedProfile.username)} text-[8px] font-extrabold text-white`}>
+                             {(selectedProfile.username || 'HR').slice(0, 2).toUpperCase()}
+                           </div>
+                         )}
+                      </div>
+                      <span>{selectedProfile.username} is typing...</span>
+                      <div className="flex items-center gap-1 ml-1">
+                        <span className="h-1 w-1 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="h-1 w-1 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="h-1 w-1 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '300ms' }} />
                       </div>
                     </div>
                   </div>

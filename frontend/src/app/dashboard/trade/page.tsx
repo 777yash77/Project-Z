@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowRightLeft, BellRing, ShieldCheck, Eye, MessageCircleMore } from 'lucide-react';
-import { claimTradeListing, fetchTradeListings } from '../api';
+import { BellRing, ShieldCheck, Eye, ArrowRightLeft, MessageCircleMore } from 'lucide-react';
+import { fetchTradeListings, claimTradeListing } from '../api';
 
 interface TradeListingItem {
   id: number;
@@ -53,33 +53,33 @@ export default function TradeWindowPage() {
         <section className="rounded-2xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
           <div className="mb-5 flex items-center justify-between">
             <div>
-              <h2 className="text-base font-semibold text-white">Open Profiles</h2>
-              <p className="mt-0.5 text-xs text-green-100/30">All profiles marked available for trade</p>
+              <h2 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Open Profiles</h2>
+              <p className="mt-0.5 text-xs" style={{ color: 'var(--text-muted)' }}>All profiles marked available for trade</p>
             </div>
-            <span className="rounded-full border border-green-500/15 bg-green-500/8 px-3 py-1 text-[10px] uppercase tracking-[0.25em] text-green-400">Shared view</span>
+            <span className="rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.25em]" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)', color: 'var(--accent)' }}>Shared view</span>
           </div>
 
           <div className="space-y-3">
             {employees.map((employee) => (
-              <div key={employee.id} className="rounded-xl border border-green-500/8 bg-black/30 p-4 transition hover:border-green-500/15">
+              <div key={employee.id} className="rounded-xl border p-4 transition" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2.5">
-                      <h3 className="font-semibold text-white">{employee.employee.name}</h3>
+                      <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{employee.employee.name}</h3>
                       {employee.status === 'OPEN' ? (
-                        <span className="rounded-full bg-green-500/12 px-2 py-0.5 text-[10px] font-semibold text-green-400">Open</span>
+                        <span className="rounded-full border px-2 py-0.5 text-[10px] font-semibold" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)', color: 'var(--accent)' }}>Open</span>
                       ) : (
-                        <span className="rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-semibold text-green-100/30">Claimed</span>
+                        <span className="rounded-full border px-2 py-0.5 text-[10px] font-semibold" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)', color: 'var(--text-muted)' }}>Claimed</span>
                       )}
                     </div>
-                    <p className="mt-1 text-xs text-green-100/40">
+                    <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
                       {employee.employee.department} ·{' '}
-                      <span className={employee.employee.riskLevel === 'High' ? 'text-red-400' : employee.employee.riskLevel === 'Medium' ? 'text-amber-400' : 'text-green-400'}>
+                      <span style={{ color: employee.employee.riskLevel === 'High' ? '#ef4444' : employee.employee.riskLevel === 'Medium' ? '#f59e0b' : 'var(--accent)' }}>
                         {employee.employee.riskLevel} risk
                       </span>{' '}
                       · score {employee.employee.riskScore.toFixed(2)}
                     </p>
-                    <p className="mt-1.5 text-xs text-green-100/25">
+                    <p className="mt-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
                       Listed by {employee.organization.name} · {employee.commissionPercent}% commission · {employee.notes || 'No notes'}
                     </p>
                   </div>
@@ -87,7 +87,8 @@ export default function TradeWindowPage() {
                     {employee.listedBy?.id && (
                       <a
                         href={`/dashboard/messages?recipientId=${employee.listedBy.id}`}
-                        className="flex items-center gap-1.5 rounded-xl border border-green-500/20 bg-green-500/8 px-3 py-2 text-xs font-semibold text-green-400 transition hover:bg-green-500/15"
+                        className="flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition hover:opacity-90"
+                        style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)', color: 'var(--accent)' }}
                       >
                         <MessageCircleMore size={14} /> Message HR
                       </a>
@@ -95,11 +96,8 @@ export default function TradeWindowPage() {
                     <button
                       onClick={() => claimListing(employee.id)}
                       disabled={employee.status !== 'OPEN'}
-                      className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
-                        employee.status === 'OPEN'
-                          ? 'bg-green-500 text-black hover:bg-green-400 hover:shadow-[0_0_12px_rgba(0,255,136,0.3)]'
-                          : 'cursor-not-allowed bg-black/40 text-green-100/20'
-                      }`}
+                      className="rounded-xl px-4 py-2 text-xs font-bold text-black transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                      style={{ backgroundColor: 'var(--accent)' }}
                     >
                       {employee.status === 'OPEN' ? 'Claim Listing' : 'Claimed'}
                     </button>
@@ -108,7 +106,7 @@ export default function TradeWindowPage() {
               </div>
             ))}
             {employees.length === 0 && (
-              <div className="rounded-xl border border-dashed border-green-500/10 py-12 text-center text-sm text-green-100/20">
+              <div className="rounded-xl border border-dashed py-12 text-center text-sm" style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}>
                 No trade listings yet. Open employees from the directory.
               </div>
             )}
@@ -117,19 +115,19 @@ export default function TradeWindowPage() {
 
         {/* Sidebar info */}
         <aside className="space-y-4">
-          <div className="rounded-2xl border border-green-500/10 bg-[#060e09] p-6">
-            <div className="flex items-center gap-2 text-green-400">
+          <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
+            <div className="flex items-center gap-2" style={{ color: 'var(--accent)' }}>
               <ShieldCheck size={16} />
               <p className="text-xs font-semibold uppercase tracking-[0.25em]">Cross-HR Visibility</p>
             </div>
-            <h2 className="mt-3 text-base font-bold text-white">Who can see this</h2>
-            <p className="mt-2 text-xs leading-relaxed text-green-100/30">
+            <h2 className="mt-3 text-base font-bold" style={{ color: 'var(--text-primary)' }}>Who can see this</h2>
+            <p className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
               Once a profile is marked open for trade, other HR IDs can track the record and coordinate recruiting conversations.
             </p>
           </div>
 
-          <div className="rounded-2xl border border-green-500/10 bg-[#060e09] p-6">
-            <div className="flex items-center gap-2 text-green-400">
+          <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
+            <div className="flex items-center gap-2" style={{ color: 'var(--accent)' }}>
               <Eye size={16} />
               <p className="text-xs font-semibold uppercase tracking-[0.25em]">Trade Readiness</p>
             </div>
@@ -139,22 +137,22 @@ export default function TradeWindowPage() {
                 'Track updates and pending trade requests.',
                 'Keep open-status summary in one place.',
               ].map((tip) => (
-                <li key={tip} className="flex items-start gap-2 text-xs text-green-100/30">
-                  <span className="mt-0.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-green-500/40" />
+                <li key={tip} className="flex items-start gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+                  <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full" style={{ backgroundColor: 'var(--accent)' }} />
                   {tip}
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="rounded-2xl border border-green-500/10 bg-[#060e09] p-5">
+          <div className="rounded-2xl border p-5" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-green-100/30">Open listings</p>
-                <p className="mt-1 text-3xl font-bold text-white">{openForTrade.length}</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Open listings</p>
+                <p className="mt-1 text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{openForTrade.length}</p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-500/10">
-                <ArrowRightLeft size={20} className="text-green-400" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl border" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
+                <ArrowRightLeft size={20} style={{ color: 'var(--accent)' }} />
               </div>
             </div>
           </div>

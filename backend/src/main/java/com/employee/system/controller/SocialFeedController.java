@@ -46,6 +46,13 @@ public class SocialFeedController {
         return ResponseEntity.ok(feedService.getFeedPosts());
     }
 
+    @GetMapping("/api/feed/my-posts")
+    public ResponseEntity<List<Post>> getMyPosts() {
+        User current = getCurrentUser();
+        if (current == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.ok(feedService.getMyPosts(current));
+    }
+
     @PostMapping("/api/feed/posts")
     public ResponseEntity<?> createPost(@RequestBody Map<String, String> payload) {
         User current = getCurrentUser();
@@ -69,6 +76,14 @@ public class SocialFeedController {
         User current = getCurrentUser();
         if (current == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         Post post = feedService.toggleLike(id, current);
+        return ResponseEntity.ok(post);
+    }
+
+    @PostMapping("/api/feed/posts/{id}/share")
+    public ResponseEntity<?> sharePost(@PathVariable Long id) {
+        User current = getCurrentUser();
+        if (current == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        Post post = feedService.sharePost(id, current);
         return ResponseEntity.ok(post);
     }
 
@@ -104,6 +119,17 @@ public class SocialFeedController {
         String status = payload.getOrDefault("status", "ACCEPTED");
         ConnectionRequest req = feedService.respondToConnectionRequest(id, status, current);
         return ResponseEntity.ok(req);
+    }
+
+    @PostMapping("/api/network/follow/{userId}")
+    public ResponseEntity<?> toggleFollow(@PathVariable Long userId) {
+        User current = getCurrentUser();
+        if (current == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        Map<String, Object> result = feedService.toggleFollow(current, userId);
+        if (result.containsKey("error")) {
+            return ResponseEntity.badRequest().body(result);
+        }
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/api/network/requests")

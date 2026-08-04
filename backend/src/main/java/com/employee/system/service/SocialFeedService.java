@@ -1,6 +1,7 @@
 package com.employee.system.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
@@ -55,6 +56,10 @@ public class SocialFeedService {
         return postRepository.findAllByOrderByCreatedAtDesc();
     }
 
+    public List<Post> getMyPosts(User current) {
+        return postRepository.findByAuthorOrderByCreatedAtDesc(current);
+    }
+
     public Post toggleLike(Long postId, User user) {
         Post post = postRepository.findById(postId).orElse(null);
         if (post == null) return null;
@@ -72,6 +77,16 @@ public class SocialFeedService {
 
             sendNotification(post.getAuthor(), user, "POST_LIKE", "Liked your post", user.getUsername() + " liked your post: \"" + truncate(post.getContent(), 30) + "\"", "/dashboard/feed");
         }
+        return postRepository.save(post);
+    }
+
+    public Post sharePost(Long postId, User user) {
+        Post post = postRepository.findById(postId).orElse(null);
+        if (post == null) return null;
+
+        post.setShareCount(post.getShareCount() + 1);
+        sendNotification(post.getAuthor(), user, "POST_SHARE", "Shared your post", user.getUsername() + " shared your post: \"" + truncate(post.getContent(), 30) + "\"", "/dashboard/feed");
+        
         return postRepository.save(post);
     }
 
@@ -121,7 +136,19 @@ public class SocialFeedService {
         ConnectionRequest saved = connectionRequestRepository.save(request);
 
         if ("ACCEPTED".equalsIgnoreCase(status)) {
-            sendNotification(request.getSender(), user, "CONNECTION_ACCEPTED", "Connection Accepted", user.getUsername() + " accepted your connection request.", "/dashboard/network");
+            // Make them follow each other
+            User sender = request.getSender();
+            
+            user.getFollowers().add(sender);
+            user.getFollowing().add(sender);
+            
+            sender.getFollowers().add(user);
+            sender.getFollowing().add(user);
+            
+            userRepository.save(user);
+            userRepository.save(sender);
+
+            sendNotification(sender, user, "CONNECTION_ACCEPTED", "Connection Accepted", user.getUsername() + " accepted your connection request.", "/dashboard/network");
         }
         return saved;
     }
@@ -132,6 +159,28 @@ public class SocialFeedService {
 
     public List<Notification> getNotifications(User user) {
         return notificationRepository.findByRecipientOrderByCreatedAtDesc(user);
+    }
+
+    public Map<String, Object> toggleFollow(User current, Long targetUserId) {
+        User targetUser = userRepository.findById(targetUserId).orElse(null);
+        if (targetUser == null || targetUser.getId().equals(current.getId())) {
+            return Map.of("error", "Invalid user");
+        }
+
+        boolean isFollowing = targetUser.getFollowers().contains(current);
+        if (isFollowing) {
+            targetUser.getFollowers().remove(current);
+            current.getFollowing().remove(targetUser);
+        } else {
+            targetUser.getFollowers().add(current);
+            current.getFollowing().add(targetUser);
+            sendNotification(targetUser, current, "NEW_FOLLOWER", "New follower", current.getUsername() + " started following you.", "/dashboard/network");
+        }
+
+        userRepository.save(targetUser);
+        userRepository.save(current);
+
+        return Map.of("following", !isFollowing);
     }
 
     public void sendNotification(User recipient, User actor, String type, String title, String message, String linkUrl) {

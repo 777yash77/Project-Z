@@ -89,9 +89,11 @@ export const approveTransferStep = (id: number) => api.post(`/trading/requests/$
 export const fetchFeed = () => api.get('/feed');
 export const createPost = (payload: { content: string; postType?: string; mediaUrl?: string; visibility?: string }) => api.post('/feed/posts', payload);
 export const togglePostLike = (id: number) => api.post(`/feed/posts/${id}/like`);
+export const sharePost = (id: number) => api.post(`/feed/posts/${id}/share`);
 export const addPostComment = (id: number, payload: { content: string; parentCommentId?: number }) => api.post(`/feed/posts/${id}/comments`, payload);
 export const fetchPostComments = (id: number) => api.get(`/feed/posts/${id}/comments`);
 export const sendConnectionRequest = (userId: number) => api.post(`/network/connect/${userId}`);
+export const toggleFollow = (userId: number) => api.post(`/network/follow/${userId}`);
 export const respondConnectionRequest = (id: number, status: 'ACCEPTED' | 'REJECTED') => api.post(`/network/requests/${id}/respond`, { status });
 export const fetchPendingConnectionRequests = () => api.get('/network/requests');
 export const fetchNotifications = () => api.get('/notifications');
@@ -103,3 +105,35 @@ export const addExperience = (payload: any) => api.post('/profile/experience', p
 export const addEducation = (payload: any) => api.post('/profile/education', payload);
 export const addSkill = (skillName: string) => api.post('/profile/skills', { skillName });
 export const addDocument = (payload: { documentName: string; documentType?: string; fileUrl: string }) => api.post('/profile/documents', payload);
+export const addAward = (payload: any) => api.post('/profile/awards', payload);
+export const addCertification = (payload: any) => api.post('/profile/certifications', payload);
+export const fetchMyPosts = () => api.get('/feed/my-posts');
+
+// ─── Utility ─────────────────────────────────────────────────────────────
+export const getBase64 = (file: File, maxWidth = 800): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const scaleSize = maxWidth / img.width;
+        let width = img.width;
+        let height = img.height;
+        if (scaleSize < 1) {
+          width = maxWidth;
+          height = img.height * scaleSize;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
+      };
+      img.onerror = (error) => reject(error);
+    };
+    reader.onerror = (error) => reject(error);
+  });
+};

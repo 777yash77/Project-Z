@@ -33,6 +33,7 @@ public class Post {
     @Column(nullable = false)
     private String visibility = "PUBLIC"; // PUBLIC, ORGANISATION, CONNECTIONS
 
+    @Column(columnDefinition = "LONGTEXT")
     private String mediaUrl;
 
     private Integer likeCount = 0;

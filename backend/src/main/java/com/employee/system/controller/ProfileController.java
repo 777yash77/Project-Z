@@ -18,6 +18,8 @@ import com.employee.system.entity.UserDocument;
 import com.employee.system.entity.UserEducation;
 import com.employee.system.entity.UserExperience;
 import com.employee.system.entity.UserSkill;
+import com.employee.system.entity.UserAward;
+import com.employee.system.entity.UserCertification;
 import com.employee.system.repository.UserRepository;
 import com.employee.system.service.EmployeeProfileService;
 
@@ -89,5 +91,19 @@ public class ProfileController {
         String fileUrl = payload.get("fileUrl");
         UserDocument doc = profileService.addDocument(current, docName, docType, fileUrl);
         return ResponseEntity.status(HttpStatus.CREATED).body(doc);
+    }
+
+    @PostMapping("/awards")
+    public ResponseEntity<?> addAward(@RequestBody UserAward award) {
+        User current = getCurrentUser();
+        if (current == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(profileService.addAward(current, award));
+    }
+
+    @PostMapping("/certifications")
+    public ResponseEntity<?> addCertification(@RequestBody UserCertification cert) {
+        User current = getCurrentUser();
+        if (current == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(profileService.addCertification(current, cert));
     }
 }

@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Lock, UserCheck, Briefcase, GraduationCap, Award, FileText, Globe, Edit3, Plus, PlusCircle } from 'lucide-react';
-import { fetchMyProfile, updateBio, addExperience, addEducation, addSkill, addDocument } from '../api';
+import { useEffect, useState, useRef } from 'react';
+import { Lock, UserCheck, Briefcase, GraduationCap, Award, FileText, Globe, Edit3, Plus, PlusCircle, Camera, MessageSquare, ThumbsUp } from 'lucide-react';
+import { fetchMyProfile, updateBio, addExperience, addEducation, addSkill, addDocument, getBase64, addAward, addCertification, fetchMyPosts } from '../api';
 
 export default function MyEnterpriseProfilePage() {
   const [profileData, setProfileData] = useState<any>(null);
@@ -16,12 +16,46 @@ export default function MyEnterpriseProfilePage() {
   const [expTitle, setExpTitle] = useState('');
   const [expDesc, setExpDesc] = useState('');
 
+  // Awards State
+  const [awardTitle, setAwardTitle] = useState('');
+  const [awardIssuer, setAwardIssuer] = useState('');
+
+  // Certifications State
+  const [certName, setCertName] = useState('');
+  const [certOrg, setCertOrg] = useState('');
+
+  // My Posts
+  const [myPosts, setMyPosts] = useState<any[]>([]);
+
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'avatarUrl' | 'coverUrl') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploading(true);
+      const base64 = await getBase64(file, 800);
+      await updateBio({ [type]: base64 });
+      await loadProfile();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const loadProfile = async () => {
     try {
-      const res = await fetchMyProfile();
+      const [res, postsRes] = await Promise.all([
+        fetchMyProfile(),
+        fetchMyPosts().catch(() => ({ data: [] }))
+      ]);
       setProfileData(res.data);
       setHeadline(res.data.user?.headline || '');
       setBio(res.data.user?.bio || '');
+      setMyPosts(postsRes.data || []);
     } catch (err) {
       console.error(err);
     }
@@ -67,21 +101,69 @@ export default function MyEnterpriseProfilePage() {
     }
   };
 
+  const handleAddAward = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!awardTitle || !awardIssuer) return;
+    try {
+      await addAward({ title: awardTitle, issuer: awardIssuer });
+      setAwardTitle('');
+      setAwardIssuer('');
+      loadProfile();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleAddCertification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!certName || !certOrg) return;
+    try {
+      await addCertification({ name: certName, issuingOrganization: certOrg });
+      setCertName('');
+      setCertOrg('');
+      loadProfile();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const user = profileData?.user;
   const employment = profileData?.employmentDetails;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       {/* Cover & Profile Header Card */}
-      <div className="overflow-hidden rounded-2xl shadow-sm" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+      <div className="overflow-hidden rounded-2xl shadow-sm relative group" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
         {/* Cover Photo */}
-        <div className="h-40 w-full" style={{ background: 'linear-gradient(135deg, var(--accent) 0%, #1e293b 100%)' }} />
+        <div 
+          onClick={() => coverInputRef.current?.click()}
+          className="h-40 w-full relative cursor-pointer group-hover:opacity-90 transition-opacity" 
+          style={{ 
+            background: user?.coverUrl ? `url(${user.coverUrl}) center/cover no-repeat` : 'linear-gradient(135deg, var(--accent) 0%, #1e293b 100%)' 
+          }}
+        >
+          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+             <Camera className="text-white opacity-80" size={32} />
+          </div>
+        </div>
 
         {/* Profile Details Container */}
         <div className="relative px-6 pb-6 pt-0">
           <div className="flex flex-wrap items-end justify-between gap-4 -mt-16 mb-4">
-            <div className="flex h-28 w-28 items-center justify-center rounded-2xl text-3xl font-black text-black ring-4 ring-black shadow-xl" style={{ backgroundColor: 'var(--accent)' }}>
-              {user?.username?.[0]?.toUpperCase() || 'E'}
+            <div 
+              onClick={() => avatarInputRef.current?.click()}
+              className="group/avatar relative flex h-28 w-28 cursor-pointer items-center justify-center rounded-2xl text-3xl font-black text-black ring-4 ring-black shadow-xl overflow-hidden" 
+              style={{ backgroundColor: 'var(--accent)' }}
+            >
+              {user?.avatarUrl ? (
+                <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                user?.username?.[0]?.toUpperCase() || 'E'
+              )}
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex flex-col items-center justify-center">
+                 <Camera className="text-white mb-1" size={20} />
+                 <span className="text-[9px] text-white font-bold tracking-wider uppercase">Upload</span>
+              </div>
             </div>
             <button
               onClick={() => setIsEditingBio(!isEditingBio)}
@@ -99,7 +181,7 @@ export default function MyEnterpriseProfilePage() {
           </div>
 
           {/* Edit Bio Drawer */}
-          {isEditingBio ? (
+          {isEditingBio && (
             <div className="mt-4 space-y-3 rounded-xl p-4" style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-subtle)' }}>
               <div>
                 <label className="block mb-1 text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Headline</label>
@@ -121,14 +203,30 @@ export default function MyEnterpriseProfilePage() {
                   style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
                 />
               </div>
-              <button onClick={handleUpdateBio} className="rounded-xl px-4 py-2 text-xs font-bold text-black" style={{ backgroundColor: 'var(--accent)' }}>
-                Save Profile Changes
+              <button onClick={handleUpdateBio} className="rounded-xl px-4 py-2 text-xs font-bold text-black flex items-center justify-center gap-2" style={{ backgroundColor: 'var(--accent)' }}>
+                {isUploading ? 'Uploading...' : 'Save Profile Changes'}
               </button>
             </div>
-          ) : (
-            user?.bio && <p className="mt-4 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>{user.bio}</p>
           )}
+
+          {/* Hidden File Inputs */}
+          <input type="file" accept="image/*" ref={avatarInputRef} className="hidden" onChange={(e) => handleImageUpload(e, 'avatarUrl')} />
+          <input type="file" accept="image/*" ref={coverInputRef} className="hidden" onChange={(e) => handleImageUpload(e, 'coverUrl')} />
         </div>
+      </div>
+
+      {/* About / Bio Section */}
+      <div className="rounded-2xl p-5 shadow-sm space-y-4" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+        <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--accent)' }}>
+          <UserCheck size={16} /> About Me
+        </h3>
+        {user?.bio ? (
+          <p className="text-xs leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--text-primary)' }}>
+            {user.bio}
+          </p>
+        ) : (
+          <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>No bio provided yet. Click 'Edit Profile Info' above to add one.</p>
+        )}
       </div>
 
       {/* EMPLOYEE ORGANISATION LOCK BANNER */}
@@ -218,19 +316,133 @@ export default function MyEnterpriseProfilePage() {
             ))}
           </div>
 
-          <form onSubmit={handleAddSkill} className="flex gap-2 pt-2 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
-            <input
-              type="text"
-              value={newSkill}
-              onChange={(e) => setNewSkill(e.target.value)}
-              placeholder="Add skill (e.g. Java, Next.js, Architecture)"
-              className="w-full rounded-xl px-3 py-1.5 text-xs outline-none"
-              style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
-            />
-            <button type="submit" className="rounded-xl px-3 py-1.5 text-xs font-bold text-black flex-shrink-0" style={{ backgroundColor: 'var(--accent)' }}>
-              Add
-            </button>
-          </form>
+            <form onSubmit={handleAddSkill} className="flex gap-2 pt-2 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+              <input
+                type="text"
+                value={newSkill}
+                onChange={(e) => setNewSkill(e.target.value)}
+                placeholder="Add skill (e.g. Java, Next.js, Architecture)"
+                className="w-full rounded-xl px-3 py-1.5 text-xs outline-none"
+                style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
+              />
+              <button type="submit" className="rounded-xl px-3 py-1.5 text-xs font-bold text-black flex-shrink-0" style={{ backgroundColor: 'var(--accent)' }}>
+                Add
+              </button>
+            </form>
+          </div>
+        </div>
+
+      {/* Awards & Certifications Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Awards */}
+        <div className="rounded-2xl p-5 shadow-sm space-y-4" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+          <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--accent)' }}>
+            <Award size={16} /> Honors & Awards
+          </h3>
+
+          <div className="space-y-3 text-xs">
+            {(profileData?.awards || []).map((award: any) => (
+              <div key={award.id} className="rounded-xl p-3" style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-subtle)' }}>
+                <p className="font-bold" style={{ color: 'var(--text-primary)' }}>{award.title}</p>
+                <p className="text-[11px]" style={{ color: 'var(--accent)' }}>{award.issuer}</p>
+              </div>
+            ))}
+
+            <form onSubmit={handleAddAward} className="space-y-2 pt-2 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+              <input
+                type="text"
+                value={awardTitle}
+                onChange={(e) => setAwardTitle(e.target.value)}
+                placeholder="Award Title (e.g. Employee of the Month)"
+                className="w-full rounded-xl px-3 py-1.5 text-xs outline-none"
+                style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
+              />
+              <input
+                type="text"
+                value={awardIssuer}
+                onChange={(e) => setAwardIssuer(e.target.value)}
+                placeholder="Issuer (e.g. HR Department)"
+                className="w-full rounded-xl px-3 py-1.5 text-xs outline-none"
+                style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
+              />
+              <button type="submit" className="w-full rounded-xl py-1.5 text-xs font-bold text-black" style={{ backgroundColor: 'var(--accent)' }}>
+                Add Award
+              </button>
+            </form>
+          </div>
+        </div>
+
+        {/* Certifications */}
+        <div className="rounded-2xl p-5 shadow-sm space-y-4" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+          <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--accent)' }}>
+            <GraduationCap size={16} /> Certifications
+          </h3>
+
+          <div className="space-y-3 text-xs">
+            {(profileData?.certifications || []).map((cert: any) => (
+              <div key={cert.id} className="rounded-xl p-3" style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-subtle)' }}>
+                <p className="font-bold" style={{ color: 'var(--text-primary)' }}>{cert.name}</p>
+                <p className="text-[11px]" style={{ color: 'var(--accent)' }}>{cert.issuingOrganization}</p>
+              </div>
+            ))}
+
+            <form onSubmit={handleAddCertification} className="space-y-2 pt-2 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+              <input
+                type="text"
+                value={certName}
+                onChange={(e) => setCertName(e.target.value)}
+                placeholder="Certification Name (e.g. AWS Certified)"
+                className="w-full rounded-xl px-3 py-1.5 text-xs outline-none"
+                style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
+              />
+              <input
+                type="text"
+                value={certOrg}
+                onChange={(e) => setCertOrg(e.target.value)}
+                placeholder="Issuing Organization (e.g. Amazon)"
+                className="w-full rounded-xl px-3 py-1.5 text-xs outline-none"
+                style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
+              />
+              <button type="submit" className="w-full rounded-xl py-1.5 text-xs font-bold text-black" style={{ backgroundColor: 'var(--accent)' }}>
+                Add Certification
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      {/* My Posts Section */}
+      <div className="rounded-2xl p-5 shadow-sm space-y-4" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+        <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--accent)' }}>
+          <MessageSquare size={16} /> My Recent Posts
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {myPosts.length === 0 ? (
+            <div className="col-span-full py-6 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
+              You haven't published any posts yet.
+            </div>
+          ) : (
+            myPosts.map((post) => (
+              <div key={post.id} className="rounded-xl p-4 transition hover:shadow-md" style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-subtle)' }}>
+                <p className="text-xs leading-relaxed mb-3 whitespace-pre-wrap" style={{ color: 'var(--text-primary)' }}>
+                  {post.content}
+                </p>
+                {post.mediaUrl && (
+                  <div className="mb-3 overflow-hidden rounded-lg" style={{ border: '1px solid var(--border-subtle)' }}>
+                    <img src={post.mediaUrl} alt="Post Attachment" className="w-full h-32 object-cover" />
+                  </div>
+                )}
+                <div className="flex items-center justify-between text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                  <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-1"><ThumbsUp size={12} /> {post.likeCount || 0}</span>
+                    <span className="flex items-center gap-1"><MessageSquare size={12} /> {post.commentCount || 0}</span>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

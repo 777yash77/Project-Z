@@ -27,7 +27,7 @@ const navItems = [
   { href: '/dashboard/employees', label: 'Employee Directory', icon: Users },
   { href: '/dashboard/org', label: 'Organisation Portal', icon: Building2 },
   { href: '/dashboard/trading-window', label: 'Talent Trading Window', icon: ArrowRightLeft },
-  { href: '/dashboard/my-profile', label: 'My Enterprise Profile', icon: UserCheck },
+  { href: '/dashboard/my-profile', label: 'My Profile', icon: UserCheck },
   { href: '/dashboard/upload', label: 'Bulk Upload', icon: UploadCloud },
   { href: '/dashboard/hire', label: 'Recruitment Hub', icon: BriefcaseBusiness },
   { href: '/dashboard/messages', label: 'Direct Messages', icon: MessageCircleMore },
@@ -63,10 +63,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!authenticated) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4" style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)' }}>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 text-center p-6" style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)', fontFamily: "'Inter', sans-serif" }}>
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-dashed" style={{ borderColor: 'var(--accent)' }} />
-        <p className="text-sm font-semibold" style={{ color: 'var(--text-muted)' }}>Verifying session & redirecting...</p>
-        <a href="/login" className="text-xs font-bold underline" style={{ color: 'var(--accent)' }}>Click here to return to Login</a>
+        <h2 className="text-lg font-bold">Session Verification</h2>
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No active session found. Redirecting to sign in...</p>
+        <a href="/login" className="mt-2 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold text-black transition hover:opacity-90" style={{ backgroundColor: 'var(--accent)' }}>
+          Click here to Sign In
+        </a>
       </div>
     );
   }
@@ -120,7 +123,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Nav Items */}
         <nav className="space-y-1 overflow-y-auto pr-1" style={{ maxHeight: 'calc(100vh - 340px)' }}>
-          {navItems.map((item) => {
+          {navItems.filter((item) => {
+            const role = userInfo?.role;
+            if (!role) return false;
+            
+            if (role === 'EMPLOYEE') {
+              return ['/dashboard/feed', '/dashboard/my-profile', '/dashboard/messages'].includes(item.href);
+            }
+            if (role === 'HR') {
+              return !['/dashboard/org', '/dashboard/my-profile'].includes(item.href);
+            }
+            if (role === 'ORGANISATION') {
+              return !['/dashboard/my-profile'].includes(item.href);
+            }
+            return false;
+          }).map((item) => {
             const Icon = item.icon;
             const active = pathname === item.href;
             return (

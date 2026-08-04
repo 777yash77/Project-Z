@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { ThumbsUp, MessageSquare, Share2, Send, Globe, Image as ImageIcon, Sparkles, UserPlus } from 'lucide-react';
-import { fetchFeed, createPost, togglePostLike, addPostComment, fetchPostComments, fetchHrUsers, sendConnectionRequest } from '../api';
+import { useEffect, useState, useRef } from 'react';
+import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
+import { ThumbsUp, MessageSquare, Share2, Send, Globe, Image as ImageIcon, Sparkles, UserPlus, X, Check } from 'lucide-react';
+import { fetchFeed, createPost, togglePostLike, addPostComment, fetchPostComments, fetchHrUsers, sendConnectionRequest, getBase64, sharePost } from '../api';
 
 export default function LinkedInFeedPage() {
   const [posts, setPosts] = useState<any[]>([]);
@@ -13,7 +15,60 @@ export default function LinkedInFeedPage() {
   const [commentsMap, setCommentsMap] = useState<Record<number, any[]>>({});
   const [commentInputMap, setCommentInputMap] = useState<Record<number, string>>({});
   const [suggestedUsers, setSuggestedUsers] = useState<any[]>([]);
+  const [pendingConnections, setPendingConnections] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
+  
+  // Crop states
+  const [imgSrc, setImgSrc] = useState('');
+  const [crop, setCrop] = useState<Crop>();
+  const [completedCrop, setCompletedCrop] = useState<PixelCrop | null>(null);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCrop(undefined);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImgSrc(e.target?.result?.toString() || '');
+    };
+    reader.readAsDataURL(file);
+    if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+    }
+  };
+
+  const finalizeCrop = () => {
+    if (!completedCrop || !imgRef.current) return;
+    
+    const canvas = document.createElement('canvas');
+    const image = imgRef.current;
+    
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    canvas.width = completedCrop.width;
+    canvas.height = completedCrop.height;
+    
+    ctx.drawImage(
+      image,
+      completedCrop.x * scaleX,
+      completedCrop.y * scaleY,
+      completedCrop.width * scaleX,
+      completedCrop.height * scaleY,
+      0,
+      0,
+      completedCrop.width,
+      completedCrop.height
+    );
+    
+    setMediaUrl(canvas.toDataURL('image/jpeg', 0.9));
+    setImgSrc('');
+  };
 
   const loadFeed = async () => {
     setLoading(true);
@@ -62,11 +117,21 @@ export default function LinkedInFeedPage() {
   };
 
   const handleLike = async (postId: number) => {
+    // Optimistic Update
+    setPosts((prev) => prev.map((p) => {
+      if (p.id === postId) {
+        // Optimistically increment or decrement depending on state (naive approach: just increment for now as we don't have isLiked)
+        return { ...p, likeCount: (p.likeCount || 0) + 1 };
+      }
+      return p;
+    }));
     try {
       const res = await togglePostLike(postId);
-      setPosts(posts.map((p) => (p.id === postId ? res.data : p)));
+      // Actual server response overrides optimistic
+      setPosts((prev) => prev.map((p) => (p.id === postId ? res.data : p)));
     } catch (err) {
       console.error(err);
+      loadFeed(); // revert on failure
     }
   };
 
@@ -92,23 +157,84 @@ export default function LinkedInFeedPage() {
       setCommentInputMap((prev) => ({ ...prev, [postId]: '' }));
       const res = await fetchPostComments(postId);
       setCommentsMap((prev) => ({ ...prev, [postId]: res.data }));
-      loadFeed();
+      // Optimistically update comment count in the feed list
+      setPosts((prev) => prev.map((p) => p.id === postId ? { ...p, commentCount: (p.commentCount || 0) + 1 } : p));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleShare = async (postId: number) => {
+    try {
+      const res = await sharePost(postId);
+      setPosts(posts.map((p) => (p.id === postId ? res.data : p)));
     } catch (err) {
       console.error(err);
     }
   };
 
   const handleConnect = async (userId: number) => {
+    // Optimistically update UI
+    setPendingConnections((prev) => {
+      const newSet = new Set(prev);
+      newSet.add(userId);
+      return newSet;
+    });
     try {
       await sendConnectionRequest(userId);
-      alert('Connection request sent!');
     } catch (err) {
       console.error(err);
+      // Revert on error
+      setPendingConnections((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(userId);
+        return newSet;
+      });
     }
   };
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
+      {/* Crop Modal */}
+      {imgSrc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="rounded-2xl bg-white p-5 shadow-2xl space-y-4 max-w-2xl w-full" style={{ backgroundColor: 'var(--bg-surface)' }}>
+            <div className="flex justify-between items-center">
+              <h3 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Crop Image</h3>
+              <button onClick={() => setImgSrc('')} className="p-1 hover:bg-gray-100 rounded-lg">
+                <X size={16} />
+              </button>
+            </div>
+            
+            <div className="flex justify-center max-h-[60vh] overflow-auto">
+              <ReactCrop
+                crop={crop}
+                onChange={(_, percentCrop) => setCrop(percentCrop)}
+                onComplete={(c) => setCompletedCrop(c)}
+              >
+                <img 
+                  ref={imgRef}
+                  src={imgSrc}
+                  alt="Crop me"
+                  style={{ maxHeight: '60vh', objectFit: 'contain' }}
+                />
+              </ReactCrop>
+            </div>
+
+            <div className="flex justify-end pt-4">
+              <button 
+                onClick={finalizeCrop}
+                disabled={!completedCrop?.width || !completedCrop?.height}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-black"
+                style={{ backgroundColor: 'var(--accent)' }}
+              >
+                Apply Crop
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>LinkedIn Enterprise Feed</h1>
@@ -139,14 +265,19 @@ export default function LinkedInFeedPage() {
 
               <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
                 <div className="flex items-center gap-2 text-xs">
-                  <input
-                    type="url"
-                    value={mediaUrl}
-                    onChange={(e) => setMediaUrl(e.target.value)}
-                    placeholder="Optional image/video URL..."
-                    className="rounded-lg px-3 py-1.5 text-xs outline-none"
-                    style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
-                  />
+                  <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs outline-none transition hover:bg-black/5" style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>
+                    <ImageIcon size={14} className={mediaUrl ? "text-green-500" : ""} /> Attach Image
+                  </button>
+                  {mediaUrl && (
+                    <div className="relative group">
+                      <img src={mediaUrl} alt="Preview" className="h-8 w-8 rounded object-cover border" style={{ borderColor: 'var(--border-subtle)' }} />
+                      <button type="button" onClick={() => setMediaUrl('')} className="absolute -top-1.5 -right-1.5 p-0.5 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
+                        <X size={10} />
+                      </button>
+                    </div>
+                  )}
+                  <input type="file" accept="image/*" ref={fileInputRef} className="hidden" onChange={handleImageUpload} />
+
                   <select
                     value={visibility}
                     onChange={(e) => setVisibility(e.target.value)}
@@ -213,6 +344,7 @@ export default function LinkedInFeedPage() {
                 {/* Action Bar */}
                 <div className="flex items-center justify-between border-t border-b py-2 my-2 text-xs" style={{ borderColor: 'var(--border-subtle)' }}>
                   <button
+                    type="button"
                     onClick={() => handleLike(post.id)}
                     className="flex items-center gap-1.5 font-medium transition hover:text-[var(--accent)]"
                     style={{ color: 'var(--text-muted)' }}
@@ -220,13 +352,19 @@ export default function LinkedInFeedPage() {
                     <ThumbsUp size={15} /> Like ({post.likeCount || 0})
                   </button>
                   <button
+                    type="button"
                     onClick={() => toggleComments(post.id)}
                     className="flex items-center gap-1.5 font-medium transition hover:text-[var(--accent)]"
                     style={{ color: 'var(--text-muted)' }}
                   >
                     <MessageSquare size={15} /> Comment ({post.commentCount || 0})
                   </button>
-                  <button className="flex items-center gap-1.5 font-medium transition hover:text-[var(--accent)]" style={{ color: 'var(--text-muted)' }}>
+                  <button 
+                    type="button"
+                    onClick={() => handleShare(post.id)}
+                    className="flex items-center gap-1.5 font-medium transition hover:text-[var(--accent)]" 
+                    style={{ color: 'var(--text-muted)' }}
+                  >
                     <Share2 size={15} /> Share ({post.shareCount || 0})
                   </button>
                 </div>
@@ -294,13 +432,22 @@ export default function LinkedInFeedPage() {
                     <p className="font-bold" style={{ color: 'var(--text-primary)' }}>{u.username}</p>
                     <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{u.role}</p>
                   </div>
-                  <button
-                    onClick={() => handleConnect(u.id)}
-                    className="flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold text-black"
-                    style={{ backgroundColor: 'var(--accent)' }}
-                  >
-                    <UserPlus size={12} /> Connect
-                  </button>
+                  {pendingConnections.has(u.id) ? (
+                    <button
+                      disabled
+                      className="flex items-center justify-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold text-white bg-green-600/80 cursor-not-allowed"
+                    >
+                      <Check size={10} /> Sent
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleConnect(u.id)}
+                      className="flex items-center justify-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold text-black"
+                      style={{ backgroundColor: 'var(--accent)' }}
+                    >
+                      <UserPlus size={10} /> Connect
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
