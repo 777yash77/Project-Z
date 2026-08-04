@@ -46,6 +46,8 @@ export default function RegisterPage() {
   const otpBoxBorder = isLight ? 'rgba(0,135,74,0.30)' : 'rgba(0,255,136,0.20)';
   const otpFocusBorder = isLight ? '#00874a' : '#00ff88';
 
+  const [regRole, setRegRole] = useState<'ORGANISATION' | 'EMPLOYEE'>('EMPLOYEE');
+
   // ── Step 1: send OTP ──────────────────────────────────────────────────────
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,7 +77,12 @@ export default function RegisterPage() {
     setLoading(true);
     setMessage('');
     try {
-      const res = await verifyRegister({ ...form, otp: code });
+      const res = await verifyRegister({
+        ...form,
+        role: regRole,
+        organizationName: regRole === 'ORGANISATION' ? form.organizationName : 'Independent Candidate',
+        otp: code,
+      });
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('currentOrganization', res.data.organization || '');
       router.push('/dashboard');
@@ -173,30 +180,100 @@ export default function RegisterPage() {
                   New account
                 </div>
                 <h1 className="mt-5 text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Create account</h1>
-                <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>Fill in your details — we'll send a code to verify your email.</p>
+                <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>Choose your profile type to get started.</p>
 
-                <div className="my-6 flex items-center gap-3">
+                {/* Role Selector Tabs */}
+                <div className="mt-4 flex rounded-xl p-1 text-xs font-bold" style={{ border: `1px solid ${inputBorder}`, backgroundColor: inputBg }}>
+                  <button
+                    type="button"
+                    onClick={() => setRegRole('EMPLOYEE')}
+                    className="w-1/2 rounded-lg py-2.5 transition text-center"
+                    style={{
+                      backgroundColor: regRole === 'EMPLOYEE' ? btnBg : 'transparent',
+                      color: regRole === 'EMPLOYEE' ? 'black' : inputText,
+                    }}
+                  >
+                    Employee / Student
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRegRole('ORGANISATION')}
+                    className="w-1/2 rounded-lg py-2.5 transition text-center"
+                    style={{
+                      backgroundColor: regRole === 'ORGANISATION' ? btnBg : 'transparent',
+                      color: regRole === 'ORGANISATION' ? 'black' : inputText,
+                    }}
+                  >
+                    Organisation
+                  </button>
+                </div>
+
+                <p className="mt-2 text-[11px] italic" style={{ color: 'var(--text-muted)' }}>
+                  {regRole === 'ORGANISATION'
+                    ? 'Register your company to generate HR credentials and manage departments.'
+                    : 'Showcase your skills, portfolio, education, and connect across the platform.'}
+                </p>
+
+                <div className="my-5 flex items-center gap-3">
                   <div className="h-px flex-1" style={{ backgroundColor: dividerBg }} />
                   <span className="text-xs uppercase tracking-[0.3em]" style={{ color: dividerText }}>step 1 of 2</span>
                   <div className="h-px flex-1" style={{ backgroundColor: dividerBg }} />
                 </div>
 
                 <form onSubmit={handleSendOtp} className="space-y-3.5">
-                  {fields.map(field => (
-                    <div key={field.id} className="space-y-1.5">
-                      <label className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: labelColor }}>{field.label}</label>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: labelColor }}>Username</label>
+                    <input
+                      type="text"
+                      className="w-full rounded-xl px-4 py-3 text-sm outline-none transition"
+                      style={{ border: `1px solid ${inputBorder}`, backgroundColor: inputBg, color: inputText }}
+                      placeholder={regRole === 'ORGANISATION' ? 'org_admin' : 'john_doe'}
+                      value={form.username}
+                      onChange={e => setForm({ ...form, username: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: labelColor }}>Email</label>
+                    <input
+                      type="email"
+                      className="w-full rounded-xl px-4 py-3 text-sm outline-none transition"
+                      style={{ border: `1px solid ${inputBorder}`, backgroundColor: inputBg, color: inputText }}
+                      placeholder="you@example.com"
+                      value={form.email}
+                      onChange={e => setForm({ ...form, email: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  {regRole === 'ORGANISATION' && (
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: labelColor }}>Company / Organisation Name</label>
                       <input
-                        id={field.id}
-                        type={field.type}
+                        type="text"
                         className="w-full rounded-xl px-4 py-3 text-sm outline-none transition"
                         style={{ border: `1px solid ${inputBorder}`, backgroundColor: inputBg, color: inputText }}
-                        placeholder={field.placeholder}
-                        value={(form as any)[field.key]}
-                        onChange={e => setForm({ ...form, [field.key]: e.target.value })}
+                        placeholder="Acme Corporation"
+                        value={form.organizationName}
+                        onChange={e => setForm({ ...form, organizationName: e.target.value })}
                         required
                       />
                     </div>
-                  ))}
+                  )}
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: labelColor }}>Password</label>
+                    <input
+                      type="password"
+                      className="w-full rounded-xl px-4 py-3 text-sm outline-none transition"
+                      style={{ border: `1px solid ${inputBorder}`, backgroundColor: inputBg, color: inputText }}
+                      placeholder="choose a strong password"
+                      value={form.password}
+                      onChange={e => setForm({ ...form, password: e.target.value })}
+                      required
+                    />
+                  </div>
                   <button
                     id="register-send-otp"
                     type="submit"

@@ -8,6 +8,7 @@ interface TradeListingItem {
   id: number;
   employee: { id: number; name: string; department: string; riskLevel: string; riskScore: number };
   organization: { name: string };
+  listedBy?: { id: number; username: string };
   commissionPercent: string;
   notes: string;
   status: string;
@@ -17,7 +18,7 @@ export default function HireWindowPage() {
   const [employees, setEmployees] = useState<TradeListingItem[]>([]);
 
   useEffect(() => {
-    fetchTradeListings().then((res) => setEmployees(res.data)).catch(() => setEmployees([]));
+    fetchTradeListings().then((res) => setEmployees(Array.isArray(res?.data) ? res.data : [])).catch(() => setEmployees([]));
   }, []);
 
   const openProfiles = useMemo(() => employees.filter((e) => e.status === 'OPEN'), [employees]);

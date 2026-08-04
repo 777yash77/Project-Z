@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { sendOtp, verifyLogin } from '../dashboard/api';
+import { loginUser, sendOtp, verifyLogin } from '../dashboard/api';
 import { ThemeToggle } from '../theme-toggle';
 import { useTheme } from '../theme-provider';
 import { AuthGuard } from '../auth-guard';
@@ -47,7 +47,28 @@ export default function LoginPage() {
   const otpBoxBorder = isLight ? 'rgba(0,135,74,0.30)' : 'rgba(0,255,136,0.20)';
   const otpFocusBorder = isLight ? '#00874a' : '#00ff88';
 
-  // ── Step 1: send OTP ──────────────────────────────────────────────────────
+  // ── Step 1a: Direct Login ──────────────────────────────────────────────────
+  const handleDirectLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!usernameOrEmail.trim() || !password) {
+      setMessage('Please enter your username/email and password.');
+      return;
+    }
+    setLoading(true);
+    setMessage('');
+    try {
+      const res = await loginUser({ usernameOrEmail, password });
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('currentOrganization', res.data.organization || '');
+      router.push('/dashboard');
+    } catch (err: any) {
+      setMessage(err.response?.data?.message || 'Invalid credentials.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Step 1b: send OTP ──────────────────────────────────────────────────────
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -264,7 +285,7 @@ export default function LoginPage() {
                     onMouseEnter={e => (e.currentTarget.style.backgroundColor = btnHoverBg)}
                     onMouseLeave={e => (e.currentTarget.style.backgroundColor = btnBg)}
                   >
-                    {loading ? <><Loader2 size={16} className="animate-spin" /> Sending OTP...</> : <>Continue — Send OTP <Mail size={16} /></>}
+                    {loading ? <><Loader2 size={16} className="animate-spin" /> Sending OTP...</> : <>Continue — Send Verification Code <Mail size={16} /></>}
                   </button>
                 </form>
 

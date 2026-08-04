@@ -55,6 +55,7 @@ public class AuthController {
         String username = payload.get("username");
         String email = payload.get("email");
         String password = payload.get("password");
+        String role = payload.getOrDefault("role", "EMPLOYEE");
         String organizationName = payload.getOrDefault("organizationName",
                 payload.getOrDefault("organization", "Default HR Group"));
 
@@ -68,7 +69,7 @@ public class AuthController {
                     .body(Map.of("message", "User already exists"));
         }
 
-        User savedUser = createAndSaveUser(username, email, password, organizationName);
+        User savedUser = createAndSaveUser(username, email, password, organizationName, role);
         Organization org = savedUser.getOrganization();
 
         Map<String, Object> response = new HashMap<>();
@@ -196,6 +197,8 @@ public class AuthController {
                 payload.getOrDefault("organization", "Default HR Group"));
         String otp              = payload.getOrDefault("otp", "").trim();
 
+        String role             = payload.getOrDefault("role", "EMPLOYEE");
+
         if (username.isBlank() || email.isBlank() || password.isBlank() || otp.isBlank()) {
             return ResponseEntity.badRequest()
                     .body(Map.of("message", "All fields are required"));
@@ -212,7 +215,7 @@ public class AuthController {
                     .body(Map.of("message", "Username or email already registered"));
         }
 
-        User savedUser = createAndSaveUser(username, email, password, organizationName);
+        User savedUser = createAndSaveUser(username, email, password, organizationName, role);
         return ResponseEntity.status(HttpStatus.CREATED).body(buildTokenResponse(savedUser));
     }
 
@@ -249,7 +252,7 @@ public class AuthController {
                 .orElse(null);
     }
 
-    private User createAndSaveUser(String username, String email, String password, String organizationName) {
+    private User createAndSaveUser(String username, String email, String password, String organizationName, String role) {
         Organization organization = organizationRepository.findByName(organizationName)
                 .orElseGet(() -> {
                     Organization org = new Organization();
@@ -263,7 +266,7 @@ public class AuthController {
         user.setUsername(username);
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
-        user.setRole("HR");
+        user.setRole(role != null && !role.isBlank() ? role : "EMPLOYEE");
         user.setOrganization(organization);
         return userRepository.save(user);
     }

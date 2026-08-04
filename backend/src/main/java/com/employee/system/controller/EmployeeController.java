@@ -75,8 +75,24 @@ public class EmployeeController {
         if (user == null) {
             return List.of();
         }
-        // Strict Per-HR User Isolation: Return ONLY employees created by/belonging to this HR user
-        return employeeRepository.findByCreatedByOrderByRiskScoreDesc(user);
+        
+        List<Employee> allEmployees = employeeRepository.findAll();
+        return allEmployees.stream().filter(emp -> {
+            // Exclude current user's own employee record so HR/users do not see themselves in employee directory
+            if (emp.getUser() != null && emp.getUser().getId().equals(user.getId())) {
+                return false;
+            }
+            // Own company employees: Fully visible to HR & Org
+            if (emp.getOrganization() != null && user.getOrganization() != null && emp.getOrganization().getId().equals(user.getOrganization().getId())) {
+                return true;
+            }
+            if (emp.getCreatedBy() != null && emp.getCreatedBy().getId().equals(user.getId())) {
+                return true;
+            }
+            // Employees from other companies: Visible ONLY when released / exited / transferred / on leave
+            String status = emp.getEmploymentStatus();
+            return "EXITED".equalsIgnoreCase(status) || "TRANSFERRED".equalsIgnoreCase(status) || "ON_LEAVE".equalsIgnoreCase(status);
+        }).sorted(Comparator.comparing(Employee::getRiskScore).reversed()).toList();
     }
 
     @GetMapping("/{id}/details")

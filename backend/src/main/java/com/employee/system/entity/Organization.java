@@ -27,6 +27,21 @@ public class Organization {
     @Column(nullable = false)
     private String location = "Global";
 
+    @Column(length = 1000)
+    private String logoUrl;
+
+    @Column(length = 1000)
+    private String coverUrl;
+
+    private String website;
+
+    @Column(length = 2000)
+    private String description;
+
+    private Integer establishedYear;
+
+    private String employeeCountRange = "50-250";
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -38,6 +53,18 @@ public class Organization {
     public void setIndustry(String industry) { this.industry = industry; }
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
+    public String getLogoUrl() { return logoUrl; }
+    public void setLogoUrl(String logoUrl) { this.logoUrl = logoUrl; }
+    public String getCoverUrl() { return coverUrl; }
+    public void setCoverUrl(String coverUrl) { this.coverUrl = coverUrl; }
+    public String getWebsite() { return website; }
+    public void setWebsite(String website) { this.website = website; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public Integer getEstablishedYear() { return establishedYear; }
+    public void setEstablishedYear(Integer establishedYear) { this.establishedYear = establishedYear; }
+    public String getEmployeeCountRange() { return employeeCountRange; }
+    public void setEmployeeCountRange(String employeeCountRange) { this.employeeCountRange = employeeCountRange; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

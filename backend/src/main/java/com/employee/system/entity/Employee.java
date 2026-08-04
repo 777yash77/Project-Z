@@ -1,6 +1,7 @@
 package com.employee.system.entity;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -42,6 +43,23 @@ public class Employee {
     @Column(nullable = false)
     private String department;
 
+    private String designation = "Software Engineer";
+
+    private String employeeCode;
+
+    @Column(nullable = false)
+    private boolean locked = true; // Employee Organisation Lock
+
+    @Column(nullable = false)
+    private String employmentStatus = "ACTIVE"; // ACTIVE, ON_LEAVE, TRANSFERRED, EXITED
+
+    private LocalDate dateOfJoining = LocalDate.now();
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id")
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "password"})
+    private User user;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "organization_id")
     @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -75,6 +93,18 @@ public class Employee {
     public void setPerformanceRating(Double performanceRating) { this.performanceRating = performanceRating; }
     public String getDepartment() { return department; }
     public void setDepartment(String department) { this.department = department; }
+    public String getDesignation() { return designation; }
+    public void setDesignation(String designation) { this.designation = designation; }
+    public String getEmployeeCode() { return employeeCode; }
+    public void setEmployeeCode(String employeeCode) { this.employeeCode = employeeCode; }
+    public boolean isLocked() { return locked; }
+    public void setLocked(boolean locked) { this.locked = locked; }
+    public String getEmploymentStatus() { return employmentStatus; }
+    public void setEmploymentStatus(String employmentStatus) { this.employmentStatus = employmentStatus; }
+    public LocalDate getDateOfJoining() { return dateOfJoining; }
+    public void setDateOfJoining(LocalDate dateOfJoining) { this.dateOfJoining = dateOfJoining; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
     public Organization getOrganization() { return organization; }
     public void setOrganization(Organization organization) { this.organization = organization; }
     public User getCreatedBy() { return createdBy; }

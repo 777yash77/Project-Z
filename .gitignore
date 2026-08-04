@@ -26,3 +26,7 @@ Thumbs.db
 # Environment files
 *.env
 *.local
+
+# Agents configuration
+.agents/
+.agents

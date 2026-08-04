@@ -19,17 +19,19 @@ export interface EmployeePayload {
   yearsAtCompany: number;
   performanceRating: number;
   department: string;
+  designation?: string;
+  employeeCode?: string;
 }
 
+// ─── Legacy & Core Auth ──────────────────────────────────────────────
 export const loginUser = (payload: { usernameOrEmail: string; password: string }) => api.post('/auth/login', payload);
 export const registerUser = (payload: { username: string; email: string; password: string; organizationName: string }) => api.post('/auth/register', payload);
 
-// OTP-based auth
 export const sendOtp = (payload: { email: string; purpose: 'LOGIN' | 'REGISTER'; usernameOrEmail?: string; password?: string; username?: string }) =>
   api.post('/auth/send-otp', payload);
 export const verifyLogin = (payload: { usernameOrEmail: string; password: string; otp: string }) =>
   api.post('/auth/verify-login', payload);
-export const verifyRegister = (payload: { username: string; email: string; password: string; organizationName: string; otp: string }) =>
+export const verifyRegister = (payload: { username: string; email: string; password: string; organizationName: string; role?: string; otp: string }) =>
   api.post('/auth/verify-register', payload);
 export const getMe = () => api.get('/auth/me');
 
@@ -61,3 +63,43 @@ export const sendMessage = (payload: { recipientId: number; content: string }) =
 
 export const fetchIndividualEmployeeAiAnalysis = (id: number) => api.get(`/gemini/employee/${id}`);
 export const fetchWorkforceAiAnalytics = () => api.get('/gemini/workforce');
+
+// ─── Organisation Portal APIs ───────────────────────────────────────────
+export const createHrAccount = (payload: { username: string; email: string }) => api.post('/org/hr', payload);
+export const fetchHrAccounts = () => api.get('/org/hr');
+export const updateHrAccountStatus = (id: number, type: 'active' | 'suspended' | 'approved', value: boolean) =>
+  api.put(`/org/hr/${id}/status`, { type, value });
+export const resetHrPassword = (id: number) => api.post(`/org/hr/${id}/reset-password`);
+export const fetchAuditLogs = () => api.get('/org/audit-logs');
+export const fetchDepartments = () => api.get('/org/departments');
+export const createDepartment = (payload: { name: string; code: string; description?: string }) => api.post('/org/departments', payload);
+export const fetchDesignations = () => api.get('/org/designations');
+export const createDesignation = (payload: { title: string; gradeLevel?: string }) => api.post('/org/designations', payload);
+
+// ─── Indian Trading Window & Rule Engine APIs ───────────────────────────
+export const saveTradingWindowConfig = (payload: any) => api.post('/trading/config', payload);
+export const fetchTradingWindowConfig = () => api.get('/trading/config');
+export const evaluateTransferEligibility = (payload: { employeeId: number; targetOrgId: number }) => api.post('/trading/evaluate', payload);
+export const createTransferRequest = (payload: { employeeId: number; targetOrgId: number; targetDepartment?: string; targetDesignation?: string; reason?: string }) =>
+  api.post('/trading/requests', payload);
+export const fetchTransferRequests = () => api.get('/trading/requests');
+export const approveTransferStep = (id: number) => api.post(`/trading/requests/${id}/approve`);
+
+// ─── LinkedIn Social Feed & Networking APIs ──────────────────────────────
+export const fetchFeed = () => api.get('/feed');
+export const createPost = (payload: { content: string; postType?: string; mediaUrl?: string; visibility?: string }) => api.post('/feed/posts', payload);
+export const togglePostLike = (id: number) => api.post(`/feed/posts/${id}/like`);
+export const addPostComment = (id: number, payload: { content: string; parentCommentId?: number }) => api.post(`/feed/posts/${id}/comments`, payload);
+export const fetchPostComments = (id: number) => api.get(`/feed/posts/${id}/comments`);
+export const sendConnectionRequest = (userId: number) => api.post(`/network/connect/${userId}`);
+export const respondConnectionRequest = (id: number, status: 'ACCEPTED' | 'REJECTED') => api.post(`/network/requests/${id}/respond`, { status });
+export const fetchPendingConnectionRequests = () => api.get('/network/requests');
+export const fetchNotifications = () => api.get('/notifications');
+
+// ─── Rich Employee Profile APIs ──────────────────────────────────────────
+export const fetchMyProfile = () => api.get('/profile/me');
+export const updateBio = (payload: any) => api.put('/profile/bio', payload);
+export const addExperience = (payload: any) => api.post('/profile/experience', payload);
+export const addEducation = (payload: any) => api.post('/profile/education', payload);
+export const addSkill = (skillName: string) => api.post('/profile/skills', { skillName });
+export const addDocument = (payload: { documentName: string; documentType?: string; fileUrl: string }) => api.post('/profile/documents', payload);
