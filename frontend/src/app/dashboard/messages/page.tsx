@@ -117,18 +117,6 @@ export default function MessagesPage() {
       const res = await sendMessage({ recipientId: selectedId, content: draft.trim() });
       setThreads((prev) => [...prev, res.data]);
       setDraft('');
-      
-      // Clear any existing timeout
-      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-      
-      // Simulate other user typing back after 1.5 seconds
-      setTimeout(() => {
-        setIsOtherTyping(true);
-        typingTimeoutRef.current = setTimeout(() => {
-          setIsOtherTyping(false);
-        }, 3000); // Stop typing after 3 seconds
-      }, 1500);
-
     } catch {
       /* ignore */
     }

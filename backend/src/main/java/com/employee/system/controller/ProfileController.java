@@ -50,6 +50,13 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.getFullProfile(current));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getUserProfile(@org.springframework.web.bind.annotation.PathVariable Long id) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        return ResponseEntity.ok(profileService.getFullProfile(user));
+    }
+
     @PutMapping("/bio")
     public ResponseEntity<?> updateBio(@RequestBody Map<String, String> payload) {
         User current = getCurrentUser();

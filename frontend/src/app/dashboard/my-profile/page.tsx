@@ -8,6 +8,11 @@ export default function MyEnterpriseProfilePage() {
   const [profileData, setProfileData] = useState<any>(null);
   const [headline, setHeadline] = useState('');
   const [bio, setBio] = useState('');
+  const [phone, setPhone] = useState('');
+  const [location, setLocation] = useState('');
+  const [website, setWebsite] = useState('');
+  const [githubUrl, setGithubUrl] = useState('');
+  const [linkedinUrl, setLinkedinUrl] = useState('');
   const [newSkill, setNewSkill] = useState('');
   const [isEditingBio, setIsEditingBio] = useState(false);
 
@@ -55,6 +60,11 @@ export default function MyEnterpriseProfilePage() {
       setProfileData(res.data);
       setHeadline(res.data.user?.headline || '');
       setBio(res.data.user?.bio || '');
+      setPhone(res.data.user?.phone || '');
+      setLocation(res.data.user?.location || '');
+      setWebsite(res.data.user?.website || '');
+      setGithubUrl(res.data.user?.githubUrl || '');
+      setLinkedinUrl(res.data.user?.linkedinUrl || '');
       setMyPosts(postsRes.data || []);
     } catch (err) {
       console.error(err);
@@ -67,7 +77,7 @@ export default function MyEnterpriseProfilePage() {
 
   const handleUpdateBio = async () => {
     try {
-      await updateBio({ headline, bio });
+      await updateBio({ headline, bio, phone, location, website, githubUrl, linkedinUrl });
       setIsEditingBio(false);
       loadProfile();
     } catch (err) {
@@ -203,7 +213,29 @@ export default function MyEnterpriseProfilePage() {
                   style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
                 />
               </div>
-              <button onClick={handleUpdateBio} className="rounded-xl px-4 py-2 text-xs font-bold text-black flex items-center justify-center gap-2" style={{ backgroundColor: 'var(--accent)' }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block mb-1 text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Phone</label>
+                  <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-xl px-3 py-2 text-xs outline-none" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }} />
+                </div>
+                <div>
+                  <label className="block mb-1 text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Location</label>
+                  <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} className="w-full rounded-xl px-3 py-2 text-xs outline-none" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }} />
+                </div>
+                <div>
+                  <label className="block mb-1 text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Website</label>
+                  <input type="text" value={website} onChange={(e) => setWebsite(e.target.value)} className="w-full rounded-xl px-3 py-2 text-xs outline-none" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }} />
+                </div>
+                <div>
+                  <label className="block mb-1 text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>GitHub URL</label>
+                  <input type="text" value={githubUrl} onChange={(e) => setGithubUrl(e.target.value)} className="w-full rounded-xl px-3 py-2 text-xs outline-none" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }} />
+                </div>
+                <div>
+                  <label className="block mb-1 text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>LinkedIn URL</label>
+                  <input type="text" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} className="w-full rounded-xl px-3 py-2 text-xs outline-none" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }} />
+                </div>
+              </div>
+              <button onClick={handleUpdateBio} className="w-full rounded-xl px-4 py-2 text-xs font-bold text-black flex items-center justify-center gap-2 mt-2" style={{ backgroundColor: 'var(--accent)' }}>
                 {isUploading ? 'Uploading...' : 'Save Profile Changes'}
               </button>
             </div>
@@ -216,17 +248,35 @@ export default function MyEnterpriseProfilePage() {
       </div>
 
       {/* About / Bio Section */}
-      <div className="rounded-2xl p-5 shadow-sm space-y-4" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
-        <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--accent)' }}>
-          <UserCheck size={16} /> About Me
-        </h3>
-        {user?.bio ? (
-          <p className="text-xs leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--text-primary)' }}>
-            {user.bio}
-          </p>
-        ) : (
-          <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>No bio provided yet. Click 'Edit Profile Info' above to add one.</p>
-        )}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2 rounded-2xl p-5 shadow-sm space-y-4" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+          <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--accent)' }}>
+            <UserCheck size={16} /> About Me
+          </h3>
+          {user?.bio ? (
+            <p className="text-xs leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--text-primary)' }}>
+              {user.bio}
+            </p>
+          ) : (
+            <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>No bio provided yet. Click 'Edit Profile Info' above to add one.</p>
+          )}
+        </div>
+
+        <div className="rounded-2xl p-5 shadow-sm space-y-4" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+          <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--accent)' }}>
+            Contact & Links
+          </h3>
+          <div className="space-y-3 text-xs">
+            {user?.phone && <div className="flex items-center gap-2" style={{ color: 'var(--text-primary)' }}><strong>Phone:</strong> {user.phone}</div>}
+            {user?.location && <div className="flex items-center gap-2" style={{ color: 'var(--text-primary)' }}><strong>Location:</strong> {user.location}</div>}
+            {user?.website && <div className="flex items-center gap-2 truncate" style={{ color: 'var(--text-primary)' }}><strong>Website:</strong> <a href={user.website} target="_blank" rel="noreferrer" className="text-blue-400 hover:underline">{user.website}</a></div>}
+            {user?.githubUrl && <div className="flex items-center gap-2 truncate" style={{ color: 'var(--text-primary)' }}><strong>GitHub:</strong> <a href={user.githubUrl} target="_blank" rel="noreferrer" className="text-blue-400 hover:underline">Link</a></div>}
+            {user?.linkedinUrl && <div className="flex items-center gap-2 truncate" style={{ color: 'var(--text-primary)' }}><strong>LinkedIn:</strong> <a href={user.linkedinUrl} target="_blank" rel="noreferrer" className="text-blue-400 hover:underline">Link</a></div>}
+            {!user?.phone && !user?.location && !user?.website && !user?.githubUrl && !user?.linkedinUrl && (
+              <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>No contact info added.</p>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* EMPLOYEE ORGANISATION LOCK BANNER */}

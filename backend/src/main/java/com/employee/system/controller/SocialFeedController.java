@@ -43,7 +43,8 @@ public class SocialFeedController {
 
     @GetMapping("/api/feed")
     public ResponseEntity<List<Post>> getFeed() {
-        return ResponseEntity.ok(feedService.getFeedPosts());
+        User current = getCurrentUser();
+        return ResponseEntity.ok(feedService.getFeedPosts(current));
     }
 
     @GetMapping("/api/feed/my-posts")

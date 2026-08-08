@@ -40,6 +40,9 @@ public class Post {
     private Integer commentCount = 0;
     private Integer shareCount = 0;
 
+    @jakarta.persistence.Transient
+    private boolean likedByMe = false;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -72,4 +75,7 @@ public class Post {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public boolean isLikedByMe() { return likedByMe; }
+    public void setLikedByMe(boolean likedByMe) { this.likedByMe = likedByMe; }
 }

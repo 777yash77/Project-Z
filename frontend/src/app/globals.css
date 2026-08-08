@@ -94,8 +94,20 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes flash-green {
+  0%   { background-color: rgba(0, 255, 136, 0.4); }
+  100% { background-color: transparent; }
+}
+
+@keyframes flash-red {
+  0%   { background-color: rgba(255, 68, 68, 0.4); }
+  100% { background-color: transparent; }
+}
+
 .animate-fade-in { animation: fade-in 0.4s ease forwards; }
 .glow-green      { animation: pulse-glow 3s ease-in-out infinite; }
+.animate-flash-green { animation: flash-green 1.5s ease-out; }
+.animate-flash-red { animation: flash-red 1.5s ease-out; }
 
 /* ═══════════════════════════════════════════════════════
    LIGHT MODE CONTRAST ENHANCEMENTS

@@ -65,13 +65,13 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
   if (!employeeId) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-fade-in overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-fade-in overflow-hidden">
       <div
-        className="relative my-8 w-full max-w-5xl rounded-3xl p-6 sm:p-8 shadow-[0_40px_100px_rgba(0,0,0,0.8)] overflow-hidden"
+        className="relative flex flex-col w-full max-w-5xl max-h-[90vh] rounded-3xl shadow-[0_40px_100px_rgba(0,0,0,0.8)] overflow-hidden"
         style={{ border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b pb-5" style={{ borderColor: 'var(--border-subtle)' }}>
+        <div className="flex-shrink-0 flex items-center justify-between border-b p-6 sm:px-8 sm:pt-8 pb-5" style={{ borderColor: 'var(--border-subtle)' }}>
           <div>
             <div className="flex items-center gap-2">
               <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em]" style={{ backgroundColor: 'var(--accent-glow)', color: 'var(--accent)' }}>
@@ -89,7 +89,8 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
           </button>
         </div>
 
-        {loading ? (
+        <div className="flex-1 overflow-y-auto p-6 sm:px-8 sm:pb-8">
+          {loading ? (
           <div className="flex h-64 items-center justify-center">
             <RefreshCw className="animate-spin text-green-400" size={28} />
           </div>
@@ -289,6 +290,7 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
         ) : (
           <p className="py-12 text-center text-sm text-green-100/30">Failed to load employee details.</p>
         )}
+        </div>
       </div>
     </div>
   );

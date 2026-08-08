@@ -78,7 +78,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="flex min-h-screen" style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)' }}>
       {/* Sidebar */}
       <aside
-        className="relative flex w-72 flex-shrink-0 flex-col px-5 py-7"
+        className="relative sticky top-0 flex h-screen w-72 flex-shrink-0 flex-col px-5 py-7"
         style={{ borderRight: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}
       >
         {/* Top glow */}

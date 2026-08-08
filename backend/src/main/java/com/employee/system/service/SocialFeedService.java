@@ -52,12 +52,22 @@ public class SocialFeedService {
         return postRepository.save(post);
     }
 
-    public List<Post> getFeedPosts() {
-        return postRepository.findAllByOrderByCreatedAtDesc();
+    public List<Post> getFeedPosts(User current) {
+        List<Post> posts = postRepository.findAllByOrderByCreatedAtDesc();
+        if (current != null) {
+            java.util.Set<Long> likedIds = likeRepository.findByUser(current).stream().map(l -> l.getPost().getId()).collect(java.util.stream.Collectors.toSet());
+            posts.forEach(p -> p.setLikedByMe(likedIds.contains(p.getId())));
+        }
+        return posts;
     }
 
     public List<Post> getMyPosts(User current) {
-        return postRepository.findByAuthorOrderByCreatedAtDesc(current);
+        List<Post> posts = postRepository.findByAuthorOrderByCreatedAtDesc(current);
+        if (current != null) {
+            java.util.Set<Long> likedIds = likeRepository.findByUser(current).stream().map(l -> l.getPost().getId()).collect(java.util.stream.Collectors.toSet());
+            posts.forEach(p -> p.setLikedByMe(likedIds.contains(p.getId())));
+        }
+        return posts;
     }
 
     public Post toggleLike(Long postId, User user) {
@@ -68,12 +78,14 @@ public class SocialFeedService {
         if (existing != null) {
             likeRepository.delete(existing);
             post.setLikeCount(Math.max(0, post.getLikeCount() - 1));
+            post.setLikedByMe(false);
         } else {
             PostLike newLike = new PostLike();
             newLike.setPost(post);
             newLike.setUser(user);
             likeRepository.save(newLike);
             post.setLikeCount(post.getLikeCount() + 1);
+            post.setLikedByMe(true);
 
             sendNotification(post.getAuthor(), user, "POST_LIKE", "Liked your post", user.getUsername() + " liked your post: \"" + truncate(post.getContent(), 30) + "\"", "/dashboard/feed");
         }

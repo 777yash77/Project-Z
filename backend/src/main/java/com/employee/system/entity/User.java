@@ -130,4 +130,16 @@ public class User {
     public boolean isOnline() {
         return lastActiveAt != null && lastActiveAt.isAfter(java.time.LocalDateTime.now().minusSeconds(12));
     }
+
+    @jakarta.persistence.Transient
+    private boolean connected = false;
+
+    @jakarta.persistence.Transient
+    private boolean connectionRequested = false;
+
+    public boolean isConnected() { return connected; }
+    public void setConnected(boolean connected) { this.connected = connected; }
+
+    public boolean isConnectionRequested() { return connectionRequested; }
+    public void setConnectionRequested(boolean connectionRequested) { this.connectionRequested = connectionRequested; }
 }

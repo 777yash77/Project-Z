@@ -9,5 +9,6 @@ import com.employee.system.entity.User;
 
 public interface ConnectionRequestRepository extends JpaRepository<ConnectionRequest, Long> {
     List<ConnectionRequest> findByReceiverAndStatus(User receiver, String status);
+    List<ConnectionRequest> findBySender(User sender);
     List<ConnectionRequest> findBySenderOrReceiver(User sender, User receiver);
 }

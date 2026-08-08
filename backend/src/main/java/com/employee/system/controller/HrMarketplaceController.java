@@ -42,19 +42,22 @@ public class HrMarketplaceController {
     private final TradeListingRepository tradeListingRepository;
     private final MessageRepository messageRepository;
     private final EmailService emailService;
+    private final com.employee.system.repository.ConnectionRequestRepository connectionRequestRepository;
 
     public HrMarketplaceController(UserRepository userRepository,
                                   OrganizationRepository organizationRepository,
                                   EmployeeRepository employeeRepository,
                                   TradeListingRepository tradeListingRepository,
                                   MessageRepository messageRepository,
-                                  EmailService emailService) {
+                                  EmailService emailService,
+                                  com.employee.system.repository.ConnectionRequestRepository connectionRequestRepository) {
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
         this.employeeRepository = employeeRepository;
         this.tradeListingRepository = tradeListingRepository;
         this.messageRepository = messageRepository;
         this.emailService = emailService;
+        this.connectionRequestRepository = connectionRequestRepository;
     }
 
     private User getCurrentUser() {
@@ -232,8 +235,18 @@ public class HrMarketplaceController {
     public List<User> getUsers() {
         User current = getCurrentUser();
         if (current == null) return List.of();
+        
+        List<com.employee.system.entity.ConnectionRequest> sentRequests = connectionRequestRepository.findBySender(current);
+        java.util.Set<Long> requestedUserIds = sentRequests.stream().map(r -> r.getReceiver().getId()).collect(java.util.stream.Collectors.toSet());
+
         return userRepository.findAll().stream()
                 .filter(user -> !user.getId().equals(current.getId()))
+                .map(user -> {
+                    user.setConnectionRequested(requestedUserIds.contains(user.getId()));
+                    boolean isFollowing = user.getFollowers().stream().anyMatch(f -> f.getId().equals(current.getId()));
+                    user.setConnected(isFollowing);
+                    return user;
+                })
                 .toList();
     }
 

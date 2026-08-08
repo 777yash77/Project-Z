@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-import { ThumbsUp, MessageSquare, Share2, Send, Globe, Image as ImageIcon, Sparkles, UserPlus, X, Check } from 'lucide-react';
+import { ThumbsUp, MessageSquare, Share2, Send, Globe, Image as ImageIcon, Sparkles, UserPlus, X, Check, UserCheck } from 'lucide-react';
 import { fetchFeed, createPost, togglePostLike, addPostComment, fetchPostComments, fetchHrUsers, sendConnectionRequest, getBase64, sharePost } from '../api';
 
 export default function LinkedInFeedPage() {
@@ -100,11 +100,11 @@ export default function LinkedInFeedPage() {
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!postContent.trim()) return;
+    if (!postContent.trim() && !mediaUrl) return;
     try {
       await createPost({
         content: postContent,
-        postType: mediaUrl ? 'IMAGE' : 'TEXT',
+        postType: mediaUrl ? (mediaUrl.startsWith('data:video') ? 'VIDEO' : 'IMAGE') : 'TEXT',
         mediaUrl: mediaUrl.trim() || undefined,
         visibility,
       });
@@ -120,8 +120,11 @@ export default function LinkedInFeedPage() {
     // Optimistic Update
     setPosts((prev) => prev.map((p) => {
       if (p.id === postId) {
-        // Optimistically increment or decrement depending on state (naive approach: just increment for now as we don't have isLiked)
-        return { ...p, likeCount: (p.likeCount || 0) + 1 };
+        return { 
+          ...p, 
+          likeCount: p.likedByMe ? Math.max(0, (p.likeCount || 1) - 1) : (p.likeCount || 0) + 1,
+          likedByMe: !p.likedByMe 
+        };
       }
       return p;
     }));
@@ -266,12 +269,31 @@ export default function LinkedInFeedPage() {
               <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
                 <div className="flex items-center gap-2 text-xs">
                   <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs outline-none transition hover:bg-black/5" style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>
-                    <ImageIcon size={14} className={mediaUrl ? "text-green-500" : ""} /> Attach Image
+                    <ImageIcon size={14} className={mediaUrl && mediaUrl.startsWith('data:image') ? "text-green-500" : ""} /> Image
                   </button>
+                  <label className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs outline-none transition hover:bg-black/5 cursor-pointer" style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>
+                    <Globe size={14} className={mediaUrl && mediaUrl.startsWith('data:video') ? "text-green-500" : ""} /> Video
+                    <input 
+                      type="file" 
+                      accept="video/*" 
+                      className="hidden" 
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = (e) => setMediaUrl(e.target?.result?.toString() || '');
+                        reader.readAsDataURL(file);
+                      }} 
+                    />
+                  </label>
                   {mediaUrl && (
-                    <div className="relative group">
-                      <img src={mediaUrl} alt="Preview" className="h-8 w-8 rounded object-cover border" style={{ borderColor: 'var(--border-subtle)' }} />
-                      <button type="button" onClick={() => setMediaUrl('')} className="absolute -top-1.5 -right-1.5 p-0.5 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
+                    <div className="relative group flex items-center justify-center bg-black/10 rounded overflow-hidden h-8 w-8" style={{ border: '1px solid var(--border-subtle)' }}>
+                      {mediaUrl.startsWith('data:video') ? (
+                        <video src={mediaUrl} className="h-full w-full object-cover" />
+                      ) : (
+                        <img src={mediaUrl} alt="Preview" className="h-full w-full object-cover" />
+                      )}
+                      <button type="button" onClick={() => setMediaUrl('')} className="absolute -top-1 -right-1 p-0.5 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-sm z-10">
                         <X size={10} />
                       </button>
                     </div>
@@ -291,7 +313,7 @@ export default function LinkedInFeedPage() {
 
                 <button
                   type="submit"
-                  disabled={!postContent.trim()}
+                  disabled={!postContent.trim() && !mediaUrl}
                   className="flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold text-black transition disabled:opacity-50"
                   style={{ backgroundColor: 'var(--accent)' }}
                 >
@@ -314,11 +336,15 @@ export default function LinkedInFeedPage() {
                 {/* Author Header */}
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full font-bold text-black" style={{ backgroundColor: 'var(--accent)' }}>
-                      {post.author?.username?.[0]?.toUpperCase() || 'U'}
-                    </div>
+                    <a href={`/dashboard/profile/${post.author?.id}`} className="flex h-10 w-10 items-center justify-center rounded-full font-bold text-black overflow-hidden hover:opacity-80 transition-opacity" style={{ backgroundColor: 'var(--accent)' }}>
+                      {post.author?.avatarUrl ? (
+                         <img src={post.author.avatarUrl} alt={post.author.username} className="w-full h-full object-cover" />
+                      ) : (
+                         post.author?.username?.[0]?.toUpperCase() || 'U'
+                      )}
+                    </a>
                     <div>
-                      <p className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{post.author?.username}</p>
+                      <a href={`/dashboard/profile/${post.author?.id}`} className="text-xs font-bold hover:underline" style={{ color: 'var(--text-primary)' }}>{post.author?.username}</a>
                       <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
                         {post.author?.organization?.name || 'Independent Enterprise'} • {new Date(post.createdAt).toLocaleDateString()}
                       </p>
@@ -337,7 +363,11 @@ export default function LinkedInFeedPage() {
                 {/* Optional Media */}
                 {post.mediaUrl && (
                   <div className="mb-4 overflow-hidden rounded-xl" style={{ border: '1px solid var(--border-subtle)' }}>
-                    <img src={post.mediaUrl} alt="Post Attachment" className="max-h-96 w-full object-cover" />
+                    {post.postType === 'VIDEO' ? (
+                      <video src={post.mediaUrl} controls className="max-h-96 w-full object-cover bg-black" />
+                    ) : (
+                      <img src={post.mediaUrl} alt="Post Attachment" className="max-h-96 w-full object-cover" />
+                    )}
                   </div>
                 )}
 
@@ -346,10 +376,10 @@ export default function LinkedInFeedPage() {
                   <button
                     type="button"
                     onClick={() => handleLike(post.id)}
-                    className="flex items-center gap-1.5 font-medium transition hover:text-[var(--accent)]"
-                    style={{ color: 'var(--text-muted)' }}
+                    className="flex items-center gap-1.5 font-medium transition"
+                    style={{ color: post.likedByMe ? 'var(--accent)' : 'var(--text-muted)' }}
                   >
-                    <ThumbsUp size={15} /> Like ({post.likeCount || 0})
+                    <ThumbsUp size={15} fill={post.likedByMe ? 'currentColor' : 'none'} /> Like ({post.likeCount || 0})
                   </button>
                   <button
                     type="button"
@@ -427,15 +457,32 @@ export default function LinkedInFeedPage() {
             <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-primary)' }}>Suggested Connections</h3>
             <div className="mt-4 space-y-3">
               {suggestedUsers.map((u) => (
-                <div key={u.id} className="flex items-center justify-between text-xs">
-                  <div>
-                    <p className="font-bold" style={{ color: 'var(--text-primary)' }}>{u.username}</p>
-                    <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{u.role}</p>
-                  </div>
-                  {pendingConnections.has(u.id) ? (
+                <div key={u.id} className="flex items-center justify-between text-xs gap-3">
+                  <a href={`/dashboard/profile/${u.id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                    <div className="h-8 w-8 flex-shrink-0 overflow-hidden rounded-full font-bold text-black flex items-center justify-center" style={{ backgroundColor: 'var(--accent)' }}>
+                       {u.avatarUrl ? (
+                         <img src={u.avatarUrl} alt={u.username} className="w-full h-full object-cover" />
+                       ) : (
+                         u.username?.[0]?.toUpperCase() || 'U'
+                       )}
+                    </div>
+                    <div>
+                      <p className="font-bold" style={{ color: 'var(--text-primary)' }}>{u.username}</p>
+                      <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{u.role}</p>
+                    </div>
+                  </a>
+                  {u.connected ? (
                     <button
                       disabled
-                      className="flex items-center justify-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold text-white bg-green-600/80 cursor-not-allowed"
+                      className="flex items-center justify-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold text-black bg-gray-500/20 cursor-not-allowed border"
+                      style={{ borderColor: 'var(--border-subtle)' }}
+                    >
+                      <UserCheck size={10} /> Connected
+                    </button>
+                  ) : pendingConnections.has(u.id) || u.connectionRequested ? (
+                    <button
+                      disabled
+                      className="flex items-center justify-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold text-white bg-green-600/80 cursor-not-allowed border-none"
                     >
                       <Check size={10} /> Sent
                     </button>
