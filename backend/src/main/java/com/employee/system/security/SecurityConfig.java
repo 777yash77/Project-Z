@@ -29,9 +29,11 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
+    private final com.employee.system.repository.UserRepository userRepository;
 
-    public SecurityConfig(JwtUtil jwtUtil) {
+    public SecurityConfig(JwtUtil jwtUtil, com.employee.system.repository.UserRepository userRepository) {
         this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
     }
 
     @Bean
@@ -49,7 +51,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        http.addFilterBefore(new JwtAuthFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(new JwtAuthFilter(jwtUtil, userRepository), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
@@ -67,9 +69,11 @@ public class SecurityConfig {
 
     public static class JwtAuthFilter extends OncePerRequestFilter {
         private final JwtUtil jwtUtil;
+        private final com.employee.system.repository.UserRepository userRepository;
 
-        public JwtAuthFilter(JwtUtil jwtUtil) {
+        public JwtAuthFilter(JwtUtil jwtUtil, com.employee.system.repository.UserRepository userRepository) {
             this.jwtUtil = jwtUtil;
+            this.userRepository = userRepository;
         }
 
         @Override
@@ -80,9 +84,14 @@ public class SecurityConfig {
                 String token = header.substring(7);
                 if (jwtUtil.validateToken(token)) {
                     String username = jwtUtil.extractUsername(token);
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    com.employee.system.entity.User user = userRepository.findByUsername(username)
+                            .orElse(userRepository.findByEmail(username).orElse(null));
+                    
+                    if (user != null && !user.isSuspended()) {
+                        UsernamePasswordAuthenticationToken authentication =
+                                new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
                 }
             }
             chain.doFilter(request, response);

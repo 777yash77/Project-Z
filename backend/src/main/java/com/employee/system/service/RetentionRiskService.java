@@ -18,17 +18,71 @@ public class RetentionRiskService {
         this.geminiService = geminiService;
     }
 
+    private final org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+
     public Map<String, Object> predictRetentionRisk(Employee employee) {
-        Map<String, Object> response = calculateRisk(
-                employee.getSalary() != null ? employee.getSalary().doubleValue() : 70000.0,
-                employee.getYearsAtCompany(),
-                employee.getPerformanceRating(),
-                employee.getAge(),
-                employee.getDepartment(),
-                false, // overtime default
-                3,     // workLifeBalance default (1-5)
-                employee.getYearsAtCompany() > 3 ? 3 : 1 // promotionGap default
-        );
+        Map<String, Object> response;
+        try {
+            // Prepare payload for ML service
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("Age", employee.getAge());
+            payload.put("MonthlyIncome", employee.getSalary() != null ? employee.getSalary().doubleValue() : 5000);
+            payload.put("YearsAtCompany", employee.getYearsAtCompany());
+            payload.put("PerformanceRating", employee.getPerformanceRating());
+            payload.put("Department", employee.getDepartment());
+
+            // Call ML service
+            String mlServiceUrl = System.getenv().getOrDefault("ML_SERVICE_URL", "http://localhost:5000/predict");
+            Map<String, Object> mlResponse = restTemplate.postForObject(mlServiceUrl, payload, Map.class);
+
+            if (mlResponse != null && mlResponse.containsKey("riskScore")) {
+                double riskScore = ((Number) mlResponse.get("riskScore")).doubleValue();
+                String riskLevel = (String) mlResponse.get("riskLevel");
+
+                response = new HashMap<>();
+                response.put("retentionRiskScore", riskScore);
+                response.put("attritionProbability", riskScore);
+                response.put("riskLevel", riskLevel);
+
+                String timeline = riskScore >= 0.75 ? "1–3 Months"
+                        : riskScore >= 0.50 ? "3–6 Months" : riskScore >= 0.30 ? "6–12 Months" : "> 1 Year";
+                response.put("timeline", timeline);
+                response.put("priorityScore", (int) Math.round(riskScore * 100));
+
+                // Add dummy shap factors for UI compatibility
+                List<Map<String, Object>> shapFactors = new ArrayList<>();
+                shapFactors.add(Map.of("factor", "ML Model Prediction", "impact", "N/A", "direction",
+                        riskScore > 0.5 ? "increase" : "decrease"));
+                response.put("shapFactors", shapFactors);
+
+                Map<String, Object> geminiCopilot = new HashMap<>();
+                geminiCopilot.put("executiveSummary",
+                        getExecutiveSummary(riskLevel, employee.getDepartment(), shapFactors));
+                geminiCopilot.put("rootCauseAnalysis", getRootCauseAnalysis(shapFactors));
+                geminiCopilot.put("immediateHrActions", getImmediateActions(riskLevel, shapFactors));
+                geminiCopilot.put("longTermPlan",
+                        getLongTermPlan(1, employee.getSalary() != null ? employee.getSalary().doubleValue() : 70000));
+                geminiCopilot.put("businessImpact", "Estimated replacement cost: $"
+                        + (int) ((employee.getSalary() != null ? employee.getSalary().doubleValue() : 70000) * 0.45)
+                        + " + project delay risk.");
+                response.put("geminiCopilot", geminiCopilot);
+            } else {
+                throw new RuntimeException("Invalid ML service response");
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to call ML service, falling back to heuristic: " + e.getMessage());
+            // Fallback to heuristic
+            response = calculateRisk(
+                    employee.getSalary() != null ? employee.getSalary().doubleValue() : 70000.0,
+                    employee.getYearsAtCompany(),
+                    employee.getPerformanceRating(),
+                    employee.getAge(),
+                    employee.getDepartment(),
+                    false, // overtime default
+                    3, // workLifeBalance default (1-5)
+                    employee.getYearsAtCompany() > 3 ? 3 : 1 // promotionGap default
+            );
+        }
 
         if (employee != null && geminiService != null) {
             String aiReport = geminiService.generateIndividualEmployeeAnalysis(employee, response);
@@ -39,7 +93,7 @@ public class RetentionRiskService {
     }
 
     public Map<String, Object> calculateRisk(double salary, int yearsAtCompany, double rating, int age,
-                                              String department, boolean overtime, int workLifeBalance, int promotionGap) {
+            String department, boolean overtime, int workLifeBalance, int promotionGap) {
         double score = 0.15;
         List<Map<String, Object>> shapFactors = new ArrayList<>();
 
@@ -53,7 +107,8 @@ public class RetentionRiskService {
         }
         if (promotionGap >= 3) {
             score += 0.16;
-            shapFactors.add(Map.of("factor", "Promotion Delay (" + promotionGap + " yrs)", "impact", "+16%", "direction", "increase"));
+            shapFactors.add(Map.of("factor", "Promotion Delay (" + promotionGap + " yrs)", "impact", "+16%",
+                    "direction", "increase"));
         }
         if (salary < 80000) {
             score += 0.14;
@@ -61,15 +116,18 @@ public class RetentionRiskService {
         }
         if (workLifeBalance <= 2) {
             score += 0.12;
-            shapFactors.add(Map.of("factor", "Poor Work-Life Balance (" + workLifeBalance + "/5)", "impact", "+12%", "direction", "increase"));
+            shapFactors.add(Map.of("factor", "Poor Work-Life Balance (" + workLifeBalance + "/5)", "impact", "+12%",
+                    "direction", "increase"));
         }
         if (yearsAtCompany > 5 && promotionGap >= 2) {
             score += 0.10;
-            shapFactors.add(Map.of("factor", "High Tenure without Mobility", "impact", "+10%", "direction", "increase"));
+            shapFactors
+                    .add(Map.of("factor", "High Tenure without Mobility", "impact", "+10%", "direction", "increase"));
         }
         if (department != null && department.equalsIgnoreCase("Sales")) {
             score += 0.08;
-            shapFactors.add(Map.of("factor", "High-Stress Department (Sales)", "impact", "+8%", "direction", "increase"));
+            shapFactors
+                    .add(Map.of("factor", "High-Stress Department (Sales)", "impact", "+8%", "direction", "increase"));
         }
 
         // Positive buffers
@@ -79,14 +137,16 @@ public class RetentionRiskService {
         }
         if (workLifeBalance >= 4) {
             score -= 0.08;
-            shapFactors.add(Map.of("factor", "Strong Work-Life Satisfaction", "impact", "-8%", "direction", "decrease"));
+            shapFactors
+                    .add(Map.of("factor", "Strong Work-Life Satisfaction", "impact", "-8%", "direction", "decrease"));
         }
 
         score = Math.min(0.96, Math.max(0.04, score));
         double roundedScore = Math.round(score * 100.0) / 100.0;
 
         String level = roundedScore >= 0.70 ? "High" : roundedScore >= 0.40 ? "Medium" : "Low";
-        String timeline = roundedScore >= 0.75 ? "1–3 Months" : roundedScore >= 0.50 ? "3–6 Months" : roundedScore >= 0.30 ? "6–12 Months" : "> 1 Year";
+        String timeline = roundedScore >= 0.75 ? "1–3 Months"
+                : roundedScore >= 0.50 ? "3–6 Months" : roundedScore >= 0.30 ? "6–12 Months" : "> 1 Year";
         int priorityScore = (int) Math.round(roundedScore * 100);
 
         Map<String, Object> geminiCopilot = new HashMap<>();
@@ -94,7 +154,8 @@ public class RetentionRiskService {
         geminiCopilot.put("rootCauseAnalysis", getRootCauseAnalysis(shapFactors));
         geminiCopilot.put("immediateHrActions", getImmediateActions(level, shapFactors));
         geminiCopilot.put("longTermPlan", getLongTermPlan(promotionGap, salary));
-        geminiCopilot.put("businessImpact", "Estimated replacement cost: $" + (int)(salary * 0.45) + " + project delay risk.");
+        geminiCopilot.put("businessImpact",
+                "Estimated replacement cost: $" + (int) (salary * 0.45) + " + project delay risk.");
 
         Map<String, Object> response = new HashMap<>();
         response.put("retentionRiskScore", roundedScore);
@@ -115,10 +176,12 @@ public class RetentionRiskService {
     }
 
     private String getRootCauseAnalysis(List<Map<String, Object>> factors) {
-        if (factors.isEmpty()) return "Employee shows stable retention indicators with balanced tenure and performance metrics.";
+        if (factors.isEmpty())
+            return "Employee shows stable retention indicators with balanced tenure and performance metrics.";
         StringBuilder sb = new StringBuilder("Key flight risk drivers identified: ");
         for (int i = 0; i < Math.min(3, factors.size()); i++) {
-            if (i > 0) sb.append(", ");
+            if (i > 0)
+                sb.append(", ");
             sb.append(factors.get(i).get("factor"));
         }
         return sb.toString() + ".";
@@ -137,6 +200,8 @@ public class RetentionRiskService {
     }
 
     private String getLongTermPlan(int promotionGap, double salary) {
-        return String.format("Establish clear quarterly promotion milestones. Target 12-month salary adjustment toward market baseline ($%.0f).", salary * 1.12);
+        return String.format(
+                "Establish clear quarterly promotion milestones. Target 12-month salary adjustment toward market baseline ($%.0f).",
+                salary * 1.12);
     }
 }

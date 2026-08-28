@@ -151,23 +151,35 @@ export default function ExecutiveDashboardPage() {
   const avgProb = employees.length ? (employees.reduce((sum, e) => sum + e.riskScore, 0) / employees.length) * 100 : 0;
 
   useEffect(() => {
+    if (!role) return;
+    const storageKey = `attritionRiskHistory_${role}_${organizationName}`;
     if (employees.length > 0 && riskHistory.length === 0) {
-      // Seed initial data for chart to look realistic
-      const now = new Date();
-      const seed = Array.from({ length: 20 }).map((_, i) => {
-        const t = new Date(now.getTime() - (20 - i) * 60000); // spread over minutes initially
-        const jitter = (Math.random() - 0.5) * 4;
-        const val = Math.max(0, Math.min(100, Number((avgProb + (i === 19 ? 0 : jitter)).toFixed(1))));
-        return {
-          time: t.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-          avgRisk: val,
-          volume: Math.floor(Math.random() * 50) + 10,
-          movingAvg: val // simplistic seed
-        };
-      });
-      setRiskHistory(seed);
+      const currentVal = Number(avgProb.toFixed(1));
+      
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.length > 0) {
+            setRiskHistory(parsed);
+            return;
+          }
+        } catch (e) {
+          console.error('Failed to parse risk history', e);
+        }
+      }
+
+      // Initialize with only the actual current data point
+      const initialHistory = [{
+        time: new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        avgRisk: currentVal,
+        volume: 0,
+        movingAvg: currentVal
+      }];
+      setRiskHistory(initialHistory);
+      localStorage.setItem(storageKey, JSON.stringify(initialHistory));
     }
-  }, [employees, riskHistory.length, avgProb]);
+  }, [employees, riskHistory.length, avgProb, role, organizationName]);
 
   useEffect(() => {
     if (employees.length === 0) return;
@@ -196,9 +208,14 @@ export default function ExecutiveDashboardPage() {
       }
 
       if (next.length > 40) next.shift(); // keep rolling window
+      
+      if (role) {
+        const storageKey = `attritionRiskHistory_${role}_${organizationName}`;
+        localStorage.setItem(storageKey, JSON.stringify(next));
+      }
       return next;
     });
-  }, [avgProb, employees.length]);
+  }, [avgProb, employees.length, role, organizationName]);
 
   // Dept risk mapping
   const deptRiskMap = useMemo(() => {
@@ -338,8 +355,8 @@ export default function ExecutiveDashboardPage() {
               />
               <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
               <Bar yAxisId="right" dataKey="volume" name="Volatility" fill="rgba(255,255,255,0.05)" radius={[2, 2, 0, 0]} />
-              <Bar yAxisId="left" dataKey="avgRisk" name="Avg Risk" fill="url(#colorRisk)" radius={[4, 4, 0, 0]} isAnimationActive={false} barSize={20} />
-              <Line yAxisId="left" type="monotone" dataKey="movingAvg" name="5-Point MA" stroke="#3b82f6" strokeWidth={2} dot={false} strokeDasharray="4 4" isAnimationActive={false} />
+              <Bar yAxisId="left" dataKey="avgRisk" name="Avg Risk" fill="url(#colorRisk)" radius={[6, 6, 0, 0]} isAnimationActive={true} barSize={40} />
+              <Line yAxisId="left" type="monotone" dataKey="movingAvg" name="5-Point MA" stroke="#3b82f6" strokeWidth={4} dot={{ r: 4 }} strokeDasharray="4 4" isAnimationActive={true} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>

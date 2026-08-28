@@ -95,6 +95,10 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message", "Invalid username/email or password"));
         }
+        if (user.isSuspended()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "Your account has been suspended by the Organization."));
+        }
         return ResponseEntity.ok(buildTokenResponse(user));
     }
 
@@ -125,6 +129,10 @@ public class AuthController {
             if (user == null || !passwordEncoder.matches(password, user.getPassword())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Map.of("message", "Invalid credentials"));
+            }
+            if (user.isSuspended()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("message", "Your account has been suspended by the Organization."));
             }
             // Use the user's actual email for OTP
             email = user.getEmail().toLowerCase();
@@ -172,6 +180,10 @@ public class AuthController {
         if (user == null || !passwordEncoder.matches(password, user.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message", "Invalid credentials"));
+        }
+        if (user.isSuspended()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "Your account has been suspended by the Organization."));
         }
 
         if (!otpStore.verify(user.getEmail(), otp, "LOGIN")) {

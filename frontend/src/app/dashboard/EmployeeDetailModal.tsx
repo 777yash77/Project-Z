@@ -65,31 +65,36 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
   if (!employeeId) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-fade-in overflow-hidden">
-      <div
-        className="relative flex flex-col w-full max-w-5xl max-h-[90vh] rounded-3xl shadow-[0_40px_100px_rgba(0,0,0,0.8)] overflow-hidden"
-        style={{ border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}
-      >
-        {/* Header */}
-        <div className="flex-shrink-0 flex items-center justify-between border-b p-6 sm:px-8 sm:pt-8 pb-5" style={{ borderColor: 'var(--border-subtle)' }}>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em]" style={{ backgroundColor: 'var(--accent-glow)', color: 'var(--accent)' }}>
-                Employee XAI Intelligence
-              </span>
-              <span className="text-xs text-green-100/30">ID #{employeeId}</span>
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md animate-fade-in">
+      <div className="flex min-h-full items-center justify-center p-4 sm:p-6 md:p-12">
+        <div
+          className="relative w-full max-w-5xl rounded-3xl shadow-[0_40px_100px_rgba(0,0,0,0.8)] p-6 sm:p-8"
+          style={{ border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}
+        >
+          {/* Header */}
+          <div className="flex items-start justify-between border-b pb-5" style={{ borderColor: 'var(--border-subtle)' }}>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em]" style={{ backgroundColor: 'var(--accent-glow)', color: 'var(--accent)' }}>
+                  Employee XAI Intelligence
+                </span>
+                <span className="text-xs" style={{ color: 'var(--text-faint)' }}>ID #{employeeId}</span>
+              </div>
+              <h2 className="mt-1 text-2xl font-extrabold" style={{ color: 'var(--text-primary)' }}>{data?.employee?.name || 'Loading Employee...'}</h2>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                {data?.employee?.department} · Age {data?.employee?.age} · {data?.employee?.yearsAtCompany} Yrs Tenure
+              </p>
             </div>
-            <h2 className="mt-1 text-2xl font-extrabold text-white">{data?.employee?.name || 'Loading Employee...'}</h2>
-            <p className="text-xs text-green-100/40">
-              {data?.employee?.department} · Age {data?.employee?.age} · {data?.employee?.yearsAtCompany} Yrs Tenure
-            </p>
+            <button 
+              onClick={onClose}
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full shadow-sm transition hover:scale-105 hover:bg-red-500/10 hover:text-red-500"
+              style={{ border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)' }}
+              title="Close"
+            >
+              <X size={20} />
+            </button>
           </div>
-          <button onClick={onClose} className="rounded-xl border p-2 text-green-100/40 transition hover:text-white" style={{ borderColor: 'var(--border-subtle)' }}>
-            <X size={18} />
-          </button>
-        </div>
 
-        <div className="flex-1 overflow-y-auto p-6 sm:px-8 sm:pb-8">
           {loading ? (
           <div className="flex h-64 items-center justify-center">
             <RefreshCw className="animate-spin text-green-400" size={28} />
@@ -113,12 +118,12 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
                   <div className="grid gap-3 sm:grid-cols-4">
                     {[
                       { label: 'Risk Level', value: activeAnalysis.riskLevel, color: activeAnalysis.riskLevel === 'High' ? 'text-red-400' : activeAnalysis.riskLevel === 'Medium' ? 'text-amber-400' : 'text-green-400' },
-                      { label: 'Attrition Probability', value: `${Math.round(activeAnalysis.attritionProbability * 100)}%`, color: 'text-white' },
+                      { label: 'Attrition Probability', value: `${Math.round(activeAnalysis.attritionProbability * 100)}%`, color: 'text-[var(--text-primary)]' },
                       { label: 'Predicted Timeline', value: activeAnalysis.timeline || '3–6 Months', color: 'text-green-400' },
                       { label: 'Priority HR Score', value: `${activeAnalysis.priorityScore}/100`, color: 'text-amber-400' },
                     ].map((kpi) => (
                       <div key={kpi.label} className="rounded-2xl border p-4 backdrop-blur-sm" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-green-100/30">{kpi.label}</p>
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-[var(--text-muted)]">{kpi.label}</p>
                         <p className={`mt-2 text-2xl font-bold ${kpi.color}`}>{kpi.value}</p>
                       </div>
                     ))}
@@ -129,17 +134,17 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
                     {/* Explainable AI (XAI) - SHAP Factors */}
                     <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
                       <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                        <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
                           <BarChart2 size={16} className="text-green-400" />
                           Explainable AI — Top Flight Risk Factors
                         </h3>
-                        <span className="text-[10px] text-green-100/30 uppercase tracking-[0.2em]">SHAP Values</span>
+                        <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-[0.2em]">SHAP Values</span>
                       </div>
                       <div className="mt-4 space-y-3">
                         {activeAnalysis.shapFactors?.map((f: any) => (
                           <div key={f.factor} className="rounded-xl border p-3" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'rgba(0,0,0,0.2)' }}>
                             <div className="flex items-center justify-between text-xs">
-                              <span className="font-semibold text-white">{f.factor}</span>
+                              <span className="font-semibold text-[var(--text-primary)]">{f.factor}</span>
                               <span className={`font-mono font-bold ${f.direction === 'increase' ? 'text-red-400' : 'text-green-400'}`}>{f.impact}</span>
                             </div>
                             <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-black/40">
@@ -186,11 +191,11 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
             <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
                     <RefreshCw size={16} className="text-green-400" />
                     What-If Retention Simulator
                   </h3>
-                  <p className="mt-0.5 text-xs text-green-100/30">Adjust compensation, overtime & work-life balance to simulate updated risk probability.</p>
+                  <p className="mt-0.5 text-xs text-[var(--text-muted)]">Adjust compensation, overtime & work-life balance to simulate updated risk probability.</p>
                 </div>
                 <button
                   onClick={handleSimulate}
@@ -203,7 +208,7 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
 
               <div className="mt-5 grid gap-4 sm:grid-cols-4">
                 <div>
-                  <label className="text-[11px] text-green-100/40 font-medium">Proposed Salary ($)</label>
+                  <label className="text-[11px] text-[var(--text-muted)] font-medium">Proposed Salary ($)</label>
                   <input
                     type="number"
                     step="5000"
@@ -215,7 +220,7 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
                 </div>
 
                 <div>
-                  <label className="text-[11px] text-green-100/40 font-medium">Work-Life Balance (1–5)</label>
+                  <label className="text-[11px] text-[var(--text-muted)] font-medium">Work-Life Balance (1–5)</label>
                   <select
                     value={simWlb}
                     onChange={(e) => setSimWlb(Number(e.target.value))}
@@ -231,7 +236,7 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
                 </div>
 
                 <div>
-                  <label className="text-[11px] text-green-100/40 font-medium">Overtime Work</label>
+                  <label className="text-[11px] text-[var(--text-muted)] font-medium">Overtime Work</label>
                   <select
                     value={simOvertime ? 'yes' : 'no'}
                     onChange={(e) => setSimOvertime(e.target.value === 'yes')}
@@ -244,7 +249,7 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
                 </div>
 
                 <div>
-                  <label className="text-[11px] text-green-100/40 font-medium">Promotion Delay (Yrs)</label>
+                  <label className="text-[11px] text-[var(--text-muted)] font-medium">Promotion Delay (Yrs)</label>
                   <input
                     type="number"
                     min="0"
@@ -262,12 +267,12 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
                 <div className="mt-5 flex items-center justify-between rounded-xl border p-4 animate-fade-in" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'rgba(0,0,0,0.4)' }}>
                   <div className="flex items-center gap-6">
                     <div>
-                      <p className="text-[10px] text-green-100/30 uppercase tracking-[0.2em]">Baseline Risk</p>
-                      <p className="text-xl font-bold text-white">{Math.round(data.riskAnalysis.attritionProbability * 100)}%</p>
+                      <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-[0.2em]">Baseline Risk</p>
+                      <p className="text-xl font-bold text-[var(--text-primary)]">{Math.round(data.riskAnalysis.attritionProbability * 100)}%</p>
                     </div>
                     <ArrowRight size={20} className="text-green-400" />
                     <div>
-                      <p className="text-[10px] text-green-100/30 uppercase tracking-[0.2em]">Simulated Risk</p>
+                      <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-[0.2em]">Simulated Risk</p>
                       <p className="text-xl font-bold text-green-400">{Math.round(simulationResult.attritionProbability * 100)}%</p>
                     </div>
                   </div>
@@ -288,7 +293,7 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
 
           </div>
         ) : (
-          <p className="py-12 text-center text-sm text-green-100/30">Failed to load employee details.</p>
+          <p className="py-12 text-center text-sm" style={{ color: 'var(--text-muted)' }}>Failed to load employee details.</p>
         )}
         </div>
       </div>
