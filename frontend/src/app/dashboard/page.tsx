@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState, useCallback } from 'react';
-import { AlertTriangle, DollarSign, Users as UsersIcon, BarChart3, TrendingUp, Activity, Filter, Search, Sparkles, PieChart, ShieldAlert, ArrowUpRight, ChevronRight, BarChart2 } from 'lucide-react';
-import { fetchEmployees, fetchWorkforceAiAnalytics, getMe } from './api';
+import { AlertTriangle, DollarSign, Users as UsersIcon, BarChart3, TrendingUp, Activity, Filter, Search, Sparkles, PieChart, ShieldAlert, ArrowUpRight, ChevronRight, BarChart2, X, RefreshCw } from 'lucide-react';
+import { fetchEmployees, fetchWorkforceAiAnalytics, getMe, fetchEmployeeImpactAnalysis } from './api';
 import EmployeeDetailModal from './EmployeeDetailModal';
 import { ComposedChart, Area, Bar, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
 import AiReportRenderer from './AiReportRenderer';
@@ -23,6 +23,8 @@ export default function ExecutiveDashboardPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [organizationName, setOrganizationName] = useState('Your Organization');
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
+  const [fetchingImpactId, setFetchingImpactId] = useState<number | null>(null);
+  const [impactModalData, setImpactModalData] = useState<{employeeName: string, impactReport: string} | null>(null);
   const [aiWorkforceReport, setAiWorkforceReport] = useState<string>('');
   const [role, setRole] = useState<string | null>(null);
   const [flashStates, setFlashStates] = useState<Record<number, 'up' | 'down'>>({});
@@ -481,12 +483,32 @@ export default function ExecutiveDashboardPage() {
                     <td className="px-5 py-4 text-green-100/50 font-medium">
                       {emp.riskLevel === 'High' ? '1–3 Months' : emp.riskLevel === 'Medium' ? '3–6 Months' : '> 1 Year'}
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-4 flex gap-2 items-center">
                       <button
                         onClick={(e) => { e.stopPropagation(); setSelectedEmployeeId(emp.id); }}
                         className="inline-flex items-center gap-1 rounded-lg border border-green-500/20 bg-green-500/10 px-3 py-1 text-[11px] font-bold text-green-400 transition hover:bg-green-500/20"
                       >
                         Inspect <ChevronRight size={13} />
+                      </button>
+                      <button
+                        onClick={async (e) => { 
+                          e.stopPropagation(); 
+                          setFetchingImpactId(emp.id);
+                          try {
+                            const res = await fetchEmployeeImpactAnalysis(emp.id);
+                            setImpactModalData({ employeeName: res.data.employeeName, impactReport: res.data.aiImpactReport });
+                          } catch (error) {
+                            console.error(error);
+                            alert('Failed to fetch impact analysis');
+                          } finally {
+                            setFetchingImpactId(null);
+                          }
+                        }}
+                        disabled={fetchingImpactId === emp.id}
+                        className="inline-flex items-center gap-1 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-bold text-emerald-400 transition hover:bg-emerald-500/20 disabled:opacity-50"
+                      >
+                        {fetchingImpactId === emp.id ? <RefreshCw size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                        Get Insights
                       </button>
                     </td>
                   </tr>
@@ -587,6 +609,27 @@ export default function ExecutiveDashboardPage() {
             loadDashboardData();
           }}
         />
+      )}
+
+      {/* Impact Modal */}
+      {impactModalData && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="w-full max-w-2xl rounded-2xl border border-emerald-500/30 p-6 shadow-2xl relative" style={{ backgroundColor: 'var(--bg-card)' }}>
+            <button 
+              onClick={() => setImpactModalData(null)}
+              className="absolute right-4 top-4 text-[color:var(--text-muted)] hover:text-emerald-500 transition-colors"
+            >
+              <X size={20} />
+            </button>
+            <div className="mb-4 flex items-center gap-2 text-emerald-400">
+              <Sparkles size={20} />
+              <div className="text-lg font-bold">AI Impact Analysis: {impactModalData.employeeName}</div>
+            </div>
+            <div className="mt-4 max-h-[70vh] overflow-y-auto pr-2">
+              <AiReportRenderer reportText={impactModalData.impactReport} />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

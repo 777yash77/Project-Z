@@ -66,24 +66,24 @@ export default function AiReportRenderer({ reportText }: AiReportRendererProps) 
               <Sparkles size={14} />
             </div>
             <div>
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-500">
+              <div className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-500">
                 Brief Executive Action Strategy
-              </span>
-              <p className="mt-0.5 text-xs font-bold text-foreground leading-snug">
+              </div>
+              <div className="mt-0.5 text-xs font-bold text-[color:var(--text-primary)] leading-snug">
                 {firstAction}
-              </p>
+              </div>
               {secondAction && (
-                <p className="mt-1 text-[11px] text-muted leading-snug">
+                <div className="mt-1 text-[11px] text-[color:var(--text-muted)] leading-snug">
                   • {secondAction}
-                </p>
+                </div>
               )}
             </div>
           </div>
           <button
             onClick={() => setExpanded(!expanded)}
-            className="flex items-center gap-1 rounded-xl border border-emerald-500/20 bg-background px-2.5 py-1 text-[10px] font-bold text-emerald-500 hover:bg-emerald-500/10 transition flex-shrink-0"
+            className="flex items-center gap-1 rounded-xl border border-emerald-500/20 bg-[var(--bg-surface)] px-2.5 py-1 text-[10px] font-bold text-emerald-500 hover:bg-emerald-500/10 transition flex-shrink-0"
           >
-            <span>{expanded ? 'Hide Details' : 'Full Strategy'}</span>
+            <div>{expanded ? 'Hide Details' : 'Full Strategy'}</div>
             {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
           </button>
         </div>
@@ -95,28 +95,28 @@ export default function AiReportRenderer({ reportText }: AiReportRendererProps) 
           {sections.map((section, idx) => (
             <div
               key={idx}
-              className="flex flex-col rounded-2xl border border-emerald-500/15 bg-background/80 p-3.5 shadow-xs"
+              className="flex flex-col rounded-2xl border border-emerald-500/15 bg-[var(--bg-surface)] p-3.5 shadow-xs"
             >
               <div className="flex items-center gap-2 border-b border-emerald-500/10 pb-2 mb-2.5">
-                <span className="flex h-4 w-4 items-center justify-center rounded bg-emerald-500/10 text-[9px] font-extrabold text-emerald-500">
+                <div className="flex h-4 w-4 items-center justify-center rounded bg-emerald-500/10 text-[9px] font-extrabold text-emerald-500">
                   {idx + 1}
-                </span>
-                <h4 className="text-[11px] font-extrabold text-foreground tracking-wide">
+                </div>
+                <div className="text-[11px] font-extrabold text-[color:var(--text-primary)] tracking-wide">
                   {section.title}
-                </h4>
+                </div>
               </div>
 
               <div className="space-y-2 flex-1">
                 {section.items.map((item, itemIdx) => (
                   <div key={itemIdx} className="flex items-start gap-1.5 text-[11px]">
                     <CheckCircle2 size={12} className="text-emerald-500 flex-shrink-0 mt-0.5" />
-                    <div className="leading-normal text-muted">
+                    <div className="leading-normal text-[color:var(--text-muted)]">
                       {item.label && (
-                        <span className="font-bold text-foreground mr-1">
+                        <b className="font-bold text-[color:var(--text-primary)] mr-1">
                           {item.label}:
-                        </span>
+                        </b>
                       )}
-                      <span>{item.text}</span>
+                      {item.text}
                     </div>
                   </div>
                 ))}

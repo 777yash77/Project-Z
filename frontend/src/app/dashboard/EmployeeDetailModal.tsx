@@ -129,10 +129,9 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
                     ))}
                   </div>
 
-                  <div className="grid gap-6 lg:grid-cols-2">
-
+                  <div className="flex flex-col gap-6">
                     {/* Explainable AI (XAI) - SHAP Factors */}
-                    <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
+                    <div className="rounded-2xl border p-6 w-full" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
                       <div className="flex items-center justify-between">
                         <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
                           <BarChart2 size={16} className="text-green-400" />
@@ -159,7 +158,7 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
                     </div>
 
                     {/* Gemini HR Copilot Panel */}
-                    <div className="rounded-2xl border border-emerald-500/20 bg-card p-6 shadow-md">
+                    <div className="rounded-2xl border border-emerald-500/20 bg-card p-6 shadow-md w-full">
                       <div className="flex items-center justify-between border-b border-emerald-500/15 pb-3 mb-4">
                         <div className="flex items-center gap-2 text-emerald-500">
                           <Sparkles size={18} />
@@ -181,136 +180,135 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
                         </div>
                       )}
                     </div>
+                  </div>
 
+                  {/* What-If Simulator */}
+                  <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
+                          <RefreshCw size={16} className="text-green-400" />
+                          What-If Retention Simulator
+                        </h3>
+                        <p className="mt-0.5 text-xs text-[var(--text-muted)]">Adjust compensation, overtime & work-life balance to simulate updated risk probability.</p>
+                      </div>
+                      <button
+                        onClick={handleSimulate}
+                        disabled={simulating}
+                        className="rounded-xl bg-green-500 px-4 py-2 text-xs font-bold text-black transition hover:bg-green-400"
+                      >
+                        {simulating ? 'Simulating...' : 'Run Simulation'}
+                      </button>
+                    </div>
+
+                    <div className="mt-5 grid gap-6 sm:grid-cols-4">
+                      <div className="flex flex-col">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Proposed Salary</label>
+                          <span className="text-xs font-mono font-bold text-green-400">${simSalary.toLocaleString()}</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="30000"
+                          max="250000"
+                          step="1000"
+                          value={simSalary}
+                          onChange={(e) => setSimSalary(Number(e.target.value))}
+                          className="w-full accent-green-500 h-1.5 bg-black/40 rounded-lg appearance-none cursor-pointer outline-none"
+                        />
+                        <div className="flex justify-between text-[9px] text-[var(--text-faint)] mt-1.5">
+                          <span>$30k</span>
+                          <span>$250k</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider">W-L Balance</label>
+                          <span className="text-xs font-bold text-green-400">{simWlb}/5</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="1"
+                          max="5"
+                          step="1"
+                          value={simWlb}
+                          onChange={(e) => setSimWlb(Number(e.target.value))}
+                          className="w-full accent-green-500 h-1.5 bg-black/40 rounded-lg appearance-none cursor-pointer outline-none"
+                        />
+                        <div className="flex justify-between text-[9px] text-[var(--text-faint)] mt-1.5">
+                          <span>Poor (1)</span>
+                          <span>Outstanding (5)</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Overtime</label>
+                        </div>
+                        <select
+                          value={simOvertime ? 'yes' : 'no'}
+                          onChange={(e) => setSimOvertime(e.target.value === 'yes')}
+                          className="w-full rounded-xl border px-3 py-1.5 text-xs font-medium outline-none cursor-pointer transition focus:ring-1 focus:ring-green-500"
+                          style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
+                        >
+                          <option value="no">No Overtime</option>
+                          <option value="yes">Requires Overtime</option>
+                        </select>
+                      </div>
+
+                      <div className="flex flex-col">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Promotion Gap</label>
+                          <span className="text-xs font-bold text-green-400">{simPromotionGap} Yrs</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="10"
+                          step="1"
+                          value={simPromotionGap}
+                          onChange={(e) => setSimPromotionGap(Number(e.target.value))}
+                          className="w-full accent-green-500 h-1.5 bg-black/40 rounded-lg appearance-none cursor-pointer outline-none"
+                        />
+                        <div className="flex justify-between text-[9px] text-[var(--text-faint)] mt-1.5">
+                          <span>0 Yrs</span>
+                          <span>10 Yrs</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Simulation Result comparison */}
+                    {simulationResult && (
+                      <div className="mt-5 flex items-center justify-between rounded-xl border p-4 animate-fade-in" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'rgba(0,0,0,0.4)' }}>
+                        <div className="flex items-center gap-6">
+                          <div>
+                            <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-[0.2em]">Baseline Risk</p>
+                            <p className="text-xl font-bold text-[var(--text-primary)]">{Math.round(data.riskAnalysis.attritionProbability * 100)}%</p>
+                          </div>
+                          <ArrowRight size={20} className="text-green-400" />
+                          <div>
+                            <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-[0.2em]">Simulated Risk</p>
+                            <p className="text-xl font-bold text-green-400">{Math.round(simulationResult.attritionProbability * 100)}%</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold ${
+                            simulationResult.attritionProbability < data.riskAnalysis.attritionProbability
+                              ? 'bg-green-500/15 text-green-400'
+                              : 'bg-red-500/15 text-red-400'
+                          }`}>
+                            {simulationResult.attritionProbability < data.riskAnalysis.attritionProbability ? <TrendingDown size={14} /> : <TrendingUp size={14} />}
+                            {Math.round((simulationResult.attritionProbability - data.riskAnalysis.attritionProbability) * 100)}% Risk Delta
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </>
               );
-            })()}
-
-            {/* What-If Simulator */}
-            <div className="rounded-2xl border p-6" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
-                    <RefreshCw size={16} className="text-green-400" />
-                    What-If Retention Simulator
-                  </h3>
-                  <p className="mt-0.5 text-xs text-[var(--text-muted)]">Adjust compensation, overtime & work-life balance to simulate updated risk probability.</p>
-                </div>
-                <button
-                  onClick={handleSimulate}
-                  disabled={simulating}
-                  className="rounded-xl bg-green-500 px-4 py-2 text-xs font-bold text-black transition hover:bg-green-400"
-                >
-                  {simulating ? 'Simulating...' : 'Run Simulation'}
-                </button>
-              </div>
-
-              <div className="mt-5 grid gap-6 sm:grid-cols-4">
-                <div className="flex flex-col">
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Proposed Salary</label>
-                    <span className="text-xs font-mono font-bold text-green-400">${simSalary.toLocaleString()}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="30000"
-                    max="250000"
-                    step="1000"
-                    value={simSalary}
-                    onChange={(e) => setSimSalary(Number(e.target.value))}
-                    className="w-full accent-green-500 h-1.5 bg-black/40 rounded-lg appearance-none cursor-pointer outline-none"
-                  />
-                  <div className="flex justify-between text-[9px] text-[var(--text-faint)] mt-1.5">
-                    <span>$30k</span>
-                    <span>$250k</span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col">
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider">W-L Balance</label>
-                    <span className="text-xs font-bold text-green-400">{simWlb}/5</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="1"
-                    max="5"
-                    step="1"
-                    value={simWlb}
-                    onChange={(e) => setSimWlb(Number(e.target.value))}
-                    className="w-full accent-green-500 h-1.5 bg-black/40 rounded-lg appearance-none cursor-pointer outline-none"
-                  />
-                  <div className="flex justify-between text-[9px] text-[var(--text-faint)] mt-1.5">
-                    <span>Poor (1)</span>
-                    <span>Outstanding (5)</span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col">
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Overtime</label>
-                  </div>
-                  <select
-                    value={simOvertime ? 'yes' : 'no'}
-                    onChange={(e) => setSimOvertime(e.target.value === 'yes')}
-                    className="w-full rounded-xl border px-3 py-1.5 text-xs font-medium outline-none cursor-pointer transition focus:ring-1 focus:ring-green-500"
-                    style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
-                  >
-                    <option value="no">No Overtime</option>
-                    <option value="yes">Requires Overtime</option>
-                  </select>
-                </div>
-
-                <div className="flex flex-col">
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Promotion Gap</label>
-                    <span className="text-xs font-bold text-green-400">{simPromotionGap} Yrs</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="10"
-                    step="1"
-                    value={simPromotionGap}
-                    onChange={(e) => setSimPromotionGap(Number(e.target.value))}
-                    className="w-full accent-green-500 h-1.5 bg-black/40 rounded-lg appearance-none cursor-pointer outline-none"
-                  />
-                  <div className="flex justify-between text-[9px] text-[var(--text-faint)] mt-1.5">
-                    <span>0 Yrs</span>
-                    <span>10 Yrs</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Simulation Result comparison */}
-              {simulationResult && (
-                <div className="mt-5 flex items-center justify-between rounded-xl border p-4 animate-fade-in" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'rgba(0,0,0,0.4)' }}>
-                  <div className="flex items-center gap-6">
-                    <div>
-                      <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-[0.2em]">Baseline Risk</p>
-                      <p className="text-xl font-bold text-[var(--text-primary)]">{Math.round(data.riskAnalysis.attritionProbability * 100)}%</p>
-                    </div>
-                    <ArrowRight size={20} className="text-green-400" />
-                    <div>
-                      <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-[0.2em]">Simulated Risk</p>
-                      <p className="text-xl font-bold text-green-400">{Math.round(simulationResult.attritionProbability * 100)}%</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold ${
-                      simulationResult.attritionProbability < data.riskAnalysis.attritionProbability
-                        ? 'bg-green-500/15 text-green-400'
-                        : 'bg-red-500/15 text-red-400'
-                    }`}>
-                      {simulationResult.attritionProbability < data.riskAnalysis.attritionProbability ? <TrendingDown size={14} /> : <TrendingUp size={14} />}
-                      {Math.round((simulationResult.attritionProbability - data.riskAnalysis.attritionProbability) * 100)}% Risk Delta
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
+          })()}
 
           </div>
         ) : (
