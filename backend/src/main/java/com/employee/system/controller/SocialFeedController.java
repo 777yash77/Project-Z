@@ -72,6 +72,31 @@ public class SocialFeedController {
         return ResponseEntity.status(HttpStatus.CREATED).body(post);
     }
 
+    @org.springframework.web.bind.annotation.PutMapping("/api/feed/posts/{id}")
+    public ResponseEntity<?> editPost(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+        User current = getCurrentUser();
+        if (current == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        
+        String newContent = payload.get("content");
+        if (newContent == null || newContent.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Post content cannot be empty"));
+        }
+        
+        Post post = feedService.editPost(id, current, newContent);
+        if (post == null) return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Not allowed"));
+        return ResponseEntity.ok(post);
+    }
+
+    @org.springframework.web.bind.annotation.DeleteMapping("/api/feed/posts/{id}")
+    public ResponseEntity<?> deletePost(@PathVariable Long id) {
+        User current = getCurrentUser();
+        if (current == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        
+        boolean deleted = feedService.deletePost(id, current);
+        if (!deleted) return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Not allowed"));
+        return ResponseEntity.ok(Map.of("message", "Post deleted successfully"));
+    }
+
     @PostMapping("/api/feed/posts/{id}/like")
     public ResponseEntity<?> toggleLike(@PathVariable Long id) {
         User current = getCurrentUser();

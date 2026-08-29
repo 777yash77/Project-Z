@@ -3,10 +3,11 @@
 import { useEffect, useState, useRef } from 'react';
 import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-import { ThumbsUp, MessageSquare, Share2, Send, Globe, Image as ImageIcon, Sparkles, UserPlus, X, Check, UserCheck } from 'lucide-react';
-import { fetchFeed, createPost, togglePostLike, addPostComment, fetchPostComments, fetchHrUsers, sendConnectionRequest, getBase64, sharePost } from '../api';
+import { ThumbsUp, MessageSquare, Share2, Send, Globe, Image as ImageIcon, Sparkles, UserPlus, X, Check, UserCheck, MoreVertical, Edit2, Trash2 } from 'lucide-react';
+import { fetchFeed, createPost, togglePostLike, addPostComment, fetchPostComments, fetchHrUsers, sendConnectionRequest, getBase64, sharePost, getMe, deletePost, editPost } from '../api';
 
 export default function LinkedInFeedPage() {
+  const [userInfo, setUserInfo] = useState<any>(null);
   const [posts, setPosts] = useState<any[]>([]);
   const [postContent, setPostContent] = useState('');
   const [mediaUrl, setMediaUrl] = useState('');
@@ -17,6 +18,11 @@ export default function LinkedInFeedPage() {
   const [suggestedUsers, setSuggestedUsers] = useState<any[]>([]);
   const [pendingConnections, setPendingConnections] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
+
+  // Edit states
+  const [editingPostId, setEditingPostId] = useState<number | null>(null);
+  const [editContent, setEditContent] = useState('');
+  const [showMenuForPost, setShowMenuForPost] = useState<number | null>(null);
   
   // Crop states
   const [imgSrc, setImgSrc] = useState('');
@@ -72,6 +78,13 @@ export default function LinkedInFeedPage() {
 
   const loadFeed = async () => {
     setLoading(true);
+    try {
+      const userRes = await getMe();
+      setUserInfo(userRes.data);
+    } catch (err) {
+      console.error(err);
+    }
+
     try {
       const res = await fetchFeed();
       setPosts(Array.isArray(res?.data) ? res.data : []);
@@ -193,6 +206,36 @@ export default function LinkedInFeedPage() {
         newSet.delete(userId);
         return newSet;
       });
+    }
+  };
+
+  const handleEditClick = (post: any) => {
+    setEditingPostId(post.id);
+    setEditContent(post.content);
+    setShowMenuForPost(null);
+  };
+
+  const handleSaveEdit = async (postId: number) => {
+    try {
+      const res = await editPost(postId, { content: editContent });
+      setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, content: res.data.content } : p)));
+      setEditingPostId(null);
+      setEditContent('');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to edit post');
+    }
+  };
+
+  const handleDeletePost = async (postId: number) => {
+    if (!confirm('Are you sure you want to delete this post?')) return;
+    try {
+      await deletePost(postId);
+      setPosts((prev) => prev.filter((p) => p.id !== postId));
+      setShowMenuForPost(null);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to delete post');
     }
   };
 
@@ -334,7 +377,7 @@ export default function LinkedInFeedPage() {
             posts.map((post) => (
               <div key={post.id} className="rounded-2xl p-5 shadow-sm transition hover:shadow-md" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
                 {/* Author Header */}
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-start justify-between mb-3 relative">
                   <div className="flex items-center gap-3">
                     <a href={`/dashboard/profile/${post.author?.id}`} className="flex h-10 w-10 items-center justify-center rounded-full font-bold text-black overflow-hidden hover:opacity-80 transition-opacity" style={{ backgroundColor: 'var(--accent)' }}>
                       {post.author?.avatarUrl ? (
@@ -350,15 +393,57 @@ export default function LinkedInFeedPage() {
                       </p>
                     </div>
                   </div>
-                  <span className="flex items-center gap-1 text-[10px] rounded-full px-2 py-0.5" style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)', color: 'var(--accent)' }}>
-                    <Globe size={10} /> {post.visibility}
-                  </span>
+                  
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-1 text-[10px] rounded-full px-2 py-0.5" style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)', color: 'var(--accent)' }}>
+                      <Globe size={10} /> {post.visibility}
+                    </span>
+                    
+                    {/* Post Actions Menu (Edit/Delete) */}
+                    {userInfo?.id === post.author?.id && (
+                      <div className="relative">
+                        <button onClick={() => setShowMenuForPost(showMenuForPost === post.id ? null : post.id)} className="p-1 rounded-full hover:bg-[var(--bg-base)] transition-colors" style={{ color: 'var(--text-muted)' }}>
+                          <MoreVertical size={16} />
+                        </button>
+                        {showMenuForPost === post.id && (
+                          <div className="absolute right-0 mt-1 w-32 rounded-xl shadow-lg border py-1 z-10" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}>
+                            <button onClick={() => handleEditClick(post)} className="w-full text-left px-4 py-2 text-xs flex items-center gap-2 hover:bg-[var(--bg-base)] transition-colors" style={{ color: 'var(--text-primary)' }}>
+                              <Edit2 size={14} /> Edit
+                            </button>
+                            <button onClick={() => handleDeletePost(post.id)} className="w-full text-left px-4 py-2 text-xs flex items-center gap-2 text-red-500 hover:bg-red-500/10 transition-colors">
+                              <Trash2 size={14} /> Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Content */}
-                <p className="text-xs leading-relaxed mb-4 whitespace-pre-wrap" style={{ color: 'var(--text-primary)' }}>
-                  {post.content}
-                </p>
+                {editingPostId === post.id ? (
+                  <div className="mb-4 space-y-3">
+                    <textarea
+                      value={editContent}
+                      onChange={(e) => setEditContent(e.target.value)}
+                      className="w-full rounded-xl px-4 py-3 outline-none focus:border-[var(--accent)] transition-colors text-xs"
+                      rows={4}
+                      style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
+                    />
+                    <div className="flex justify-end gap-2">
+                      <button onClick={() => setEditingPostId(null)} className="px-4 py-2 text-xs font-semibold rounded-xl border hover:bg-[var(--bg-base)] transition-colors" style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}>
+                        Cancel
+                      </button>
+                      <button onClick={() => handleSaveEdit(post.id)} className="px-4 py-2 text-xs font-semibold rounded-xl text-black hover:opacity-90 transition-opacity" style={{ backgroundColor: 'var(--accent)' }}>
+                        Save Changes
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs leading-relaxed mb-4 whitespace-pre-wrap" style={{ color: 'var(--text-primary)' }}>
+                    {post.content}
+                  </p>
+                )}
 
                 {/* Optional Media */}
                 {post.mediaUrl && (

@@ -65,6 +65,9 @@ public class User {
     private String website;
     private String githubUrl;
     private String linkedinUrl;
+    
+    @Column(nullable = false)
+    private boolean openForWork = false;
 
     @Column(name = "last_active_at")
     private java.time.LocalDateTime lastActiveAt;
@@ -116,6 +119,8 @@ public class User {
     public void setGithubUrl(String githubUrl) { this.githubUrl = githubUrl; }
     public String getLinkedinUrl() { return linkedinUrl; }
     public void setLinkedinUrl(String linkedinUrl) { this.linkedinUrl = linkedinUrl; }
+    public boolean isOpenForWork() { return openForWork; }
+    public void setOpenForWork(boolean openForWork) { this.openForWork = openForWork; }
     public Organization getOrganization() { return organization; }
     public void setOrganization(Organization organization) { this.organization = organization; }
     public java.time.LocalDateTime getLastActiveAt() { return lastActiveAt; }

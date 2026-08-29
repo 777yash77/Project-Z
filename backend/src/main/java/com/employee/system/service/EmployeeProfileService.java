@@ -84,6 +84,7 @@ public class EmployeeProfileService {
         if (payload.containsKey("linkedinUrl")) user.setLinkedinUrl(payload.get("linkedinUrl"));
         if (payload.containsKey("coverUrl")) user.setCoverUrl(payload.get("coverUrl"));
         if (payload.containsKey("avatarUrl")) user.setAvatarUrl(payload.get("avatarUrl"));
+        if (payload.containsKey("openForWork")) user.setOpenForWork(Boolean.parseBoolean(payload.get("openForWork")));
         return userRepository.save(user);
     }
 

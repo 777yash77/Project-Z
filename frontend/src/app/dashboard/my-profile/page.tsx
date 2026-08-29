@@ -15,6 +15,7 @@ export default function MyEnterpriseProfilePage() {
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [newSkill, setNewSkill] = useState('');
   const [isEditingBio, setIsEditingBio] = useState(false);
+  const [openForWork, setOpenForWork] = useState(false);
 
   // New Experience State
   const [expCompany, setExpCompany] = useState('');
@@ -65,6 +66,7 @@ export default function MyEnterpriseProfilePage() {
       setWebsite(res.data.user?.website || '');
       setGithubUrl(res.data.user?.githubUrl || '');
       setLinkedinUrl(res.data.user?.linkedinUrl || '');
+      setOpenForWork(res.data.user?.openForWork || false);
       setMyPosts(postsRes.data || []);
     } catch (err) {
       console.error(err);
@@ -77,7 +79,7 @@ export default function MyEnterpriseProfilePage() {
 
   const handleUpdateBio = async () => {
     try {
-      await updateBio({ headline, bio, phone, location, website, githubUrl, linkedinUrl });
+      await updateBio({ headline, bio, phone, location, website, githubUrl, linkedinUrl, openForWork: String(openForWork) });
       setIsEditingBio(false);
       loadProfile();
     } catch (err) {
@@ -186,13 +188,30 @@ export default function MyEnterpriseProfilePage() {
 
           <div>
             <h1 className="text-xl font-black" style={{ color: 'var(--text-primary)' }}>{user?.username}</h1>
-            <p className="text-xs font-medium" style={{ color: 'var(--accent)' }}>{user?.headline || 'Enterprise Team Member'}</p>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-xs font-medium" style={{ color: 'var(--accent)' }}>{user?.headline || 'Enterprise Team Member'}</p>
+              {user?.openForWork && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-green-500/20 text-green-400 border border-green-500/30">Open To Work</span>
+              )}
+            </div>
             <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{user?.email} • {user?.organization?.name || 'Independent Enterprise'}</p>
           </div>
 
           {/* Edit Bio Drawer */}
           {isEditingBio && (
             <div className="mt-4 space-y-3 rounded-xl p-4" style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-subtle)' }}>
+              
+              <div className="p-3 mb-2 rounded-lg flex items-center justify-between border" style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 5%, transparent)', borderColor: 'color-mix(in srgb, var(--accent) 20%, transparent)' }}>
+                <div>
+                  <h4 className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>Open to Work</h4>
+                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Show recruiters and HR that you are open to internal talent mobility.</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" checked={openForWork} onChange={(e) => setOpenForWork(e.target.checked)} className="sr-only peer" />
+                  <div className="w-9 h-5 bg-gray-600 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--accent)]"></div>
+                </label>
+              </div>
+
               <div>
                 <label className="block mb-1 text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Headline</label>
                 <input

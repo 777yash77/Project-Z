@@ -80,6 +80,28 @@ public class GeminiController {
                 "aiAnalysisReport", report));
     }
 
+    @GetMapping("/employee/{id}/impact")
+    public ResponseEntity<?> getEmployeeImpactAnalysis(@PathVariable Long id) {
+        Employee emp = employeeRepository.findById(id).orElse(null);
+        if (emp == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        User currentUser = getCurrentUser();
+        if (currentUser == null || emp.getCreatedBy() == null
+                || !emp.getCreatedBy().getId().equals(currentUser.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "Not authorized to access this employee profile"));
+        }
+
+        String impactReport = geminiService.generateEmployeeImpactAnalysis(emp);
+
+        return ResponseEntity.ok(Map.of(
+                "employeeId", emp.getId(),
+                "employeeName", emp.getName(),
+                "aiImpactReport", impactReport));
+    }
+
     @GetMapping("/workforce")
     public ResponseEntity<?> getWorkforceAnalytics() {
         User current = getCurrentUser();

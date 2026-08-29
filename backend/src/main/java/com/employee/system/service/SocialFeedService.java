@@ -70,6 +70,25 @@ public class SocialFeedService {
         return posts;
     }
 
+    public Post editPost(Long postId, User user, String newContent) {
+        Post post = postRepository.findById(postId).orElse(null);
+        if (post == null || !post.getAuthor().getId().equals(user.getId())) return null;
+        post.setContent(newContent);
+        return postRepository.save(post);
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public boolean deletePost(Long postId, User user) {
+        Post post = postRepository.findById(postId).orElse(null);
+        if (post == null || !post.getAuthor().getId().equals(user.getId())) return false;
+        
+        likeRepository.deleteAll(likeRepository.findByPost(post));
+        commentRepository.deleteAll(commentRepository.findByPostOrderByCreatedAtAsc(post));
+        
+        postRepository.delete(post);
+        return true;
+    }
+
     public Post toggleLike(Long postId, User user) {
         Post post = postRepository.findById(postId).orElse(null);
         if (post == null) return null;

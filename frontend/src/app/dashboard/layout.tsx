@@ -16,7 +16,8 @@ import {
   Bell,
   Search,
   Menu,
-  HelpCircle
+  HelpCircle,
+  Briefcase
 } from 'lucide-react';
 import { ThemeToggle } from '../theme-toggle';
 
@@ -26,6 +27,7 @@ import { getMe } from './api';
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/feed', label: 'Feed', icon: Share2 },
+  { href: '/dashboard/jobs', label: 'Jobs', icon: Briefcase },
   { href: '/dashboard/employees', label: 'Directory', icon: Users },
   { href: '/dashboard/org', label: 'Organisation', icon: Building2 },
   { href: '/dashboard/trading-window', label: 'Trading', icon: ArrowRightLeft },
@@ -87,13 +89,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (item.href === '/dashboard/help') return true;
     
     if (role === 'EMPLOYEE') {
-      return ['/dashboard/feed', '/dashboard/my-profile', '/dashboard/messages', '/dashboard/trading-window'].includes(item.href);
+      return ['/dashboard/feed', '/dashboard/jobs', '/dashboard/my-profile', '/dashboard/messages'].includes(item.href);
     }
     if (role === 'HR') {
-      return !['/dashboard/org', '/dashboard/my-profile'].includes(item.href);
+      return !['/dashboard/org', '/dashboard/my-profile', '/dashboard/jobs'].includes(item.href);
     }
     if (role === 'ORGANISATION') {
-      return !['/dashboard/my-profile'].includes(item.href);
+      return !['/dashboard/my-profile', '/dashboard/jobs'].includes(item.href);
     }
     return false;
   });

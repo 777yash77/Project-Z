@@ -62,6 +62,7 @@ export const fetchMessages = () => api.get('/hr/messages');
 export const sendMessage = (payload: { recipientId: number; content: string }) => api.post('/hr/messages', payload);
 
 export const fetchIndividualEmployeeAiAnalysis = (id: number) => api.get(`/gemini/employee/${id}`);
+export const fetchEmployeeImpactAnalysis = (id: number) => api.get(`/gemini/employee/${id}/impact`);
 export const fetchWorkforceAiAnalytics = () => api.get('/gemini/workforce');
 
 // ─── Organisation Portal APIs ───────────────────────────────────────────
@@ -88,6 +89,8 @@ export const approveTransferStep = (id: number) => api.post(`/trading/requests/$
 // ─── LinkedIn Social Feed & Networking APIs ──────────────────────────────
 export const fetchFeed = () => api.get('/feed');
 export const createPost = (payload: { content: string; postType?: string; mediaUrl?: string; visibility?: string }) => api.post('/feed/posts', payload);
+export const editPost = (id: number, payload: { content: string }) => api.put(`/feed/posts/${id}`, payload);
+export const deletePost = (id: number) => api.delete(`/feed/posts/${id}`);
 export const togglePostLike = (id: number) => api.post(`/feed/posts/${id}/like`);
 export const sharePost = (id: number) => api.post(`/feed/posts/${id}/share`);
 export const addPostComment = (id: number, payload: { content: string; parentCommentId?: number }) => api.post(`/feed/posts/${id}/comments`, payload);

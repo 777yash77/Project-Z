@@ -99,6 +99,39 @@ public class GeminiService {
         return buildIndividualFallbackReport(emp, risk);
     }
 
+    public String generateEmployeeImpactAnalysis(Employee emp) {
+        String prompt = String.format(
+            "Analyze this employee's data and determine the business impact if they leave. Focus on whether leaving would cause a significant loss, and if it is crucial for them to stay.\n" +
+            "Employee Details:\n" +
+            "- Name: %s\n" +
+            "- Age: %d\n" +
+            "- Department: %s\n" +
+            "- Annual Salary: $%s\n" +
+            "- Years at Company: %d\n" +
+            "- Performance Rating: %.1f / 5.0\n\n" +
+            "Provide a concise markdown response with:\n" +
+            "1. **Business Impact of Departure**: (quantify potential loss in productivity/knowledge)\n" +
+            "2. **Cruciality to Retain**: (Is it crucial to keep this employee? Why?)",
+            emp.getName(), emp.getAge(), emp.getDepartment(), emp.getSalary(),
+            emp.getYearsAtCompany(), emp.getPerformanceRating()
+        );
+
+        String response = generateContent(prompt);
+        if (response != null && !response.isBlank()) {
+            return response;
+        }
+        
+        boolean isCrucial = emp.getPerformanceRating() >= 4.0 || emp.getYearsAtCompany() > 5;
+        return String.format(
+            "### 1. Business Impact of Departure\n" +
+            "Losing %s would likely cause a %s loss in %s department productivity, considering their %d years of tenure and performance rating of %.1f.\n\n" +
+            "### 2. Cruciality to Retain\n" +
+            "%s",
+            emp.getName(), isCrucial ? "significant" : "moderate", emp.getDepartment(), emp.getYearsAtCompany(), emp.getPerformanceRating(),
+            isCrucial ? "**Crucial to Retain**: Yes. Their high performance or tenure makes them a valuable asset." : "**Moderate Priority**: While valuable, standard retention practices apply."
+        );
+    }
+
     private String buildIndividualFallbackReport(Employee emp, Map<String, Object> risk) {
         double score = emp.getRiskScore() <= 1.0 ? emp.getRiskScore() * 100 : emp.getRiskScore();
         String level = emp.getRiskLevel() != null ? emp.getRiskLevel() : (score >= 60 ? "High" : score >= 30 ? "Medium" : "Low");
