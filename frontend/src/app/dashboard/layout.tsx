@@ -192,7 +192,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     Role: <span className="font-semibold text-[var(--accent)]">{userInfo?.role || 'CONNECTED'}</span>
                   </div>
                   <button
-                    onClick={handleSignOut}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleSignOut();
+                    }}
                     className="w-full flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-[var(--text-muted)] transition hover:bg-[var(--bg-card)] hover:text-red-400"
                   >
                     <LogOut size={16} />
