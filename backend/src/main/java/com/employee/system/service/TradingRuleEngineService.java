@@ -52,12 +52,37 @@ public class TradingRuleEngineService {
         TradingWindowConfig config = getActiveConfig(emp.getOrganization());
         LocalDate today = LocalDate.now();
 
-        if (config == null || !config.isActive()) {
-            checks.add("Transfer window is currently CLOSED for organisation " + emp.getOrganization().getName());
+        // BRAND NEW FEATURE: Validate Target Organization is not the same as Current
+        if (targetOrg != null && emp.getOrganization() != null && targetOrg.getId().equals(emp.getOrganization().getId())) {
+            checks.add("FAILED: Cannot transfer to the same organisation.");
             eligible = false;
         } else {
+            checks.add("PASSED: Cross-organisation transfer validated.");
+        }
+
+        // FALLBACK LOGIC: If no specific policy is configured by the org, use a standard global fallback
+        if (config == null || !config.isActive()) {
+            checks.add("INFO: Organisation specific policy not found. Applying Global Standard Transfer Policy (Open Window, Min Tenure 6 Months).");
+            
+            // Standard Global Policy Rules
+            int tenureMonths = emp.getYearsAtCompany() * 12;
+            if (tenureMonths < 6) {
+                checks.add("FAILED: Employee tenure (" + tenureMonths + " months) is less than required (6 months)");
+                eligible = false;
+            } else {
+                checks.add("PASSED: Tenure threshold met (" + tenureMonths + " months).");
+            }
+
+            if (emp.getPerformanceRating() < 3.0) {
+                checks.add("FAILED: Performance rating (" + emp.getPerformanceRating() + ") is below standard threshold (3.0)");
+                eligible = false;
+            } else {
+                checks.add("PASSED: Performance rating threshold met.");
+            }
+        } else {
+            // Use strict organizational policy
             if (today.isBefore(config.getStartDate()) || today.isAfter(config.getEndDate())) {
-                checks.add("Current date " + today + " is outside the transfer window (" + config.getStartDate() + " to " + config.getEndDate() + ")");
+                checks.add("FAILED: Current date " + today + " is outside the transfer window (" + config.getStartDate() + " to " + config.getEndDate() + ")");
                 eligible = false;
             } else {
                 checks.add("PASSED: Transfer window is active.");

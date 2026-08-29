@@ -15,7 +15,8 @@ import {
   Share2,
   Bell,
   Search,
-  Menu
+  Menu,
+  HelpCircle
 } from 'lucide-react';
 import { ThemeToggle } from '../theme-toggle';
 
@@ -32,6 +33,7 @@ const navItems = [
   { href: '/dashboard/upload', label: 'Upload', icon: UploadCloud },
   { href: '/dashboard/hire', label: 'Recruitment', icon: BriefcaseBusiness },
   { href: '/dashboard/messages', label: 'Messages', icon: MessageCircleMore },
+  { href: '/dashboard/help', label: 'Help', icon: HelpCircle },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -81,8 +83,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const role = userInfo?.role;
     if (!role) return false;
     
+    // Help is visible to everyone
+    if (item.href === '/dashboard/help') return true;
+    
     if (role === 'EMPLOYEE') {
-      return ['/dashboard/feed', '/dashboard/my-profile', '/dashboard/messages'].includes(item.href);
+      return ['/dashboard/feed', '/dashboard/my-profile', '/dashboard/messages', '/dashboard/trading-window'].includes(item.href);
     }
     if (role === 'HR') {
       return !['/dashboard/org', '/dashboard/my-profile'].includes(item.href);
