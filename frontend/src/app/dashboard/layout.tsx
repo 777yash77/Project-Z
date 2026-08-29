@@ -112,6 +112,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       >
         {/* Left: Logo & Search */}
         <div className="flex items-center gap-4 md:gap-6 relative">
+          
+          {/* App Logo */}
+          <Link href="/dashboard/home" className="flex items-center justify-center h-10 w-10 rounded-md shadow-sm transition-transform hover:scale-105" style={{ backgroundColor: 'var(--accent)', color: 'white' }}>
+            <span className="font-bold text-2xl leading-none tracking-tighter">Z</span>
+          </Link>
+
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowProfileMenu(!showProfileMenu)}
