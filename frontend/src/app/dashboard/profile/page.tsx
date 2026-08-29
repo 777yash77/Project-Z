@@ -274,7 +274,7 @@ export default function HrProfilePage() {
 
       {/* Edit Profile Picture Modal */}
       {showAvatarModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 dark:bg-black/70 p-4 backdrop-blur-md">
           <div className="w-full max-w-lg rounded-3xl border border-slate-700 bg-slate-900 p-6 sm:p-8 shadow-2xl">
             <div className="flex items-center justify-between mb-6 border-b border-slate-800 pb-4">
               <div>
@@ -345,7 +345,7 @@ export default function HrProfilePage() {
 
       {/* Edit Office Modal */}
       {showEditModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 dark:bg-black/70 p-4 backdrop-blur-md">
           <div className="w-full max-w-lg rounded-3xl border border-slate-700 bg-slate-900 p-6 sm:p-8 shadow-2xl">
             <div className="flex items-center justify-between mb-6 border-b border-slate-800 pb-4">
               <div>

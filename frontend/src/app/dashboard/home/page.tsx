@@ -3,8 +3,8 @@
 import { useEffect, useState, useRef } from 'react';
 import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-import { ThumbsUp, MessageSquare, Share2, Send, Globe, Image as ImageIcon, Sparkles, UserPlus, X, Check, UserCheck, MoreVertical, Edit2, Trash2 } from 'lucide-react';
-import { fetchFeed, createPost, togglePostLike, addPostComment, fetchPostComments, fetchHrUsers, sendConnectionRequest, getBase64, sharePost, getMe, deletePost, editPost } from '../api';
+import { ThumbsUp, MessageSquare, Share2, Send, Globe, Image as ImageIcon, Sparkles, UserPlus, X, Check, UserCheck, MoreVertical, Edit2, Trash2, Bookmark, Settings, Info } from 'lucide-react';
+import { fetchFeed, createPost, togglePostLike, addPostComment, fetchPostComments, sendConnectionRequest, getBase64, sharePost, getMe, deletePost, editPost } from '../api';
 
 export default function LinkedInFeedPage() {
   const [userInfo, setUserInfo] = useState<any>(null);
@@ -15,8 +15,6 @@ export default function LinkedInFeedPage() {
   const [activeCommentPostId, setActiveCommentPostId] = useState<number | null>(null);
   const [commentsMap, setCommentsMap] = useState<Record<number, any[]>>({});
   const [commentInputMap, setCommentInputMap] = useState<Record<number, string>>({});
-  const [suggestedUsers, setSuggestedUsers] = useState<any[]>([]);
-  const [pendingConnections, setPendingConnections] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
 
   // Edit states
@@ -91,17 +89,6 @@ export default function LinkedInFeedPage() {
     } catch (err) {
       console.error('Failed to fetch feed posts:', err);
       setPosts([]);
-    }
-
-    try {
-      const usersRes = await fetchHrUsers();
-      if (Array.isArray(usersRes?.data)) {
-        setSuggestedUsers(usersRes.data.slice(0, 5));
-      } else {
-        setSuggestedUsers([]);
-      }
-    } catch (err) {
-      setSuggestedUsers([]);
     } finally {
       setLoading(false);
     }
@@ -189,26 +176,6 @@ export default function LinkedInFeedPage() {
     }
   };
 
-  const handleConnect = async (userId: number) => {
-    // Optimistically update UI
-    setPendingConnections((prev) => {
-      const newSet = new Set(prev);
-      newSet.add(userId);
-      return newSet;
-    });
-    try {
-      await sendConnectionRequest(userId);
-    } catch (err) {
-      console.error(err);
-      // Revert on error
-      setPendingConnections((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(userId);
-        return newSet;
-      });
-    }
-  };
-
   const handleEditClick = (post: any) => {
     setEditingPostId(post.id);
     setEditContent(post.content);
@@ -243,7 +210,7 @@ export default function LinkedInFeedPage() {
     <div className="mx-auto max-w-6xl space-y-6">
       {/* Crop Modal */}
       {imgSrc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 dark:bg-black/70 p-4 backdrop-blur-md">
           <div className="rounded-2xl bg-white p-5 shadow-2xl space-y-4 max-w-2xl w-full" style={{ backgroundColor: 'var(--bg-surface)' }}>
             <div className="flex justify-between items-center">
               <h3 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Crop Image</h3>
@@ -282,16 +249,50 @@ export default function LinkedInFeedPage() {
       )}
 
       {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>LinkedIn Enterprise Feed</h1>
-        <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
-          Connect with colleagues, publish organization updates, and interact across the network.
-        </p>
+      <div className="hidden">
+        <h1 className="text-2xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>Home</h1>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-4">
+        
+        {/* Left Sidebar (Mini Profile) */}
+        <div className="hidden md:block col-span-1 space-y-4">
+          <div className="rounded-2xl shadow-sm overflow-hidden" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+            <div className="h-16 relative" style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 30%, transparent)' }}>
+              <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 rounded-full border-4 overflow-hidden h-16 w-16 flex items-center justify-center font-bold text-lg text-black bg-white" style={{ borderColor: 'var(--bg-surface)', backgroundColor: userInfo?.avatarUrl ? 'transparent' : 'var(--accent)' }}>
+                {userInfo?.avatarUrl ? (
+                  <img src={userInfo.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  userInfo?.username?.[0]?.toUpperCase() || 'U'
+                )}
+              </div>
+            </div>
+            <div className="pt-10 pb-4 px-4 text-center border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+              <a href="/dashboard/my-profile" className="font-bold text-sm hover:underline" style={{ color: 'var(--text-primary)' }}>
+                {userInfo?.username || 'User Name'}
+              </a>
+              <p className="text-[10px] mt-1" style={{ color: 'var(--text-muted)' }}>
+                {userInfo?.headline || (userInfo?.role === 'ORGANISATION' ? 'Organization' : 'Software Professional')}
+              </p>
+            </div>
+            <div className="py-3 text-xs border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+              <div className="px-4 py-1.5 flex justify-between hover:bg-black/5 cursor-pointer transition">
+                <span style={{ color: 'var(--text-muted)' }}>Profile viewers</span>
+                <span className="font-bold text-blue-500">12</span>
+              </div>
+              <a href="/dashboard/network" className="px-4 py-1.5 flex justify-between hover:bg-black/5 cursor-pointer transition">
+                <span style={{ color: 'var(--text-muted)' }}>Connections</span>
+                <span className="font-bold text-blue-500">500+</span>
+              </a>
+            </div>
+            <div className="px-4 py-3 hover:bg-black/5 cursor-pointer transition text-xs flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-300">
+              <Bookmark size={14} /> Saved items
+            </div>
+          </div>
+        </div>
+
         {/* Main Feed Column (2 cols) */}
-        <div className="space-y-6 lg:col-span-2">
+        <div className="space-y-6 md:col-span-2">
           {/* Post Creation Box */}
           <div className="rounded-2xl p-5 shadow-sm" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
             <form onSubmit={handleCreatePost} className="space-y-3">
@@ -521,68 +522,50 @@ export default function LinkedInFeedPage() {
         </div>
 
         {/* Sidebar Widgets (1 col) */}
-        <div className="space-y-6">
-          {/* Trending Hashtags Widget */}
+        <div className="hidden lg:block space-y-6 col-span-1">
+          {/* Trending News Widget */}
           <div className="rounded-2xl p-5 shadow-sm" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
-            <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--accent)' }}>
-              <Sparkles size={14} /> Trending Enterprise Topics
+            <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider mb-4" style={{ color: 'var(--text-primary)' }}>
+              LinkedIn News <Info size={14} className="ml-auto text-gray-400" />
             </h3>
-            <div className="mt-3 space-y-2 text-xs">
-              <p className="font-medium hover:underline cursor-pointer" style={{ color: 'var(--text-primary)' }}>#TalentMobility2026</p>
-              <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>1,420 post discussions</p>
-              <p className="font-medium hover:underline cursor-pointer" style={{ color: 'var(--text-primary)' }}>#WorkdayAnalytics</p>
-              <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>980 post discussions</p>
-              <p className="font-medium hover:underline cursor-pointer" style={{ color: 'var(--text-primary)' }}>#RetentionRiskAI</p>
-              <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>740 post discussions</p>
+            
+            <div className="space-y-4 text-xs">
+              <div>
+                <p className="font-bold flex items-center gap-1 cursor-pointer hover:text-blue-500" style={{ color: 'var(--text-primary)' }}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                  Tech hiring bounces back
+                </p>
+                <p className="text-[10px] ml-2.5 mt-0.5" style={{ color: 'var(--text-muted)' }}>Top news • 12,345 readers</p>
+              </div>
+              
+              <div>
+                <p className="font-bold flex items-center gap-1 cursor-pointer hover:text-blue-500" style={{ color: 'var(--text-primary)' }}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                  AI transformation in HR
+                </p>
+                <p className="text-[10px] ml-2.5 mt-0.5" style={{ color: 'var(--text-muted)' }}>2d ago • 5,420 readers</p>
+              </div>
+              
+              <div>
+                <p className="font-bold flex items-center gap-1 cursor-pointer hover:text-blue-500" style={{ color: 'var(--text-primary)' }}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                  Remote work debate continues
+                </p>
+                <p className="text-[10px] ml-2.5 mt-0.5" style={{ color: 'var(--text-muted)' }}>3d ago • 19,002 readers</p>
+              </div>
+              
+              <div>
+                <p className="font-bold flex items-center gap-1 cursor-pointer hover:text-blue-500" style={{ color: 'var(--text-primary)' }}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                  New productivity tools for 2026
+                </p>
+                <p className="text-[10px] ml-2.5 mt-0.5" style={{ color: 'var(--text-muted)' }}>5h ago • 840 readers</p>
+              </div>
             </div>
-          </div>
-
-          {/* Suggested Network Connections */}
-          <div className="rounded-2xl p-5 shadow-sm" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
-            <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-primary)' }}>Suggested Connections</h3>
-            <div className="mt-4 space-y-3">
-              {suggestedUsers.map((u) => (
-                <div key={u.id} className="flex items-center justify-between text-xs gap-3">
-                  <a href={`/dashboard/profile/${u.id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                    <div className="h-8 w-8 flex-shrink-0 overflow-hidden rounded-full font-bold text-black flex items-center justify-center" style={{ backgroundColor: 'var(--accent)' }}>
-                       {u.avatarUrl ? (
-                         <img src={u.avatarUrl} alt={u.username} className="w-full h-full object-cover" />
-                       ) : (
-                         u.username?.[0]?.toUpperCase() || 'U'
-                       )}
-                    </div>
-                    <div>
-                      <p className="font-bold" style={{ color: 'var(--text-primary)' }}>{u.username}</p>
-                      <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{u.role}</p>
-                    </div>
-                  </a>
-                  {u.connected ? (
-                    <button
-                      disabled
-                      className="flex items-center justify-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold text-black bg-gray-500/20 cursor-not-allowed border"
-                      style={{ borderColor: 'var(--border-subtle)' }}
-                    >
-                      <UserCheck size={10} /> Connected
-                    </button>
-                  ) : pendingConnections.has(u.id) || u.connectionRequested ? (
-                    <button
-                      disabled
-                      className="flex items-center justify-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold text-white bg-green-600/80 cursor-not-allowed border-none"
-                    >
-                      <Check size={10} /> Sent
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleConnect(u.id)}
-                      className="flex items-center justify-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold text-black"
-                      style={{ backgroundColor: 'var(--accent)' }}
-                    >
-                      <UserPlus size={10} /> Connect
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
+            
+            <button className="mt-4 text-[11px] font-semibold flex items-center gap-1 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1 rounded transition">
+              Show more <MoreVertical size={12} />
+            </button>
           </div>
         </div>
       </div>

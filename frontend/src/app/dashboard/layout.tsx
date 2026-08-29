@@ -17,6 +17,8 @@ import {
   Search,
   Menu,
   HelpCircle,
+  User,
+  Settings,
   Briefcase
 } from 'lucide-react';
 import { ThemeToggle } from '../theme-toggle';
@@ -26,7 +28,8 @@ import { getMe } from './api';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/feed', label: 'Feed', icon: Share2 },
+  { href: '/dashboard/home', label: 'Home', icon: LayoutDashboard },
+  { href: '/dashboard/network', label: 'Colleagues', icon: Users },
   { href: '/dashboard/jobs', label: 'Jobs', icon: Briefcase },
   { href: '/dashboard/employees', label: 'Directory', icon: Users },
   { href: '/dashboard/org', label: 'Organisation', icon: Building2 },
@@ -89,10 +92,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (item.href === '/dashboard/help') return true;
     
     if (role === 'EMPLOYEE') {
-      return ['/dashboard/feed', '/dashboard/jobs', '/dashboard/my-profile', '/dashboard/messages'].includes(item.href);
+      return ['/dashboard/home', '/dashboard/network', '/dashboard/jobs', '/dashboard/my-profile', '/dashboard/messages'].includes(item.href);
     }
     if (role === 'HR') {
-      return !['/dashboard/org', '/dashboard/my-profile', '/dashboard/jobs'].includes(item.href);
+      return !['/dashboard/org', '/dashboard/my-profile', '/dashboard/jobs', '/dashboard/home', '/dashboard/network'].includes(item.href);
     }
     if (role === 'ORGANISATION') {
       return !['/dashboard/my-profile', '/dashboard/jobs'].includes(item.href);
@@ -108,14 +111,62 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         style={{ borderBottom: '1px solid var(--border-subtle)', backgroundColor: 'color-mix(in srgb, var(--bg-surface) 85%, transparent)' }}
       >
         {/* Left: Logo & Search */}
-        <div className="flex items-center gap-4 md:gap-6">
+        <div className="flex items-center gap-4 md:gap-6 relative">
           <div className="flex items-center gap-2">
-            <div
-              className="flex h-9 w-9 items-center justify-center rounded-lg shadow-[0_0_12px_var(--accent-glow)] transition-transform hover:scale-105 cursor-pointer"
-              style={{ backgroundColor: 'var(--accent)' }}
+            <button
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              onBlur={() => setTimeout(() => setShowProfileMenu(false), 200)}
+              className="flex items-center justify-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-[var(--bg-card)] border border-transparent hover:border-[var(--border-subtle)]"
             >
-              <span className="text-sm font-black text-black">EP</span>
-            </div>
+              <div className="h-8 w-8 rounded-full border-2 overflow-hidden flex items-center justify-center" style={{ borderColor: 'var(--accent)', backgroundColor: 'var(--bg-surface)' }}>
+                {userInfo?.avatarUrl ? (
+                  <img src={userInfo.avatarUrl} alt="User" className="h-full w-full object-cover" />
+                ) : (
+                  <UserCheck size={16} className="text-[var(--accent)]" />
+                )}
+              </div>
+              <Menu size={18} className="text-[var(--text-muted)] hidden sm:block" />
+            </button>
+
+            {/* Profile Dropdown Menu (Moved to Left) */}
+            {showProfileMenu && (
+              <div className="absolute left-0 top-full mt-2 w-64 rounded-xl border shadow-xl overflow-hidden animate-fade-in z-50" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}>
+                <div className="p-4 border-b flex gap-3" style={{ borderColor: 'var(--border-subtle)' }}>
+                  <div className="h-12 w-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--bg-card)' }}>
+                    {userInfo?.avatarUrl ? (
+                      <img src={userInfo.avatarUrl} alt="User" className="h-full w-full object-cover rounded-full" />
+                    ) : (
+                      <UserCheck size={24} className="text-[var(--accent)]" />
+                    )}
+                  </div>
+                  <div className="flex flex-col justify-center overflow-hidden">
+                    <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{userInfo?.username || 'User'}</p>
+                    <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{userInfo?.email || ''}</p>
+                  </div>
+                </div>
+                <div className="p-2 space-y-1">
+                  <div className="px-3 py-2 text-xs rounded-md mb-2" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-muted)' }}>
+                    Role: <span className="font-semibold" style={{ color: 'var(--accent)' }}>{userInfo?.role || 'CONNECTED'}</span>
+                  </div>
+                  <Link href="/dashboard/my-profile" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-[var(--bg-card)]" style={{ color: 'var(--text-primary)' }}>
+                    <User size={16} /> View Profile
+                  </Link>
+                  <Link href="/dashboard/settings" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-[var(--bg-card)]" style={{ color: 'var(--text-primary)' }}>
+                    <Settings size={16} /> Settings
+                  </Link>
+                  <button
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleSignOut();
+                    }}
+                    className="w-full flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-[var(--bg-card)] text-red-500 hover:text-red-400"
+                  >
+                    <LogOut size={16} />
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
           
           {/* Search bar (desktop) */}
@@ -167,52 +218,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Divider */}
           <div className="hidden md:block h-8 w-px bg-[var(--border-subtle)] mx-1" />
 
-          {/* User Profile Dropdown Toggle */}
-          <div className="relative h-full flex items-center">
-            <button 
-              onClick={() => setShowProfileMenu(!showProfileMenu)}
-              onBlur={() => setTimeout(() => setShowProfileMenu(false), 200)}
-              className="flex flex-col items-center justify-center gap-1 h-full px-2 hover:opacity-80 transition-opacity"
-            >
-              <div className="h-7 w-7 rounded-full border-2 border-[var(--border-subtle)] bg-[var(--bg-card)] flex items-center justify-center overflow-hidden">
-                <UserCheck size={14} className="text-[var(--text-muted)]" />
-              </div>
-              <span className="text-[10px] font-medium text-[var(--text-muted)] hidden md:flex items-center gap-1">
-                Me <span className="text-[8px]">▼</span>
-              </span>
-            </button>
-
-            {/* Profile Dropdown Menu */}
-            {showProfileMenu && (
-              <div className="absolute right-0 top-full mt-0 w-64 rounded-bl-xl rounded-br-xl border border-[var(--border-subtle)] shadow-xl overflow-hidden animate-fade-in" style={{ backgroundColor: 'var(--bg-surface)' }}>
-                <div className="p-4 border-b border-[var(--border-subtle)] flex gap-3">
-                  <div className="h-12 w-12 rounded-full bg-[var(--bg-card)] flex items-center justify-center flex-shrink-0">
-                    <UserCheck size={24} className="text-[var(--accent)]" />
-                  </div>
-                  <div className="flex flex-col justify-center overflow-hidden">
-                    <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{userInfo?.username}</p>
-                    <p className="text-xs text-[var(--text-muted)] truncate">{userInfo?.email}</p>
-                  </div>
-                </div>
-                <div className="p-2">
-                  <div className="px-3 py-2 text-xs text-[var(--text-muted)] bg-[var(--bg-card)] rounded-md mb-2">
-                    Role: <span className="font-semibold text-[var(--accent)]">{userInfo?.role || 'CONNECTED'}</span>
-                  </div>
-                  <button
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      handleSignOut();
-                    }}
-                    className="w-full flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-[var(--text-muted)] transition hover:bg-[var(--bg-card)] hover:text-red-400"
-                  >
-                    <LogOut size={16} />
-                    Sign Out
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
           {/* Mobile Menu Toggle */}
           <button 
             className="md:hidden p-2 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
@@ -251,7 +256,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}
 
       {/* Main content area */}
-      <main className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
+      <main className="flex-1 w-full px-4 md:px-6 lg:px-8 py-6">
         {/* Page Header (optional, for context) */}
         <div className="mb-6 flex items-center gap-2">
           <span className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Enterprise Platform</span>

@@ -613,7 +613,7 @@ export default function ExecutiveDashboardPage() {
 
       {/* Impact Modal */}
       {impactModalData && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/20 dark:bg-black/70 backdrop-blur-md p-4 animate-fade-in">
           <div className="w-full max-w-2xl rounded-2xl border border-emerald-500/30 p-6 shadow-2xl relative" style={{ backgroundColor: 'var(--bg-card)' }}>
             <button 
               onClick={() => setImpactModalData(null)}

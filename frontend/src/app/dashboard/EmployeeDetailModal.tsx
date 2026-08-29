@@ -65,7 +65,7 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
   if (!employeeId) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md animate-fade-in">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/20 dark:bg-black/70 backdrop-blur-md animate-fade-in">
       <div className="flex min-h-full items-center justify-center p-4 sm:p-6 md:p-12">
         <div
           className="relative w-full max-w-5xl rounded-3xl shadow-[0_40px_100px_rgba(0,0,0,0.8)] p-6 sm:p-8"

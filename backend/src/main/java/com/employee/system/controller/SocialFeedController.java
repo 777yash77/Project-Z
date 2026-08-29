@@ -165,6 +165,29 @@ public class SocialFeedController {
         return ResponseEntity.ok(feedService.getPendingConnectionRequests(current));
     }
 
+    @GetMapping("/api/network/suggestions")
+    public ResponseEntity<?> getNetworkSuggestions() {
+        User current = getCurrentUser();
+        List<User> suggestions = userRepository.findByRoleNot("HR");
+        
+        List<Map<String, Object>> result = new java.util.ArrayList<>();
+        for (User u : suggestions) {
+            if (current != null && u.getId().equals(current.getId())) continue;
+            
+            Map<String, Object> map = new java.util.HashMap<>();
+            map.put("id", u.getId());
+            map.put("username", u.getUsername());
+            map.put("headline", u.getHeadline());
+            map.put("avatarUrl", u.getAvatarUrl());
+            map.put("role", u.getRole());
+            if (u.getOrganization() != null) {
+                map.put("organization", u.getOrganization().getName());
+            }
+            result.add(map);
+        }
+        return ResponseEntity.ok(result);
+    }
+
     @GetMapping("/api/notifications")
     public ResponseEntity<List<Notification>> getNotifications() {
         User current = getCurrentUser();

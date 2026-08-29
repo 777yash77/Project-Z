@@ -314,7 +314,7 @@ export default function EmployeesPage() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 dark:bg-black/70 p-4 backdrop-blur-md overflow-y-auto">
           <div className="relative my-auto w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl border p-6 sm:p-8 shadow-2xl" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
             <div className="mb-6 flex items-center justify-between border-b pb-4" style={{ borderColor: 'var(--border-subtle)' }}>
               <div>

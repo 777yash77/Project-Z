@@ -99,6 +99,7 @@ export const sendConnectionRequest = (userId: number) => api.post(`/network/conn
 export const toggleFollow = (userId: number) => api.post(`/network/follow/${userId}`);
 export const respondConnectionRequest = (id: number, status: 'ACCEPTED' | 'REJECTED') => api.post(`/network/requests/${id}/respond`, { status });
 export const fetchPendingConnectionRequests = () => api.get('/network/requests');
+export const fetchNetworkSuggestions = () => api.get('/network/suggestions');
 export const fetchNotifications = () => api.get('/notifications');
 
 // ─── Rich Employee Profile APIs ──────────────────────────────────────────
@@ -140,3 +141,13 @@ export const getBase64 = (file: File, maxWidth = 800): Promise<string> => {
     reader.onerror = (error) => reject(error);
   });
 };
+
+// ─── Job Board APIs ──────────────────────────────────────────────────
+export const createJobPosting = (payload: any) => api.post('/jobs', payload);
+export const fetchMyOrgJobs = () => api.get('/jobs/my');
+export const fetchOpenCandidates = () => api.get('/jobs/candidates');
+export const fetchJobApplications = (jobId: number) => api.get(`/jobs/${jobId}/applications`);
+export const applyToJob = (jobId: number) => api.post(`/jobs/${jobId}/apply`);
+export const fetchAllOpenJobs = () => api.get('/jobs');
+export const fetchMyJobApplications = () => api.get('/jobs/applications/my');
+
