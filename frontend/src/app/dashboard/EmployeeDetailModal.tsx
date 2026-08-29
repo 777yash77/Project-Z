@@ -130,33 +130,6 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
                   </div>
 
                   <div className="flex flex-col gap-6">
-                    {/* Explainable AI (XAI) - SHAP Factors */}
-                    <div className="rounded-2xl border p-6 w-full" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
-                          <BarChart2 size={16} className="text-green-400" />
-                          Explainable AI — Top Flight Risk Factors
-                        </h3>
-                        <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-[0.2em]">SHAP Values</span>
-                      </div>
-                      <div className="mt-4 space-y-3">
-                        {activeAnalysis.shapFactors?.map((f: any) => (
-                          <div key={f.factor} className="rounded-xl border p-3" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'rgba(0,0,0,0.2)' }}>
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="font-semibold text-[var(--text-primary)]">{f.factor}</span>
-                              <span className={`font-mono font-bold ${f.direction === 'increase' ? 'text-red-400' : 'text-green-400'}`}>{f.impact}</span>
-                            </div>
-                            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-black/40">
-                              <div
-                                className={`h-full rounded-full ${f.direction === 'increase' ? 'bg-red-500' : 'bg-green-500'}`}
-                                style={{ width: `${Math.min(100, Math.abs(parseInt(f.impact)) * 4)}%` }}
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
                     {/* Gemini HR Copilot Panel */}
                     <div className="rounded-2xl border border-emerald-500/20 bg-card p-6 shadow-md w-full">
                       <div className="flex items-center justify-between border-b border-emerald-500/15 pb-3 mb-4">
