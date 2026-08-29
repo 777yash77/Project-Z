@@ -46,6 +46,80 @@ public class Employee {
     private String designation = "Software Engineer";
 
     private String employeeCode;
+    private Integer dailyRate = 800;
+    private Integer distanceFromHome = 10;
+    private Integer education = 3;
+    private String educationField = "Life Sciences";
+    private Integer environmentSatisfaction = 3;
+    private String gender = "Male";
+    private Integer hourlyRate = 65;
+    private Integer jobInvolvement = 3;
+    private Integer jobLevel = 2;
+    private Integer jobSatisfaction = 3;
+    private String maritalStatus = "Married";
+    private Integer monthlyRate = 15000;
+    private Integer numCompaniesWorked = 2;
+    private Boolean overTime = false;
+    private Integer percentSalaryHike = 14;
+    private Integer relationshipSatisfaction = 3;
+    private Integer stockOptionLevel = 1;
+    private Integer totalWorkingYears = 7;
+    private Integer trainingTimesLastYear = 2;
+    private Integer workLifeBalance = 3;
+    private Integer yearsInCurrentRole = 2;
+    private Integer yearsSinceLastPromotion = 1;
+    private Integer yearsWithCurrManager = 2;
+    private String businessTravel = "Travel_Rarely";
+
+    public Integer getDailyRate() { return dailyRate; }
+    public void setDailyRate(Integer dailyRate) { this.dailyRate = dailyRate; }
+    public Integer getDistanceFromHome() { return distanceFromHome; }
+    public void setDistanceFromHome(Integer distanceFromHome) { this.distanceFromHome = distanceFromHome; }
+    public Integer getEducation() { return education; }
+    public void setEducation(Integer education) { this.education = education; }
+    public String getEducationField() { return educationField; }
+    public void setEducationField(String educationField) { this.educationField = educationField; }
+    public Integer getEnvironmentSatisfaction() { return environmentSatisfaction; }
+    public void setEnvironmentSatisfaction(Integer environmentSatisfaction) { this.environmentSatisfaction = environmentSatisfaction; }
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+    public Integer getHourlyRate() { return hourlyRate; }
+    public void setHourlyRate(Integer hourlyRate) { this.hourlyRate = hourlyRate; }
+    public Integer getJobInvolvement() { return jobInvolvement; }
+    public void setJobInvolvement(Integer jobInvolvement) { this.jobInvolvement = jobInvolvement; }
+    public Integer getJobLevel() { return jobLevel; }
+    public void setJobLevel(Integer jobLevel) { this.jobLevel = jobLevel; }
+    public Integer getJobSatisfaction() { return jobSatisfaction; }
+    public void setJobSatisfaction(Integer jobSatisfaction) { this.jobSatisfaction = jobSatisfaction; }
+    public String getMaritalStatus() { return maritalStatus; }
+    public void setMaritalStatus(String maritalStatus) { this.maritalStatus = maritalStatus; }
+    public Integer getMonthlyRate() { return monthlyRate; }
+    public void setMonthlyRate(Integer monthlyRate) { this.monthlyRate = monthlyRate; }
+    public Integer getNumCompaniesWorked() { return numCompaniesWorked; }
+    public void setNumCompaniesWorked(Integer numCompaniesWorked) { this.numCompaniesWorked = numCompaniesWorked; }
+    public Boolean getOverTime() { return overTime; }
+    public void setOverTime(Boolean overTime) { this.overTime = overTime; }
+    public Integer getPercentSalaryHike() { return percentSalaryHike; }
+    public void setPercentSalaryHike(Integer percentSalaryHike) { this.percentSalaryHike = percentSalaryHike; }
+    public Integer getRelationshipSatisfaction() { return relationshipSatisfaction; }
+    public void setRelationshipSatisfaction(Integer relationshipSatisfaction) { this.relationshipSatisfaction = relationshipSatisfaction; }
+    public Integer getStockOptionLevel() { return stockOptionLevel; }
+    public void setStockOptionLevel(Integer stockOptionLevel) { this.stockOptionLevel = stockOptionLevel; }
+    public Integer getTotalWorkingYears() { return totalWorkingYears; }
+    public void setTotalWorkingYears(Integer totalWorkingYears) { this.totalWorkingYears = totalWorkingYears; }
+    public Integer getTrainingTimesLastYear() { return trainingTimesLastYear; }
+    public void setTrainingTimesLastYear(Integer trainingTimesLastYear) { this.trainingTimesLastYear = trainingTimesLastYear; }
+    public Integer getWorkLifeBalance() { return workLifeBalance; }
+    public void setWorkLifeBalance(Integer workLifeBalance) { this.workLifeBalance = workLifeBalance; }
+    public Integer getYearsInCurrentRole() { return yearsInCurrentRole; }
+    public void setYearsInCurrentRole(Integer yearsInCurrentRole) { this.yearsInCurrentRole = yearsInCurrentRole; }
+    public Integer getYearsSinceLastPromotion() { return yearsSinceLastPromotion; }
+    public void setYearsSinceLastPromotion(Integer yearsSinceLastPromotion) { this.yearsSinceLastPromotion = yearsSinceLastPromotion; }
+    public Integer getYearsWithCurrManager() { return yearsWithCurrManager; }
+    public void setYearsWithCurrManager(Integer yearsWithCurrManager) { this.yearsWithCurrManager = yearsWithCurrManager; }
+    public String getBusinessTravel() { return businessTravel; }
+    public void setBusinessTravel(String businessTravel) { this.businessTravel = businessTravel; }
+
 
     @Column(nullable = false)
     private boolean locked = true; // Employee Organisation Lock
@@ -78,6 +152,14 @@ public class Employee {
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @jakarta.persistence.OneToMany(mappedBy = "employee", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true)
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private java.util.List<TradeListing> tradeListings = new java.util.ArrayList<>();
+
+    @jakarta.persistence.OneToMany(mappedBy = "employee", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true)
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private java.util.List<TransferRequest> transferRequests = new java.util.ArrayList<>();
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

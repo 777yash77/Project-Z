@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -54,12 +55,90 @@ public class EmployeeController {
         this.geminiService = geminiService;
     }
 
+    private void clampPerformanceRating(Employee employee) {
+        if (employee.getPerformanceRating() != null) {
+            if (employee.getPerformanceRating() > 5.0) employee.setPerformanceRating(5.0);
+            if (employee.getPerformanceRating() < 1.0) employee.setPerformanceRating(1.0);
+        }
+    }
+
+    private void copyEmployeeDetails(Employee target, Employee source) {
+        target.setName(source.getName());
+        target.setAge(source.getAge());
+        target.setSalary(source.getSalary());
+        target.setYearsAtCompany(source.getYearsAtCompany());
+        target.setPerformanceRating(source.getPerformanceRating());
+        target.setDepartment(source.getDepartment());
+        target.setDesignation(source.getDesignation());
+        target.setDailyRate(source.getDailyRate());
+        target.setDistanceFromHome(source.getDistanceFromHome());
+        target.setEducation(source.getEducation());
+        target.setEducationField(source.getEducationField());
+        target.setEnvironmentSatisfaction(source.getEnvironmentSatisfaction());
+        target.setGender(source.getGender());
+        target.setHourlyRate(source.getHourlyRate());
+        target.setJobInvolvement(source.getJobInvolvement());
+        target.setJobLevel(source.getJobLevel());
+        target.setJobSatisfaction(source.getJobSatisfaction());
+        target.setMaritalStatus(source.getMaritalStatus());
+        target.setMonthlyRate(source.getMonthlyRate());
+        target.setNumCompaniesWorked(source.getNumCompaniesWorked());
+        target.setOverTime(source.getOverTime());
+        target.setPercentSalaryHike(source.getPercentSalaryHike());
+        target.setRelationshipSatisfaction(source.getRelationshipSatisfaction());
+        target.setStockOptionLevel(source.getStockOptionLevel());
+        target.setTotalWorkingYears(source.getTotalWorkingYears());
+        target.setTrainingTimesLastYear(source.getTrainingTimesLastYear());
+        target.setWorkLifeBalance(source.getWorkLifeBalance());
+        target.setYearsInCurrentRole(source.getYearsInCurrentRole());
+        target.setYearsSinceLastPromotion(source.getYearsSinceLastPromotion());
+        target.setYearsWithCurrManager(source.getYearsWithCurrManager());
+        target.setBusinessTravel(source.getBusinessTravel());
+    }
+
+    private Integer parseInteger(String val, Integer defaultVal) {
+        if (val == null || val.trim().isEmpty()) return defaultVal;
+        try { return (int) Double.parseDouble(val.trim()); } catch (Exception e) { return defaultVal; }
+    }
+    
+    private Boolean parseBoolean(String val, Boolean defaultVal) {
+        if (val == null || val.trim().isEmpty()) return defaultVal;
+        return Boolean.parseBoolean(val.trim()) || "1".equals(val.trim()) || "yes".equalsIgnoreCase(val.trim());
+    }
+    
+    private String parseString(String val, String defaultVal) {
+        if (val == null || val.trim().isEmpty()) return defaultVal;
+        return val.trim();
+    }
+
+    private Employee findDuplicate(String name, String department, User user) {
+        if (user.getOrganization() != null) {
+            List<Employee> dups = employeeRepository.findByNameIgnoreCaseAndDepartmentIgnoreCaseAndOrganization(name, department, user.getOrganization());
+            if (!dups.isEmpty()) return dups.get(0);
+        } else {
+            List<Employee> dups = employeeRepository.findByNameIgnoreCaseAndDepartmentIgnoreCaseAndCreatedBy(name, department, user);
+            if (!dups.isEmpty()) return dups.get(0);
+        }
+        return null;
+    }
+
     @PostMapping
     public ResponseEntity<?> createEmployee(@Valid @RequestBody Employee employee) {
         User user = getCurrentUser();
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Authentication required"));
         }
+        
+        clampPerformanceRating(employee);
+
+        Employee existing = findDuplicate(employee.getName(), employee.getDepartment(), user);
+        if (existing != null) {
+            copyEmployeeDetails(existing, employee);
+            applyRisk(existing);
+            Employee saved = employeeRepository.save(existing);
+            return ResponseEntity.status(HttpStatus.OK).body(saved);
+        }
+
         employee.setCreatedBy(user);
         if (user.getOrganization() != null) {
             employee.setOrganization(user.getOrganization());
@@ -121,14 +200,7 @@ public class EmployeeController {
         double rating = ((Number) payload.getOrDefault("performanceRating", 3.5)).doubleValue();
         int age = ((Number) payload.getOrDefault("age", 30)).intValue();
         String department = (String) payload.getOrDefault("department", "Engineering");
-        boolean overtime = Boolean.TRUE.equals(payload.get("overtime"));
-        int workLifeBalance = ((Number) payload.getOrDefault("workLifeBalance", 3)).intValue();
-        int promotionGap = ((Number) payload.getOrDefault("promotionGap", 2)).intValue();
-
-        Map<String, Object> result = retentionRiskService.calculateRisk(
-                salary, yearsAtCompany, rating, age, department, overtime, workLifeBalance, promotionGap
-        );
-
+        
         Employee tempEmp = new Employee();
         tempEmp.setName((String) payload.getOrDefault("name", "Employee"));
         tempEmp.setSalary(BigDecimal.valueOf(salary));
@@ -136,6 +208,14 @@ public class EmployeeController {
         tempEmp.setPerformanceRating(rating);
         tempEmp.setAge(age);
         tempEmp.setDepartment(department);
+        
+        Map<String, Object> extraParams = new HashMap<>();
+        if (payload.containsKey("overtime")) extraParams.put("overtime", payload.get("overtime"));
+        if (payload.containsKey("workLifeBalance")) extraParams.put("workLifeBalance", payload.get("workLifeBalance"));
+        if (payload.containsKey("promotionGap")) extraParams.put("promotionGap", payload.get("promotionGap"));
+
+        Map<String, Object> result = retentionRiskService.predictRetentionRisk(tempEmp, extraParams);
+
         tempEmp.setRiskScore(((Number) result.get("retentionRiskScore")).doubleValue());
         tempEmp.setRiskLevel((String) result.get("riskLevel"));
 
@@ -159,12 +239,8 @@ public class EmployeeController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Not authorized to update this employee"));
         }
 
-        existing.setName(employeeDetails.getName());
-        existing.setAge(employeeDetails.getAge());
-        existing.setSalary(employeeDetails.getSalary());
-        existing.setYearsAtCompany(employeeDetails.getYearsAtCompany());
-        existing.setPerformanceRating(employeeDetails.getPerformanceRating());
-        existing.setDepartment(employeeDetails.getDepartment());
+        copyEmployeeDetails(existing, employeeDetails);
+        clampPerformanceRating(existing);
         applyRisk(existing);
         return ResponseEntity.ok(employeeRepository.save(existing));
     }
@@ -177,7 +253,15 @@ public class EmployeeController {
         }
 
         User currentUser = getCurrentUser();
-        if (currentUser == null || existing.getCreatedBy() == null || !existing.getCreatedBy().getId().equals(currentUser.getId())) {
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Authentication required"));
+        }
+        
+        boolean isCreator = existing.getCreatedBy() != null && existing.getCreatedBy().getId().equals(currentUser.getId());
+        boolean isSameOrg = existing.getOrganization() != null && currentUser.getOrganization() != null 
+                            && existing.getOrganization().getId().equals(currentUser.getOrganization().getId());
+
+        if (!isCreator && !isSameOrg) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Not authorized to delete this employee"));
         }
 
@@ -206,22 +290,58 @@ public class EmployeeController {
 
             List<Employee> employees = new ArrayList<>();
             for (CSVRecord record : parser) {
-                Employee employee = new Employee();
-                employee.setName(record.get("name"));
+                String name = record.get("name");
+                String dept = record.get("department");
+                Employee employee = findDuplicate(name, dept, user);
+                
+                if (employee == null) {
+                    employee = new Employee();
+                    employee.setName(name);
+                    employee.setDepartment(dept);
+                    employee.setCreatedBy(user);
+                    if (user.getOrganization() != null) {
+                        employee.setOrganization(user.getOrganization());
+                    }
+                }
+                
                 employee.setAge(Integer.parseInt(record.get("age")));
                 employee.setSalary(new BigDecimal(record.get("salary")));
                 employee.setYearsAtCompany(Integer.parseInt(record.get("yearsAtCompany")));
                 employee.setPerformanceRating(Double.parseDouble(record.get("performanceRating")));
-                employee.setDepartment(record.get("department"));
-                employee.setCreatedBy(user);
-                if (user.getOrganization() != null) {
-                    employee.setOrganization(user.getOrganization());
-                }
+                
+                // Advanced fields
+                if (record.isMapped("dailyRate")) employee.setDailyRate(parseInteger(record.get("dailyRate"), employee.getDailyRate()));
+                if (record.isMapped("distanceFromHome")) employee.setDistanceFromHome(parseInteger(record.get("distanceFromHome"), employee.getDistanceFromHome()));
+                if (record.isMapped("education")) employee.setEducation(parseInteger(record.get("education"), employee.getEducation()));
+                if (record.isMapped("educationField")) employee.setEducationField(parseString(record.get("educationField"), employee.getEducationField()));
+                if (record.isMapped("environmentSatisfaction")) employee.setEnvironmentSatisfaction(parseInteger(record.get("environmentSatisfaction"), employee.getEnvironmentSatisfaction()));
+                if (record.isMapped("gender")) employee.setGender(parseString(record.get("gender"), employee.getGender()));
+                if (record.isMapped("hourlyRate")) employee.setHourlyRate(parseInteger(record.get("hourlyRate"), employee.getHourlyRate()));
+                if (record.isMapped("jobInvolvement")) employee.setJobInvolvement(parseInteger(record.get("jobInvolvement"), employee.getJobInvolvement()));
+                if (record.isMapped("jobLevel")) employee.setJobLevel(parseInteger(record.get("jobLevel"), employee.getJobLevel()));
+                if (record.isMapped("jobSatisfaction")) employee.setJobSatisfaction(parseInteger(record.get("jobSatisfaction"), employee.getJobSatisfaction()));
+                if (record.isMapped("maritalStatus")) employee.setMaritalStatus(parseString(record.get("maritalStatus"), employee.getMaritalStatus()));
+                if (record.isMapped("monthlyRate")) employee.setMonthlyRate(parseInteger(record.get("monthlyRate"), employee.getMonthlyRate()));
+                if (record.isMapped("numCompaniesWorked")) employee.setNumCompaniesWorked(parseInteger(record.get("numCompaniesWorked"), employee.getNumCompaniesWorked()));
+                if (record.isMapped("overTime")) employee.setOverTime(parseBoolean(record.get("overTime"), employee.getOverTime()));
+                if (record.isMapped("percentSalaryHike")) employee.setPercentSalaryHike(parseInteger(record.get("percentSalaryHike"), employee.getPercentSalaryHike()));
+                if (record.isMapped("relationshipSatisfaction")) employee.setRelationshipSatisfaction(parseInteger(record.get("relationshipSatisfaction"), employee.getRelationshipSatisfaction()));
+                if (record.isMapped("stockOptionLevel")) employee.setStockOptionLevel(parseInteger(record.get("stockOptionLevel"), employee.getStockOptionLevel()));
+                if (record.isMapped("totalWorkingYears")) employee.setTotalWorkingYears(parseInteger(record.get("totalWorkingYears"), employee.getTotalWorkingYears()));
+                if (record.isMapped("trainingTimesLastYear")) employee.setTrainingTimesLastYear(parseInteger(record.get("trainingTimesLastYear"), employee.getTrainingTimesLastYear()));
+                if (record.isMapped("workLifeBalance")) employee.setWorkLifeBalance(parseInteger(record.get("workLifeBalance"), employee.getWorkLifeBalance()));
+                if (record.isMapped("yearsInCurrentRole")) employee.setYearsInCurrentRole(parseInteger(record.get("yearsInCurrentRole"), employee.getYearsInCurrentRole()));
+                if (record.isMapped("yearsSinceLastPromotion")) employee.setYearsSinceLastPromotion(parseInteger(record.get("yearsSinceLastPromotion"), employee.getYearsSinceLastPromotion()));
+                if (record.isMapped("yearsWithCurrManager")) employee.setYearsWithCurrManager(parseInteger(record.get("yearsWithCurrManager"), employee.getYearsWithCurrManager()));
+                if (record.isMapped("businessTravel")) employee.setBusinessTravel(parseString(record.get("businessTravel"), employee.getBusinessTravel()));
+                
+                clampPerformanceRating(employee);
                 applyRisk(employee);
                 employees.add(employee);
+                // Save immediately to catch duplicates within the same CSV
+                employeeRepository.save(employee);
             }
-            employeeRepository.saveAll(employees);
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Imported " + employees.size() + " employees successfully into your account."));
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Imported/Updated " + employees.size() + " employees successfully."));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "CSV import failed: " + e.getMessage()));
         }

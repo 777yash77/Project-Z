@@ -206,59 +206,80 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
                 </button>
               </div>
 
-              <div className="mt-5 grid gap-4 sm:grid-cols-4">
-                <div>
-                  <label className="text-[11px] text-[var(--text-muted)] font-medium">Proposed Salary ($)</label>
+              <div className="mt-5 grid gap-6 sm:grid-cols-4">
+                <div className="flex flex-col">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Proposed Salary</label>
+                    <span className="text-xs font-mono font-bold text-green-400">${simSalary.toLocaleString()}</span>
+                  </div>
                   <input
-                    type="number"
-                    step="5000"
+                    type="range"
+                    min="30000"
+                    max="250000"
+                    step="1000"
                     value={simSalary}
                     onChange={(e) => setSimSalary(Number(e.target.value))}
-                    className="mt-1.5 w-full rounded-xl border px-3 py-2 text-xs outline-none"
-                    style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
+                    className="w-full accent-green-500 h-1.5 bg-black/40 rounded-lg appearance-none cursor-pointer outline-none"
                   />
+                  <div className="flex justify-between text-[9px] text-[var(--text-faint)] mt-1.5">
+                    <span>$30k</span>
+                    <span>$250k</span>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="text-[11px] text-[var(--text-muted)] font-medium">Work-Life Balance (1–5)</label>
-                  <select
+                <div className="flex flex-col">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider">W-L Balance</label>
+                    <span className="text-xs font-bold text-green-400">{simWlb}/5</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1"
+                    max="5"
+                    step="1"
                     value={simWlb}
                     onChange={(e) => setSimWlb(Number(e.target.value))}
-                    className="mt-1.5 w-full rounded-xl border px-3 py-2 text-xs outline-none cursor-pointer"
-                    style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
-                  >
-                    <option value={1} style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>1 - Poor</option>
-                    <option value={2} style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>2 - Fair</option>
-                    <option value={3} style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>3 - Good</option>
-                    <option value={4} style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>4 - Excellent</option>
-                    <option value={5} style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>5 - Outstanding</option>
-                  </select>
+                    className="w-full accent-green-500 h-1.5 bg-black/40 rounded-lg appearance-none cursor-pointer outline-none"
+                  />
+                  <div className="flex justify-between text-[9px] text-[var(--text-faint)] mt-1.5">
+                    <span>Poor (1)</span>
+                    <span>Outstanding (5)</span>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="text-[11px] text-[var(--text-muted)] font-medium">Overtime Work</label>
+                <div className="flex flex-col">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Overtime</label>
+                  </div>
                   <select
                     value={simOvertime ? 'yes' : 'no'}
                     onChange={(e) => setSimOvertime(e.target.value === 'yes')}
-                    className="mt-1.5 w-full rounded-xl border px-3 py-2 text-xs outline-none cursor-pointer"
+                    className="w-full rounded-xl border px-3 py-1.5 text-xs font-medium outline-none cursor-pointer transition focus:ring-1 focus:ring-green-500"
                     style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
                   >
-                    <option value="no" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>No Overtime</option>
-                    <option value="yes" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)' }}>Requires Overtime</option>
+                    <option value="no">No Overtime</option>
+                    <option value="yes">Requires Overtime</option>
                   </select>
                 </div>
 
-                <div>
-                  <label className="text-[11px] text-[var(--text-muted)] font-medium">Promotion Delay (Yrs)</label>
+                <div className="flex flex-col">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Promotion Gap</label>
+                    <span className="text-xs font-bold text-green-400">{simPromotionGap} Yrs</span>
+                  </div>
                   <input
-                    type="number"
+                    type="range"
                     min="0"
                     max="10"
+                    step="1"
                     value={simPromotionGap}
                     onChange={(e) => setSimPromotionGap(Number(e.target.value))}
-                    className="mt-1.5 w-full rounded-xl border px-3 py-2 text-xs outline-none"
-                    style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
+                    className="w-full accent-green-500 h-1.5 bg-black/40 rounded-lg appearance-none cursor-pointer outline-none"
                   />
+                  <div className="flex justify-between text-[9px] text-[var(--text-faint)] mt-1.5">
+                    <span>0 Yrs</span>
+                    <span>10 Yrs</span>
+                  </div>
                 </div>
               </div>
 

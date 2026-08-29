@@ -340,23 +340,28 @@ export default function ExecutiveDashboardPage() {
             <ComposedChart data={riskHistory} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorRisk" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="var(--accent)" stopOpacity={0.2} />
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.5} />
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
+                </linearGradient>
+                <linearGradient id="colorVol" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="rgba(255,255,255,0.1)" stopOpacity={1} />
+                  <stop offset="95%" stopColor="rgba(255,255,255,0.01)" stopOpacity={1} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 255, 136, 0.1)" vertical={false} />
-              <XAxis dataKey="time" stroke="rgba(255,255,255,0.2)" fontSize={10} tickMargin={10} />
-              <YAxis yAxisId="left" domain={['auto', 'auto']} stroke="rgba(255,255,255,0.2)" fontSize={10} tickFormatter={(val) => `${val}%`} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" vertical={false} />
+              <XAxis dataKey="time" stroke="rgba(255,255,255,0.3)" fontSize={11} tickMargin={12} tickLine={false} axisLine={false} />
+              <YAxis yAxisId="left" domain={['auto', 'auto']} stroke="rgba(255,255,255,0.3)" fontSize={11} tickFormatter={(val) => `${val}%`} tickLine={false} axisLine={false} />
               <YAxis yAxisId="right" orientation="right" domain={[0, 'auto']} hide />
               <Tooltip 
-                contentStyle={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-subtle)', borderRadius: '12px', fontSize: '12px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)' }}
+                contentStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.85)', borderColor: 'rgba(16, 185, 129, 0.3)', borderRadius: '14px', padding: '12px', fontSize: '13px', boxShadow: '0 10px 30px -5px rgba(0, 0, 0, 0.8)', backdropFilter: 'blur(8px)' }}
                 itemStyle={{ fontWeight: 'bold' }}
-                labelStyle={{ color: 'var(--text-muted)', marginBottom: '5px' }}
+                labelStyle={{ color: 'rgba(255,255,255,0.6)', marginBottom: '6px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px' }}
+                cursor={{ stroke: 'rgba(16, 185, 129, 0.2)', strokeWidth: 2, strokeDasharray: '4 4' }}
               />
-              <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-              <Bar yAxisId="right" dataKey="volume" name="Volatility" fill="rgba(255,255,255,0.05)" radius={[2, 2, 0, 0]} />
-              <Bar yAxisId="left" dataKey="avgRisk" name="Avg Risk" fill="url(#colorRisk)" radius={[6, 6, 0, 0]} isAnimationActive={true} barSize={40} />
-              <Line yAxisId="left" type="monotone" dataKey="movingAvg" name="5-Point MA" stroke="#3b82f6" strokeWidth={4} dot={{ r: 4 }} strokeDasharray="4 4" isAnimationActive={true} />
+              <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '15px', opacity: 0.8 }} iconType="circle" />
+              <Bar yAxisId="right" dataKey="volume" name="Activity Volatility" fill="url(#colorVol)" radius={[4, 4, 0, 0]} barSize={25} />
+              <Area yAxisId="left" type="monotone" dataKey="avgRisk" name="Avg Risk" stroke="#10b981" strokeWidth={3} fill="url(#colorRisk)" isAnimationActive={true} />
+              <Line yAxisId="left" type="monotone" dataKey="movingAvg" name="5-Point MA" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#000', stroke: '#3b82f6', strokeWidth: 2 }} activeDot={{ r: 6 }} strokeDasharray="4 4" isAnimationActive={true} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>

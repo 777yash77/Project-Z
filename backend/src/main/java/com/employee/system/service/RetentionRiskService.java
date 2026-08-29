@@ -21,6 +21,10 @@ public class RetentionRiskService {
     private final org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
 
     public Map<String, Object> predictRetentionRisk(Employee employee) {
+        return predictRetentionRisk(employee, new HashMap<>());
+    }
+
+    public Map<String, Object> predictRetentionRisk(Employee employee, Map<String, Object> extraParams) {
         Map<String, Object> response;
         try {
             // Prepare payload for ML service
@@ -30,6 +34,37 @@ public class RetentionRiskService {
             payload.put("YearsAtCompany", employee.getYearsAtCompany());
             payload.put("PerformanceRating", employee.getPerformanceRating());
             payload.put("Department", employee.getDepartment());
+            
+            payload.put("DailyRate", employee.getDailyRate());
+            payload.put("DistanceFromHome", employee.getDistanceFromHome());
+            payload.put("Education", employee.getEducation());
+            payload.put("EducationField", employee.getEducationField());
+            payload.put("EnvironmentSatisfaction", employee.getEnvironmentSatisfaction());
+            payload.put("Gender", employee.getGender());
+            payload.put("HourlyRate", employee.getHourlyRate());
+            payload.put("JobInvolvement", employee.getJobInvolvement());
+            payload.put("JobLevel", employee.getJobLevel());
+            payload.put("JobSatisfaction", employee.getJobSatisfaction());
+            payload.put("MaritalStatus", employee.getMaritalStatus());
+            payload.put("MonthlyRate", employee.getMonthlyRate());
+            payload.put("NumCompaniesWorked", employee.getNumCompaniesWorked());
+            payload.put("OverTime", employee.getOverTime());
+            payload.put("PercentSalaryHike", employee.getPercentSalaryHike());
+            payload.put("RelationshipSatisfaction", employee.getRelationshipSatisfaction());
+            payload.put("StockOptionLevel", employee.getStockOptionLevel());
+            payload.put("TotalWorkingYears", employee.getTotalWorkingYears());
+            payload.put("TrainingTimesLastYear", employee.getTrainingTimesLastYear());
+            payload.put("WorkLifeBalance", employee.getWorkLifeBalance());
+            payload.put("YearsInCurrentRole", employee.getYearsInCurrentRole());
+            payload.put("YearsSinceLastPromotion", employee.getYearsSinceLastPromotion());
+            payload.put("YearsWithCurrManager", employee.getYearsWithCurrManager());
+            payload.put("BusinessTravel", employee.getBusinessTravel());
+            payload.put("JobRole", employee.getDesignation());
+            
+            // Add simulator parameters if present (overrides employee defaults if run in simulation)
+            if (extraParams.containsKey("overtime")) payload.put("OverTime", extraParams.get("overtime"));
+            if (extraParams.containsKey("workLifeBalance")) payload.put("WorkLifeBalance", extraParams.get("workLifeBalance"));
+            if (extraParams.containsKey("promotionGap")) payload.put("YearsSinceLastPromotion", extraParams.get("promotionGap"));
 
             // Call ML service
             String mlServiceUrl = System.getenv().getOrDefault("ML_SERVICE_URL", "http://localhost:5000/predict");

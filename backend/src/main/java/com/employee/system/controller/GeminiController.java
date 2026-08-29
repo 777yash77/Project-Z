@@ -33,7 +33,7 @@ public class GeminiController {
     private final RetentionRiskService retentionRiskService;
 
     public GeminiController(GeminiService geminiService, EmployeeRepository employeeRepository,
-                            UserRepository userRepository, RetentionRiskService retentionRiskService) {
+            UserRepository userRepository, RetentionRiskService retentionRiskService) {
         this.geminiService = geminiService;
         this.employeeRepository = employeeRepository;
         this.userRepository = userRepository;
@@ -41,7 +41,8 @@ public class GeminiController {
     }
 
     private User getCurrentUser() {
-        if (SecurityContextHolder.getContext() == null || SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (SecurityContextHolder.getContext() == null
+                || SecurityContextHolder.getContext().getAuthentication() == null) {
             return null;
         }
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -61,8 +62,10 @@ public class GeminiController {
         }
 
         User currentUser = getCurrentUser();
-        if (currentUser == null || emp.getCreatedBy() == null || !emp.getCreatedBy().getId().equals(currentUser.getId())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Not authorized to access this employee profile"));
+        if (currentUser == null || emp.getCreatedBy() == null
+                || !emp.getCreatedBy().getId().equals(currentUser.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "Not authorized to access this employee profile"));
         }
 
         Map<String, Object> riskDetails = retentionRiskService.predictRetentionRisk(emp);
@@ -74,8 +77,7 @@ public class GeminiController {
                 "department", emp.getDepartment(),
                 "riskLevel", emp.getRiskLevel(),
                 "riskScore", emp.getRiskScore(),
-                "aiAnalysisReport", report
-        ));
+                "aiAnalysisReport", report));
     }
 
     @GetMapping("/workforce")
@@ -90,13 +92,13 @@ public class GeminiController {
 
         return ResponseEntity.ok(Map.of(
                 "totalEmployees", employees.size(),
-                "aiWorkforceReport", report
-        ));
+                "aiWorkforceReport", report));
     }
 
     @PostMapping("/insights")
     public ResponseEntity<?> generateInsights(@RequestBody Map<String, String> payload) {
-        String prompt = payload.getOrDefault("prompt", "Provide executive employee retention insights for high attrition risks.");
+        String prompt = payload.getOrDefault("prompt",
+                "Provide executive employee retention insights for high attrition risks.");
         String result = geminiService.generateContent(prompt);
 
         Map<String, Object> response = new HashMap<>();
@@ -105,7 +107,8 @@ public class GeminiController {
             response.put("insight", result);
         } else {
             response.put("source", "HR Intelligence AI Engine (Fallback)");
-            response.put("insight", "Workforce analytics indicate high risk concentrated in Engineering & Sales. Priority actions: 1) Execute stay interviews for engineers with >5 years tenure. 2) Review market compensation benchmarks against industry standard. 3) Initiate trade placement for high-performing, disengaged candidates.");
+            response.put("insight",
+                    "Workforce analytics indicate high risk concentrated in Engineering & Sales. Priority actions: 1) Execute stay interviews for engineers with >5 years tenure. 2) Review market compensation benchmarks against industry standard. 3) Initiate trade placement for high-performing, disengaged candidates.");
         }
         return ResponseEntity.ok(response);
     }
@@ -114,7 +117,9 @@ public class GeminiController {
     public ResponseEntity<?> generateOutreachDraft(@RequestBody Map<String, String> payload) {
         String targetHr = payload.getOrDefault("targetHr", "HR Representative");
         String targetOrg = payload.getOrDefault("targetOrg", "Partner Company");
-        String prompt = String.format("Write a professional, concise LinkedIn-style B2B HR outreach message to %s at %s proposing talent mobility, cross-organization recruiting, and retention risk sharing.", targetHr, targetOrg);
+        String prompt = String.format(
+                "Write a professional, concise LinkedIn-style B2B HR outreach message to %s at %s proposing talent mobility, cross-organization recruiting, and retention risk sharing.",
+                targetHr, targetOrg);
 
         String result = geminiService.generateContent(prompt);
         Map<String, Object> response = new HashMap<>();
@@ -123,7 +128,9 @@ public class GeminiController {
             response.put("draft", result);
         } else {
             response.put("source", "HR Intelligence AI Engine");
-            response.put("draft", String.format("Hi %s! I'm reaching out from our organization to discuss potential talent mobility synergies with %s. We have open listings and would love to explore mutually beneficial recruitment opportunities. Let's connect!", targetHr, targetOrg));
+            response.put("draft", String.format(
+                    "Hi %s! I'm reaching out from our organization to discuss potential talent mobility synergies with %s. We have open listings and would love to explore mutually beneficial recruitment opportunities. Let's connect!",
+                    targetHr, targetOrg));
         }
         return ResponseEntity.ok(response);
     }

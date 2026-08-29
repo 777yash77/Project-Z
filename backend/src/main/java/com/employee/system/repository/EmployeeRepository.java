@@ -10,4 +10,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     List<Employee> findAllByOrderByRiskScoreDesc();
     List<Employee> findByCreatedByOrderByRiskScoreDesc(User createdBy);
     List<Employee> findByOrganizationOrderByRiskScoreDesc(Organization organization);
+    List<Employee> findByNameIgnoreCaseAndDepartmentIgnoreCaseAndOrganization(String name, String department, Organization organization);
+    List<Employee> findByNameIgnoreCaseAndDepartmentIgnoreCaseAndCreatedBy(String name, String department, User createdBy);
 }
