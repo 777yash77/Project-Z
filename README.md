@@ -28,9 +28,13 @@
 8. [Comprehensive Technology Stack](#-comprehensive-technology-stack)
 9. [Detailed Installation & Setup Guide](#-detailed-installation--setup-guide)
 10. [REST API Endpoints Reference](#-rest-api-endpoints-reference)
-11. [Upcoming Features & Roadmap](#-upcoming-features--roadmap)
-12. [Known Problems & Current Limitations](#-known-problems--current-limitations)
-13. [Contributing & License](#-contributing--license)
+11. [Database Schema Definition](#-database-schema-definition)
+12. [Frontend Component Architecture](#-frontend-component-architecture)
+13. [Backend Security & JWT Flow](#-backend-security--jwt-flow)
+14. [Deployment Scenarios (K8s & CI/CD)](#-deployment-scenarios-k8s--cicd)
+15. [Upcoming Features & Roadmap](#-upcoming-features--roadmap)
+16. [Known Problems & Current Limitations](#-known-problems--current-limitations)
+17. [Contributing & License](#-contributing--license)
 
 ---
 
@@ -132,8 +136,8 @@ We use a robust ensemble learning approach (like Random Forest or XGBoost) to cl
   - 🟡 **Medium Risk (0.40 - 0.69):** Needs monitoring. Flight risk within 6 months.
   - 🔴 **High Risk (0.70 - 1.0):** Critical. Imminent flight risk. Immediate intervention required.
 
-### 🔍 Explainable AI (XAI) with SHAP values (Future Integration)
-The system is designed to eventually support SHAP (SHapley Additive exPlanations) values to tell the user *exactly* which feature pushed the score high (e.g., "+20% risk due to 'Years in Current Role = 5'"). 🔬
+### 🔬 Feature Importance and Preprocessing
+The Flask backend pre-processes the data using `StandardScaler` to normalize numeric values (e.g., Salary is normalized to ensure it doesn't disproportionately weigh against smaller numeric values like performance rating). Categorical variables (e.g., Department, EducationField) are One-Hot Encoded. The resulting 1D tensor is passed to our persisted `.pkl` model for inference.
 
 ---
 
@@ -141,14 +145,20 @@ The system is designed to eventually support SHAP (SHapley Additive exPlanations
 
 Raw numbers are great, but human resources is about *humans*. We integrated Google's Gemini AI to bridge the gap between cold data and actionable strategy. 🗣️
 
-When HR clicks "Get Insights" on an employee, the backend takes the employee's data (Salary, Tenure, Risk Score, Department) and sends a highly structured prompt to Gemini. 
+When HR clicks "Get Insights" on an employee, the Spring Boot backend takes the employee's data and triggers a REST call to the ML Service (`/predict-impact`).
 
-**Gemini then returns a 3-part report:**
-1. **Diagnosis:** Why is this person at risk? 🩺
-2. **Impact:** What happens to the company if they leave? 💥
-3. **Action Plan:** A bulleted, step-by-step roadmap for HR to retain the employee (e.g., "Schedule a 1-on-1", "Review compensation band", "Offer lateral movement"). 🗺️
+### 📝 The Secret Sauce: Prompt Engineering
+The ML Service formats a dynamic, highly contextual prompt before passing it to Gemini:
+```text
+"Act as an Expert HR Consultant. An employee named {name} working as a {designation} in the {department} department has been flagged by our ML system with a retention risk score of {riskScore * 100}%. 
+Their current salary is {salary}, they have been at the company for {tenure} years, and their last performance rating was {performanceRating}/5.0. 
+Based on these metrics, provide a 3-part executive report:
+1. Diagnosis (Why are they at risk?)
+2. Business Impact (What happens if they leave?)
+3. Actionable Retention Strategy (Provide 3 concrete bullet points to retain them)."
+```
 
-This text is rendered beautifully in the frontend using the `AiReportRenderer` component. ✨
+Gemini returns a beautifully formatted markdown response which the Next.js `AiReportRenderer` converts into a visual UI with icons and drop-downs. ✨
 
 ---
 
@@ -158,6 +168,7 @@ This text is rendered beautifully in the frontend using the `AiReportRenderer` c
 Forget boring spreadsheets! ERDSS treats employee risk like a live stock market.
 - **Flashing Rows:** When an employee's risk score changes, their row flashes green or red! 🚨
 - **Live Trend Chart:** A beautiful Area chart tracks the aggregate risk of the organization over time. 📊
+- **Polling Architecture:** The frontend polls the backend every 5 seconds to get the latest workforce state, instantly mapping delta changes to the UI without a hard refresh.
 
 ### 🔄 Internal Trading Window
 A revolutionary concept in HR software! 
@@ -168,12 +179,12 @@ A revolutionary concept in HR software!
 ### 📂 Smart Bulk CSV Upload
 Onboarding a company of 10,000 employees? No problem.
 - Drag and drop a CSV file. 📁
-- The Spring Boot backend parses it, saves it to MySQL, and instantly batches requests to the Python ML service.
+- The Spring Boot backend parses it using `Apache Commons CSV`, batches records, saves them to MySQL via JPA, and asynchronously passes them to the ML service to avoid blocking the HTTP request thread.
 - Within seconds, your entire workforce is scored and ranked! ⚡
 
 ### 💬 Cross-HR Messaging System
 Secure, intra-organization messaging.
-- HR managers can DM each other directly within the platform to discuss sensitive employee retention strategies without relying on external, less secure tools like Slack. 📩
+- HR managers can DM each other directly within the platform. The UI features a real-time thread view reminiscent of iMessage or Slack, storing messages in the relational database with timestamps.
 
 ---
 
@@ -186,7 +197,7 @@ We spared no expense in choosing the best tools for the job! 🏆
 - **Styling:** Tailwind CSS (Utility-first goodness) 💅
 - **Icons:** Lucide-React (Crisp, clean SVGs) 🖼️
 - **Charts:** Recharts (D3 built for React) 📉
-- **State Management:** React Hooks (useState, useMemo, useContext) 🪝
+- **State Management:** React Hooks (`useState`, `useMemo`, `useContext`) 🪝
 - **Routing:** Next.js App Router (Server & Client components) 🛣️
 
 ### Backend (Core Server) ☕
@@ -329,23 +340,115 @@ Want to run everything locally for development and debugging? Buckle up! 🎢
 
 ## 📡 REST API Endpoints Reference 📡
 
-Here is a quick overview of the core endpoints exposed by the Spring Boot Backend (`http://localhost:8080/api`):
+Here is a comprehensive overview of the core endpoints exposed by the Spring Boot Backend (`http://localhost:8080/api`):
 
-### Authentication (`/api/auth`) 🔐
-- `POST /register`: Register a new user (Organization or Employee).
-- `POST /login`: Authenticate and receive a JWT token.
-- `POST /send-otp`: Request an OTP for registration or login.
-- `POST /verify-otp`: Validate OTP.
+### 1. Authentication Endpoints (`/api/auth`) 🔐
 
-### Employees (`/api/employees`) 🧑‍💼
-- `GET /`: Retrieve all employees for the current organization.
-- `POST /`: Add a new employee.
-- `GET /{id}`: Get specific employee details.
-- `POST /upload-csv`: Bulk import employees via Multipart File.
-- `GET /{id}/impact`: Trigger a request to the ML service to generate a Gemini XAI report for this employee.
+| Endpoint | Method | Description | Requires Auth | JSON Payload Example |
+|---|---|---|---|---|
+| `/register` | `POST` | Creates a new user profile (HR or Employee). | ❌ | `{"username":"john_doe","email":"john@acme.com","password":"pass","organizationName":"Acme"}` |
+| `/login` | `POST` | Authenticates user and returns JWT token. | ❌ | `{"usernameOrEmail":"john_doe","password":"pass"}` |
+| `/send-otp` | `POST` | Sends a 6-digit OTP to user email. | ❌ | `{"email":"john@acme.com","purpose":"LOGIN"}` |
+| `/verify-otp` | `POST` | Verifies the sent OTP. | ❌ | `{"email":"john@acme.com","otp":"123456"}` |
 
-### User Profile (`/api/users`) 👤
-- `GET /me`: Get details of the currently authenticated user based on JWT.
+### 2. Employee Endpoints (`/api/employees`) 🧑‍💼
+
+| Endpoint | Method | Description | Requires Auth | Response (Snippet) |
+|---|---|---|---|---|
+| `/` | `GET` | Retrieve all employees for the current organization. | ✅ (JWT) | `[{"id":1, "name":"Alice", "riskScore":0.85, "riskLevel":"High"}]` |
+| `/` | `POST` | Add a single new employee record manually. | ✅ (JWT) | `{"id":2, "name":"Bob"}` |
+| `/{id}` | `GET` | Get detailed stats for a specific employee. | ✅ (JWT) | `{"id":1, "salary":95000, "tenure":4, "department":"Engineering"}` |
+| `/upload-csv` | `POST` | Bulk import employees via Multipart File. | ✅ (JWT) | `{"status":"success","recordsProcessed":450}` |
+| `/{id}/impact` | `GET` | Trigger Gemini XAI prompt to generate a report. | ✅ (JWT) | `{"aiImpactReport":"Based on Alice's tenure..."}` |
+
+### 3. User Profile (`/api/users`) 👤
+
+| Endpoint | Method | Description | Requires Auth |
+|---|---|---|---|
+| `/me` | `GET` | Decodes JWT and returns current user details. | ✅ (JWT) |
+
+---
+
+## 🗄️ Database Schema Definition 🗄️
+
+The application uses MySQL. Below are the primary entities and their columns modeled by Hibernate (JPA).
+
+### Table: `users`
+- **`id`** (BIGINT, Primary Key, Auto Increment)
+- **`username`** (VARCHAR, Unique)
+- **`email`** (VARCHAR, Unique)
+- **`password_hash`** (VARCHAR) - BCrypt encrypted.
+- **`role`** (ENUM: 'EMPLOYEE', 'HR', 'ORGANISATION')
+- **`organization_id`** (BIGINT, Foreign Key)
+
+### Table: `employees`
+- **`id`** (BIGINT, Primary Key)
+- **`name`** (VARCHAR)
+- **`age`** (INT)
+- **`salary`** (DOUBLE)
+- **`department`** (VARCHAR)
+- **`years_at_company`** (INT)
+- **`performance_rating`** (DOUBLE)
+- **`risk_score`** (DOUBLE) - Generated by ML model (0.0 to 1.0).
+- **`risk_level`** (ENUM: 'Low', 'Medium', 'High')
+- **`organization_id`** (BIGINT, Foreign Key to `organizations`)
+
+### Table: `organizations`
+- **`id`** (BIGINT, Primary Key)
+- **`name`** (VARCHAR, Unique)
+- **`subscription_tier`** (VARCHAR)
+
+### Table: `messages`
+- **`id`** (BIGINT, Primary Key)
+- **`sender_id`** (BIGINT, FK to `users`)
+- **`receiver_id`** (BIGINT, FK to `users`)
+- **`content`** (TEXT)
+- **`timestamp`** (TIMESTAMP)
+
+---
+
+## 🖥️ Frontend Component Architecture 🖥️
+
+Our Next.js App Router setup separates concerns gracefully:
+
+### Root Layout (`app/layout.tsx`)
+- Provides the global HTML structure, fonts (Google Inter), and the highly-critical `<ThemeProvider>` to inject dark/light mode context deeply into the React tree without hydration errors.
+
+### Dashboard Layout (`app/dashboard/layout.tsx`)
+- Contains the Sidebar Navigation and Top Header.
+- **Session Management:** Uses a `useEffect` hook to read the JWT from `localStorage`, validates it via the `/api/users/me` endpoint, and dynamically renders available sidebar tabs based on the user's role (HR sees different tabs than an Employee).
+
+### Executive Dashboard (`app/dashboard/page.tsx`)
+- **Data Fetching:** Polls the `/api/employees` endpoint every 5 seconds.
+- **`useMemo` Optimizations:** Filters the employee list down by search queries and selected departments instantly on the client side without triggering full tree re-renders.
+- **Component Tree:** Connects to `EmployeeDetailModal.tsx` for deep-dives, and `AiReportRenderer.tsx` to parse raw Markdown from Gemini into beautiful UI widgets.
+
+---
+
+## 🛡️ Backend Security & JWT Flow 🛡️
+
+ERDSS implements a robust, stateless security model using Spring Security.
+
+1. **Authentication Process:** When a user logs in, Spring's `AuthenticationManager` verifies the BCrypt hashed password against the database.
+2. **Token Generation:** The `JwtUtil` class signs a payload containing the `username`, `role`, and `organizationId` using the HS256 algorithm with a secret key.
+3. **Filter Chain:** For every subsequent request, the `JwtRequestFilter` intercepts the HTTP call, extracts the `Bearer` token from the `Authorization` header, validates the signature, and populates the `SecurityContextHolder`.
+4. **Method Security:** Controllers use `@PreAuthorize("hasRole('HR')")` to ensure strictly vertical access control.
+
+---
+
+## 🚢 Deployment Scenarios (K8s & CI/CD) 🚢
+
+While Docker Compose is used for local development, ERDSS is built cloud-native for Enterprise scalability.
+
+### CI/CD Pipeline (GitHub Actions / Jenkins)
+- **Continuous Integration:** Every commit to `main` triggers a workflow that runs JUnit tests for the backend, Jest tests for the frontend, and PyTest for the ML service.
+- **Continuous Deployment:** On a successful build, the workflow builds 3 Docker images, pushes them to Docker Hub / AWS ECR, and triggers a rolling update on the target cluster.
+
+### Kubernetes (K8s) Architecture
+For production, you can deploy ERDSS via Kubernetes Helm charts:
+- **Deployments:** 3 separate deployments (`erdss-frontend`, `erdss-backend`, `erdss-ml`).
+- **Services:** Internal ClusterIP services connect the backend to the ML service. An Ingress controller routes external traffic to the frontend and backend APIs.
+- **Horizontal Pod Autoscaling (HPA):** The Python ML service can scale up automatically based on CPU usage during massive CSV batch processing! 📈
 
 ---
 
@@ -368,6 +471,9 @@ An upcoming feature that will simulate the exact dollar amount of raise required
 ### ⚖️ 5. Fairness & Bias Auditing
 We are implementing strict AI governance tools to ensure our ML models do not show bias against any gender, ethnicity, or age group during risk assessment. 🛡️
 
+### 🔐 6. SSO Integration (SAML / OAuth2)
+We will be adding Single Sign-On capabilities allowing enterprise clients to log in using Azure AD, Okta, and Google Workspace.
+
 ---
 
 ## 🚧 Known Problems & Current Limitations 🚧
@@ -378,6 +484,7 @@ While ERDSS is powerful, we want to be transparent about its current boundaries:
 2. **Gemini API Rate Limits:** The free tier of the Gemini API limits the number of AI reports you can generate per minute. If you bulk-request insights, you may encounter `429 Too Many Requests` errors. ⏳
 3. **Static Model Weights:** Currently, the ML model in the Python service uses static rules/pre-trained weights. It does not continuously retrain itself on the fly as new data is uploaded. Active learning is on our roadmap! 🧠
 4. **Mobile App Incomplete:** The mobile directory is initialized but not yet fully functional. Please rely on the Next.js web application for now. 🚧
+5. **No WebSocket Support Yet:** Currently, the real-time dashboard relies on 5-second polling intervals rather than WebSockets or SSE (Server-Sent Events).
 
 ---
 
@@ -392,6 +499,9 @@ We welcome contributions from the open-source community! 💖
 4. Push to the branch (`git push origin feature/AmazingFeature`). 🚀
 5. Open a Pull Request! 📬
 
+### Code of Conduct
+Please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms. 🤝
+
 ### License 📜
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
 
@@ -402,5 +512,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Made with ❤️ by the ERDSS Team**
 
 *Empowering Organizations to Keep Their Best People.* 🌟
+
+*Documentation Version 2.0.0 | Finalized 2026*
 
 </div>
