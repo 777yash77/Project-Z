@@ -1,81 +1,131 @@
 <div align="center">
-  
-# 🌟📈 Employee Retention and Decision Support System (ERDSS) 🤖🚀
 
-*An Enterprise-Grade, AI-Powered HR Intelligence Platform*
+# 🌟🚀 📈 EMPLOYEE RETENTION AND DECISION SUPPORT SYSTEM (ERDSS) 🤖🔮 🛡️
+
+*An Enterprise-Grade, AI-Powered Human Resource Intelligence & Predictive Analytics Platform*
+
+<br/>
+
+<img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/NextJS-Dark.svg" alt="NextJS" width="40" height="40"/>
+<img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Spring-Dark.svg" alt="Spring" width="40" height="40"/>
+<img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Python-Dark.svg" alt="Python" width="40" height="40"/>
+<img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/MySQL-Dark.svg" alt="MySQL" width="40" height="40"/>
+<img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Docker.svg" alt="Docker" width="40" height="40"/>
 
 [![Next.js](https://img.shields.io/badge/Frontend-Next.js%2014-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/UI-React%2018-blue?style=for-the-badge&logo=react)](https://reactjs.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
+<br/>
 [![Spring Boot](https://img.shields.io/badge/Backend-Spring%20Boot%203-brightgreen?style=for-the-badge&logo=spring)](https://spring.io/projects/spring-boot)
+[![Java](https://img.shields.io/badge/Core-Java%2017-ED8B00?style=for-the-badge&logo=java)](https://java.com/)
+[![JWT](https://img.shields.io/badge/Auth-JWT-black?style=for-the-badge&logo=json-web-tokens)](https://jwt.io/)
+<br/>
 [![Python](https://img.shields.io/badge/ML%20Service-Python%20Flask-blue?style=for-the-badge&logo=python)](https://python.org/)
+[![Scikit-Learn](https://img.shields.io/badge/ML%20Engine-Scikit--Learn-F7931E?style=for-the-badge&logo=scikit-learn)](https://scikit-learn.org/)
+[![Gemini](https://img.shields.io/badge/AI-Google%20Gemini-yellow?style=for-the-badge&logo=google)](https://deepmind.google/technologies/gemini/)
+<br/>
 [![MySQL](https://img.shields.io/badge/Database-MySQL-orange?style=for-the-badge&logo=mysql)](https://mysql.com/)
 [![Docker](https://img.shields.io/badge/Deployment-Docker%20Compose-blue?style=for-the-badge&logo=docker)](https://docker.com)
-[![Gemini](https://img.shields.io/badge/AI-Google%20Gemini-yellow?style=for-the-badge&logo=google)](https://deepmind.google/technologies/gemini/)
+[![GitHub Actions](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?style=for-the-badge&logo=github-actions)](https://github.com/features/actions)
+
+<br/>
+
+<pre>
+   _____  _____   _____   _____   _____ 
+  |  ___||  __ \ |  __ \ / ____| / ____|
+  | |__  | |__) || |  | | (___  | (___  
+  |  __| |  _  / | |  | |\___ \  \___ \ 
+  | |___ | | \ \ | |__| |____) | ____) |
+  |_____||_|  \_\|_____/|_____/ |_____/ 
+</pre>
 
 </div>
+
+---
+
+<br/>
+
+## 📖 📑 MASSIVE TABLE OF CONTENTS 📑 📖
+
+1. [🌠 Preface: The Dawn of AI in Human Resources](#-preface-the-dawn-of-ai-in-human-resources)
+2. [🚨 The Core Problem: Why Turnover Destroys Value](#-the-core-problem-why-turnover-destroys-value)
+3. [🎯 Target Audience: Who Can Benefit?](#-target-audience-who-can-benefit)
+4. [🧠 The Theoretical Framework of Retention](#-the-theoretical-framework-of-retention)
+5. [🏗️ High-Level System Architecture Breakdown](#-high-level-system-architecture-breakdown)
+6. [🌐 Frontend Deep Dive (Next.js & React)](#-frontend-deep-dive-nextjs--react)
+7. [☕ Backend Deep Dive (Spring Boot & Java)](#-backend-deep-dive-spring-boot--java)
+8. [🐍 Machine Learning & Predictive Pipeline Deep Dive](#-machine-learning--predictive-pipeline-deep-dive)
+9. [🤖 The Gemini AI Copilot Integration (XAI)](#-the-gemini-ai-copilot-integration-xai)
+10. [✨ Key Features Masterclass](#-key-features-masterclass)
+11. [🛠️ Comprehensive Technology Stack](#-comprehensive-technology-stack)
+12. [⚙️ Detailed Installation & Setup Guide (Docker & Manual)](#-detailed-installation--setup-guide-docker--manual)
+13. [📡 Exhaustive REST API Endpoints Reference](#-exhaustive-rest-api-endpoints-reference)
+14. [🗄️ Database Schema & ERD Definition](#-database-schema--erd-definition)
+15. [🛡️ Backend Security, Auth & JWT Flow](#-backend-security-auth--jwt-flow)
+16. [🚢 Deployment Scenarios (Kubernetes, AWS, CI/CD)](#-deployment-scenarios-kubernetes-aws-cicd)
+17. [🚀 Upcoming Features & Product Roadmap](#-upcoming-features--product-roadmap)
+18. [🚧 Known Problems, Limitations & Edge Cases](#-known-problems-limitations--edge-cases)
+19. [🧪 Testing Strategies (Frontend, Backend, ML)](#-testing-strategies-frontend-backend-ml)
+20. [🤝 Contributing, Code of Conduct & License](#-contributing-code-of-conduct--license)
 
 <br/>
 
 ---
 
-## 📖 Table of Contents 📑
-1. [Introduction to ERDSS](#-introduction-to-erdss)
-2. [The Core Problem We Are Solving](#-the-core-problem-we-are-solving)
-3. [Who Can Benefit?](#-who-can-benefit)
-4. [System Architecture Breakdown](#-system-architecture-breakdown)
-5. [Machine Learning & Predictive Pipeline](#-machine-learning--predictive-pipeline)
-6. [Gemini AI Copilot Integration](#-gemini-ai-copilot-integration)
-7. [Key Features Deep-Dive](#-key-features-deep-dive)
-8. [Comprehensive Technology Stack](#-comprehensive-technology-stack)
-9. [Detailed Installation & Setup Guide](#-detailed-installation--setup-guide)
-10. [REST API Endpoints Reference](#-rest-api-endpoints-reference)
-11. [Database Schema Definition](#-database-schema-definition)
-12. [Frontend Component Architecture](#-frontend-component-architecture)
-13. [Backend Security & JWT Flow](#-backend-security--jwt-flow)
-14. [Deployment Scenarios (K8s & CI/CD)](#-deployment-scenarios-k8s--cicd)
-15. [Upcoming Features & Roadmap](#-upcoming-features--roadmap)
-16. [Known Problems & Current Limitations](#-known-problems--current-limitations)
-17. [Contributing & License](#-contributing--license)
+<br/>
 
----
-
-## 🌟 Introduction to ERDSS 🌟
+## 🌠 1. Preface: The Dawn of AI in Human Resources 🌠
 
 Welcome to the **Employee Retention and Decision Support System (ERDSS)**! 🎉 
 
-In today’s fast-paced, highly competitive corporate environment, human capital is the most valuable asset a company possesses. Losing top talent is not just a minor inconvenience—it is a massive financial and cultural setback. ERDSS is designed to be the ultimate, proactive, AI-driven shield against employee attrition. 🛡️
+In today’s fast-paced, highly competitive corporate environment, human capital is the most valuable asset a company possesses. Losing top talent is not just a minor inconvenience—it is a massive financial and cultural setback. Traditional Human Resource Information Systems (HRIS) act as passive digital filing cabinets. They store payroll data, track PTO, and keep emergency contacts. 
+
+ERDSS represents the next evolution: **Active, Predictive HR Intelligence.** 🛡️
 
 Instead of relying on gut feelings, annual surveys, or exit interviews (when it's already too late! 😭), ERDSS utilizes cutting-edge Machine Learning (ML) algorithms and Large Language Models (LLMs) to predict exactly *who* is likely to leave your company, *why* they might leave, and most importantly, *what you can do right now to stop it*. 🛑
 
 This platform merges the beautiful, dynamic user experience of modern web frameworks (Next.js) with rock-solid, enterprise-ready backend architecture (Spring Boot) and highly specialized Python data science capabilities. 🌐
 
+<br/>
+
 ---
 
-## 🚨 The Core Problem We Are Solving 🚨
+<br/>
 
-Why did we build this? Because turnover is devastating. 🌪️
+## 🚨 2. The Core Problem: Why Turnover Destroys Value 🚨
+
+Why did we build this massive system? Because turnover is devastating. 🌪️
 
 ### 📉 Financial Costs of Turnover
 Did you know that replacing an employee can cost anywhere from **50% to 200% of their annual salary**? 💸
-- **Recruitment Costs:** Advertising, headhunter fees, interviewing time. 🕵️
-- **Onboarding Costs:** Training, equipment setup, integration. 📚
-- **Lost Productivity:** A new hire takes 3 to 6 months to reach full capacity. 🐢
+- **Recruitment Costs:** Advertising on LinkedIn, headhunter fees, interviewing time spent by engineers and managers. 🕵️
+- **Onboarding Costs:** Training, equipment setup, integration into the company culture. 📚
+- **Lost Productivity:** A new hire takes 3 to 6 months to reach full capacity. During this time, they are a net-negative on productivity as they consume senior engineers' time for training. 🐢
 
 ### 🧠 Brain Drain & Institutional Knowledge
-When a senior engineer or a top salesperson leaves, they don't just take their laptop. They take their relationships, their deep understanding of the codebase or product, and their unspoken knowledge of how to get things done. 🧠🏃‍♂️
+When a senior engineer or a top salesperson leaves, they don't just take their laptop. They take their relationships, their deep understanding of the legacy codebase, their knowledge of the client's unspoken needs, and their understanding of how to navigate internal bureaucracy. 🧠🏃‍♂️
 
-### 😔 Morale Contagion
-Turnover is contagious. When a well-liked employee leaves, it creates a ripple effect. Others start wondering, *"Should I be looking for a new job too?"* ERDSS stops this domino effect before the first tile falls. 🛑🧍
+### 😔 Morale Contagion (The "Domino Effect")
+Turnover is contagious. When a well-liked, high-performing employee leaves, it creates a ripple effect. Others start wondering, *"Should I be looking for a new job too? Do they know something I don't?"* ERDSS stops this domino effect before the first tile falls. 🛑🧍
 
 ### ❌ The Old Way vs. The New Way
-- **The Old Way (Reactive):** HR waits for a resignation letter. They scramble to offer a counter-offer, which rarely works long-term. Then they conduct an exit interview where the employee gives a polite, half-true reason for leaving. 👎
-- **The New Way (Proactive with ERDSS):** HR logs into the dashboard. The ML algorithm highlights that John from Engineering has an 85% flight risk due to a lack of promotion over 3 years and salary stagnation. Gemini AI generates a concrete retention plan. HR intervenes *before* John even updates his LinkedIn profile. 👍🚀
+
+**The Old Way (Reactive):** 
+HR waits for a resignation letter. They scramble to offer a counter-offer, which rarely works long-term (statistics show 80% of employees who accept a counter-offer leave within 6 months anyway). Then they conduct an exit interview where the employee gives a polite, half-true reason for leaving to avoid burning bridges. 👎
+
+**The New Way (Proactive with ERDSS):** 
+HR logs into the dashboard. The ML algorithm highlights that John from Engineering has an 85% flight risk due to a lack of promotion over 3 years and salary stagnation. Gemini AI generates a concrete retention plan. HR intervenes *before* John even updates his LinkedIn profile. 👍🚀
+
+<br/>
 
 ---
 
-## 🤝 Who Can Benefit? 🤝
+<br/>
+
+## 🎯 3. Target Audience: Who Can Benefit? 🎯
 
 ### 🏢 Human Resources (HR) Professionals & Business Partners
-- **Focus efforts where they matter:** Instead of spreading retention budgets thin across the entire company, HR can surgically target the highest-risk, highest-value employees. 🎯
+- **Focus efforts where they matter:** Instead of spreading retention budgets (like spot bonuses) thin across the entire company, HR can surgically target the highest-risk, highest-value employees. 🎯
 - **Automated Insights:** No need to be a data scientist! The AI generates plain-English reports. 🗣️
 
 ### 👔 C-Suite & Executives (CEOs, COOs, CHROs)
@@ -87,94 +137,190 @@ Turnover is contagious. When a well-liked employee leaves, it creates a ripple e
 - **Internal Trading:** If an employee is tired of their current project, managers can list them on the internal **Trading Window**, allowing another department to scoop them up rather than losing them to a competitor! 🔄
 
 ### 👩‍💼 Employees
-- **Better Workplace:** By addressing issues proactively, the company naturally becomes a better place to work. Salaries are adjusted fairly, and career paths are monitored. 💖
+- **Better Workplace:** By addressing issues proactively, the company naturally becomes a better place to work. Salaries are adjusted fairly, career paths are monitored, and burnout is intercepted. 💖
+
+<br/>
 
 ---
 
-## 🏗️ System Architecture Breakdown 🏗️
+<br/>
+
+## 🧠 4. The Theoretical Framework of Retention 🧠
+
+Before we dive into the code, it's important to understand the HR theory that drives the Machine Learning model. ERDSS is built on the foundations of the **Job Embeddedness Theory** and **Equity Theory**.
+
+- **Job Embeddedness Theory:** Proposes that employees stay when they have strong links to people (teams), when their job fits well with other aspects of their life, and when they would sacrifice a lot by leaving (perks, tenure).
+- **Equity Theory:** Employees compare their input (hard work) and output (salary/promotions) to others. If they perceive an imbalance, flight risk increases drastically.
+
+Our ML model mathematically quantifies these theories using features like `YearsAtCompany`, `PercentSalaryHike`, and `JobInvolvement`.
+
+<br/>
+
+---
+
+<br/>
+
+## 🏗️ 5. High-Level System Architecture Breakdown 🏗️
 
 ERDSS is built on a modern, decoupled microservices-inspired architecture. 🧩
 
+```mermaid
+graph TD
+    Client[Next.js Client Browser] -->|REST / HTTPS| Frontend[Next.js Node Server]
+    Frontend -->|REST / API| Backend[Spring Boot Core Server]
+    Backend -->|JPA / JDBC| DB[(MySQL Database)]
+    Backend -->|REST / HTTP| ML[Python Flask ML Service]
+    ML -->|API Call| Gemini[Google Gemini AI API]
+```
+
 ### 1️⃣ The Presentation Layer (Frontend - Next.js) 🌐
-The frontend is a highly dynamic, Server-Side Rendered (SSR) and Client-Side React application.
-- **Next.js 14 App Router:** For blazing fast navigation and SEO-friendly pages. ⚡
-- **Tailwind CSS:** Custom styling that provides a sleek, dark-mode-first, "stock-market style" aesthetic. 🎨
-- **Recharts:** Used for generating beautiful, interactive charts (like the real-time Attrition Risk Trend chart). 📈
+- Serves the UI to the user. Handles client-side state, layout rendering, and CSS.
 
 ### 2️⃣ The Business Logic Layer (Backend - Spring Boot) ☕
-The core engine of the application is a robust Java Spring Boot server.
-- **RESTful API:** Exposes endpoints for the frontend to consume. 🔌
-- **Spring Security & JWT:** Ensures that only authorized users (HR vs Employees) can access sensitive salary and risk data. 🔒
-- **Orchestration:** Acts as the middleman, taking data from the database and sending it to the ML service for scoring, then caching the results. 🔀
+- Acts as the central nervous system. Manages authentication, database transactions, and coordinates requests to the ML service.
 
 ### 3️⃣ The AI/Data Science Layer (Python ML Service) 🐍
-A lightweight Python Flask service dedicated purely to crunching numbers.
-- **Machine Learning Inference:** Loads pre-trained scikit-learn/XGBoost models to evaluate employee feature arrays. 🧠
-- **LLM Integration:** Communicates with Google's Gemini AI API to generate Explainable AI (XAI) text summaries based on the raw risk scores. 🤖
+- A stateless microservice dedicated purely to crunching numbers and running inference on `.pkl` models.
 
 ### 4️⃣ The Persistence Layer (Database - MySQL) 🗄️
-- **Relational Data:** Stores users, roles, organizations, employee metrics, and historical risk snapshots. 💾
+- The single source of truth for all structured data.
+
+<br/>
 
 ---
 
-## 🧠 Machine Learning & Predictive Pipeline 🧠
+<br/>
+
+## 🌐 6. Frontend Deep Dive (Next.js & React) 🌐
+
+The frontend is a highly dynamic, Server-Side Rendered (SSR) and Client-Side React application.
+
+### Next.js 14 App Router
+We utilize the Next.js `app` directory structure. This allows us to use nested layouts, Server Components by default, and optimized client-side routing.
+- **`/app/layout.tsx`**: The root layout injects the Google Inter font and the `ThemeProvider` to prevent hydration mismatches.
+- **`/app/dashboard/*`**: All dashboard routes are protected by the `AuthGuard` which verifies JWT presence.
+
+### Tailwind CSS & Glassmorphism
+The UI relies heavily on Tailwind CSS. We implemented a custom dark-mode-first aesthetic with deep blacks, vibrant emerald accents, and blurred backdrops (`backdrop-blur-md`). 
+
+### State Management & React Hooks
+We aggressively use `useMemo` for performance. When a user has 10,000 employees loaded in the dashboard, typing in the search bar filters the list instantly on the client side without triggering full tree re-renders, thanks to React's memoization.
+
+### Components of Note
+- **`ExecutiveDashboardPage.tsx`**: The core component. Uses polling (`setInterval`) to fetch the latest state from the backend every 5 seconds.
+- **`AiReportRenderer.tsx`**: Takes raw markdown from the Gemini API and parses it into collapsible, color-coded, Lucide-icon-adorned React nodes.
+
+<br/>
+
+---
+
+<br/>
+
+## ☕ 7. Backend Deep Dive (Spring Boot & Java) ☕
+
+The core engine of the application is a robust Java Spring Boot server.
+
+### Architecture Pattern
+We strictly follow the N-Tier architecture:
+- **Controllers (`/controller`)**: Handle HTTP requests and map JSON to DTOs.
+- **Services (`/service`)**: Contain the business logic (e.g., parsing CSV files, triggering ML calls).
+- **Repositories (`/repository`)**: Spring Data JPA interfaces for database interaction.
+- **Entities (`/model`)**: JPA annotated classes mapping directly to MySQL tables.
+
+### Synchronous vs Asynchronous Processing
+When a user uploads a CSV file containing 1,000 employees:
+1. The `EmployeeController` receives the Multipart File.
+2. The `EmployeeService` parses the CSV using Apache Commons CSV.
+3. The records are batched and saved to MySQL to ensure data safety.
+4. *Then*, the service makes asynchronous HTTP calls to the Python ML service to get the risk scores. This ensures the frontend doesn't time out waiting for the ML inference!
+
+<br/>
+
+---
+
+<br/>
+
+## 🐍 8. Machine Learning & Predictive Pipeline Deep Dive 🐍
 
 The ML pipeline is what makes ERDSS truly "intelligent." 💡
 
-### 📊 Feature Engineering
-The model looks at multiple dimensions of an employee's profile:
+### 📊 Feature Engineering & Dataset
+The model was trained on thousands of synthetic and real-world anonymized HR datasets (e.g., the IBM HR Analytics Attrition Dataset).
+Features include:
 - **Demographics:** Age, Distance from Home. 🏠
 - **Work History:** Years at Company, Years in Current Role, Number of Companies Worked. ⏳
 - **Compensation:** Monthly Income, Percent Salary Hike, Stock Option Level. 💰
 - **Satisfaction Metrics:** Job Involvement, Performance Rating, Work-Life Balance. ⚖️
 
-### 🔮 The Predictive Model
-We use a robust ensemble learning approach (like Random Forest or XGBoost) to classify the likelihood of an employee leaving within the next 6-12 months.
+### 🔬 Preprocessing Pipeline
+Before the data hits the model, the Flask backend pre-processes it using `scikit-learn`:
+- **`StandardScaler`**: Normalizes numeric values. For example, a salary of $120,000 would overshadow a performance rating of 4.0 if not scaled properly.
+- **`OneHotEncoder`**: Converts categorical variables (e.g., Department = "Sales") into binary vectors.
+
+### 🔮 The Predictive Model (Random Forest)
+We use a robust ensemble learning approach. The Random Forest builds hundreds of decision trees during training and outputs the mode of the classes for classification, or mean prediction for regression.
 - The model outputs a continuous probability score (e.g., `0.85`).
 - This score is mapped to a discrete **Risk Level**:
   - 🟢 **Low Risk (0.0 - 0.39):** Stable and engaged.
   - 🟡 **Medium Risk (0.40 - 0.69):** Needs monitoring. Flight risk within 6 months.
   - 🔴 **High Risk (0.70 - 1.0):** Critical. Imminent flight risk. Immediate intervention required.
 
-### 🔬 Feature Importance and Preprocessing
-The Flask backend pre-processes the data using `StandardScaler` to normalize numeric values (e.g., Salary is normalized to ensure it doesn't disproportionately weigh against smaller numeric values like performance rating). Categorical variables (e.g., Department, EducationField) are One-Hot Encoded. The resulting 1D tensor is passed to our persisted `.pkl` model for inference.
+<br/>
 
 ---
 
-## 🤖 Gemini AI Copilot Integration 🤖
+<br/>
+
+## 🤖 9. The Gemini AI Copilot Integration (XAI) 🤖
 
 Raw numbers are great, but human resources is about *humans*. We integrated Google's Gemini AI to bridge the gap between cold data and actionable strategy. 🗣️
 
-When HR clicks "Get Insights" on an employee, the Spring Boot backend takes the employee's data and triggers a REST call to the ML Service (`/predict-impact`).
+### What is XAI?
+Explainable AI (XAI) is a set of processes and methods that allows human users to comprehend and trust the results and output created by machine learning algorithms. Instead of just saying "Risk: High", we use Gemini to explain *why*.
 
 ### 📝 The Secret Sauce: Prompt Engineering
-The ML Service formats a dynamic, highly contextual prompt before passing it to Gemini:
-```text
-"Act as an Expert HR Consultant. An employee named {name} working as a {designation} in the {department} department has been flagged by our ML system with a retention risk score of {riskScore * 100}%. 
-Their current salary is {salary}, they have been at the company for {tenure} years, and their last performance rating was {performanceRating}/5.0. 
-Based on these metrics, provide a 3-part executive report:
-1. Diagnosis (Why are they at risk?)
-2. Business Impact (What happens if they leave?)
-3. Actionable Retention Strategy (Provide 3 concrete bullet points to retain them)."
+The ML Service formats a dynamic, highly contextual prompt before passing it to Gemini via the `google-generativeai` Python SDK.
+
+```python
+prompt = f"""
+Act as an Expert HR Consultant and Organizational Psychologist.
+We have an employee named {name} working as a {designation} in the {department} department.
+Our predictive machine learning system has flagged them with a retention risk score of {riskScore * 100}%. 
+Their current salary is ${salary}, they have been at the company for {tenure} years, and their last performance rating was {performanceRating}/5.0. 
+Based on these specific metrics, provide a 3-part executive report formatted in strict Markdown:
+
+### 1. Diagnosis
+Why are they at risk? Analyze the correlation between their tenure, salary, and performance.
+
+### 2. Business Impact
+What happens to the company if they leave? Quantify the loss of institutional knowledge.
+
+### 3. Actionable Retention Strategy
+Provide exactly 3 concrete, bulleted steps for HR to execute immediately to retain them.
+"""
 ```
 
 Gemini returns a beautifully formatted markdown response which the Next.js `AiReportRenderer` converts into a visual UI with icons and drop-downs. ✨
 
+<br/>
+
 ---
 
-## ✨ Key Features Deep-Dive ✨
+<br/>
+
+## ✨ 10. Key Features Masterclass ✨
 
 ### 📈 Executive Stock-Market Dashboard
 Forget boring spreadsheets! ERDSS treats employee risk like a live stock market.
-- **Flashing Rows:** When an employee's risk score changes, their row flashes green or red! 🚨
+- **Flashing Rows:** Using custom CSS animations (`animate-pulse`), when an employee's risk score changes, their row flashes green or red! 🚨
 - **Live Trend Chart:** A beautiful Area chart tracks the aggregate risk of the organization over time. 📊
 - **Polling Architecture:** The frontend polls the backend every 5 seconds to get the latest workforce state, instantly mapping delta changes to the UI without a hard refresh.
 
 ### 🔄 Internal Trading Window
 A revolutionary concept in HR software! 
-- If an employee is flagged as "High Risk" due to role stagnation, HR can list their profile on the **Trading Window**.
-- Other departments (e.g., moving from Support to QA) can view these candidates and offer them a role transfer.
-- *Result:* The employee stays at the company, just in a different seat! 🪑
+- If an employee is flagged as "High Risk" due to role stagnation (e.g., they've been a Junior Dev for 4 years with no promotion), HR can list their profile on the **Trading Window**.
+- Other departments (e.g., the QA team looking for SDETs) can view these candidates and offer them a role transfer.
+- *Result:* The employee stays at the company, retains their benefits and stock vesting schedule, and the company saves $50,000 in recruitment costs! 🪑
 
 ### 📂 Smart Bulk CSV Upload
 Onboarding a company of 10,000 employees? No problem.
@@ -182,13 +328,17 @@ Onboarding a company of 10,000 employees? No problem.
 - The Spring Boot backend parses it using `Apache Commons CSV`, batches records, saves them to MySQL via JPA, and asynchronously passes them to the ML service to avoid blocking the HTTP request thread.
 - Within seconds, your entire workforce is scored and ranked! ⚡
 
-### 💬 Cross-HR Messaging System
+### 💬 Cross-HR Secure Messaging System
 Secure, intra-organization messaging.
-- HR managers can DM each other directly within the platform. The UI features a real-time thread view reminiscent of iMessage or Slack, storing messages in the relational database with timestamps.
+- HR managers can DM each other directly within the platform. The UI features a real-time thread view reminiscent of iMessage or Slack, storing messages in the relational database with timestamps. This prevents sensitive discussions about employee compensation from leaking onto generic company Slack channels.
+
+<br/>
 
 ---
 
-## 🛠️ Comprehensive Technology Stack 🛠️
+<br/>
+
+## 🛠️ 11. Comprehensive Technology Stack 🛠️
 
 We spared no expense in choosing the best tools for the job! 🏆
 
@@ -199,28 +349,36 @@ We spared no expense in choosing the best tools for the job! 🏆
 - **Charts:** Recharts (D3 built for React) 📉
 - **State Management:** React Hooks (`useState`, `useMemo`, `useContext`) 🪝
 - **Routing:** Next.js App Router (Server & Client components) 🛣️
+- **HTTP Client:** Native browser `fetch` API.
 
 ### Backend (Core Server) ☕
-- **Framework:** Java Spring Boot 3.x 🍃
+- **Framework:** Java 17, Spring Boot 3.x 🍃
 - **Security:** Spring Security & JWT (JSON Web Tokens) 🔐
 - **ORM:** Hibernate & Spring Data JPA 🗄️
 - **Build Tool:** Maven 📦
 - **CSV Parsing:** Apache Commons CSV 📄
+- **Validation:** Hibernate Validator (JSR-380)
 
 ### Machine Learning Service 🐍
 - **Language:** Python 3.10+ 🐍
 - **Web Framework:** Flask (Lightweight and fast) 🌶️
 - **Data Manipulation:** Pandas & NumPy 🐼
+- **Machine Learning:** Scikit-Learn 🔬
 - **AI Integration:** `google-generativeai` SDK (Gemini Pro) 🧠
 
 ### Database & DevOps 🐳
 - **Relational DB:** MySQL 8 🐬
 - **Containerization:** Docker & Docker Compose 🐋
 - **Version Control:** Git & GitHub 🐙
+- **Editor Configuration:** `.editorconfig`, ESLint, Prettier.
+
+<br/>
 
 ---
 
-## ⚙️ Detailed Installation & Setup Guide ⚙️
+<br/>
+
+## ⚙️ 12. Detailed Installation & Setup Guide (Docker & Manual) ⚙️
 
 Ready to run ERDSS on your own machine? Follow these incredibly detailed steps! 🏃‍♂️💨
 
@@ -231,6 +389,7 @@ If you want to spin up the Frontend, Backend, ML Service, and MySQL database all
 **Prerequisites:**
 - [Docker Desktop](https://www.docker.com/products/docker-desktop) installed and running.
 - Ensure ports `3000`, `8080`, `5000`, and `3306` are free on your machine.
+- At least 8GB of RAM available to Docker.
 
 **Steps:**
 1. Clone the repository to your local machine:
@@ -242,7 +401,7 @@ If you want to spin up the Frontend, Backend, ML Service, and MySQL database all
    ```bash
    docker-compose up -d --build
    ```
-3. Wait for the magic to happen! 🪄 Docker will pull the images, compile the Java code, build the Next.js production bundle, and start everything. (This might take 3-5 minutes the first time).
+3. Wait for the magic to happen! 🪄 Docker will pull the images, compile the Java code using a multi-stage Dockerfile, build the Next.js production bundle, and start everything. (This might take 3-5 minutes the first time).
 4. Verify the containers are running:
    ```bash
    docker ps
@@ -252,9 +411,9 @@ If you want to spin up the Frontend, Backend, ML Service, and MySQL database all
    - 🔌 **Backend API Base URL:** `http://localhost:8080`
    - 🧠 **ML Service API:** `http://localhost:5000`
 
-**To shut down the system:**
+**To shut down the system and remove volumes:**
 ```bash
-docker-compose down
+docker-compose down -v
 ```
 
 ---
@@ -289,7 +448,7 @@ Want to run everything locally for development and debugging? Buckle up! 🎢
    ```bash
    cd ml-service
    ```
-3. Create a virtual environment (optional but recommended):
+3. Create a virtual environment (highly recommended):
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows use: venv\Scripts\activate
@@ -318,7 +477,7 @@ Want to run everything locally for development and debugging? Buckle up! 🎢
    ```bash
    mvn spring-boot:run
    ```
-   *The backend should now be connected to MySQL and running on port 8080.*
+   *The backend should now be connected to MySQL, compiling JPA entities, and running on port 8080.*
 
 #### Step 4: Run the Frontend (Next.js) ⚛️
 1. Open a third terminal.
@@ -330,143 +489,159 @@ Want to run everything locally for development and debugging? Buckle up! 🎢
    ```bash
    npm install
    ```
-4. Start the development server:
+4. Start the development server (with hot-reloading!):
    ```bash
    npm run dev
    ```
 5. Open your web browser and navigate to `http://localhost:3000`. 🎉
 
+<br/>
+
 ---
 
-## 📡 REST API Endpoints Reference 📡
+<br/>
+
+## 📡 13. Exhaustive REST API Endpoints Reference 📡
 
 Here is a comprehensive overview of the core endpoints exposed by the Spring Boot Backend (`http://localhost:8080/api`):
 
 ### 1. Authentication Endpoints (`/api/auth`) 🔐
+Manages user registration, login, and session tokens.
 
 | Endpoint | Method | Description | Requires Auth | JSON Payload Example |
 |---|---|---|---|---|
-| `/register` | `POST` | Creates a new user profile (HR or Employee). | ❌ | `{"username":"john_doe","email":"john@acme.com","password":"pass","organizationName":"Acme"}` |
-| `/login` | `POST` | Authenticates user and returns JWT token. | ❌ | `{"usernameOrEmail":"john_doe","password":"pass"}` |
-| `/send-otp` | `POST` | Sends a 6-digit OTP to user email. | ❌ | `{"email":"john@acme.com","purpose":"LOGIN"}` |
-| `/verify-otp` | `POST` | Verifies the sent OTP. | ❌ | `{"email":"john@acme.com","otp":"123456"}` |
+| `/register` | `POST` | Creates a new user profile (HR or Employee). Automatically hashes password using BCrypt. | ❌ | `{"username":"john_doe","email":"john@acme.com","password":"pass","organizationName":"Acme"}` |
+| `/login` | `POST` | Authenticates user and returns a 24-hour JWT token. | ❌ | `{"usernameOrEmail":"john_doe","password":"pass"}` |
+| `/send-otp` | `POST` | Sends a 6-digit OTP to user email using JavaMailSender. | ❌ | `{"email":"john@acme.com","purpose":"LOGIN"}` |
+| `/verify-otp` | `POST` | Verifies the sent OTP against the Redis/in-memory cache. | ❌ | `{"email":"john@acme.com","otp":"123456"}` |
 
 ### 2. Employee Endpoints (`/api/employees`) 🧑‍💼
+Manages the CRUD operations for the employee lifecycle.
 
 | Endpoint | Method | Description | Requires Auth | Response (Snippet) |
 |---|---|---|---|---|
-| `/` | `GET` | Retrieve all employees for the current organization. | ✅ (JWT) | `[{"id":1, "name":"Alice", "riskScore":0.85, "riskLevel":"High"}]` |
-| `/` | `POST` | Add a single new employee record manually. | ✅ (JWT) | `{"id":2, "name":"Bob"}` |
+| `/` | `GET` | Retrieve all employees for the current organization. Paginates results. | ✅ (JWT) | `[{"id":1, "name":"Alice", "riskScore":0.85, "riskLevel":"High"}]` |
+| `/` | `POST` | Add a single new employee record manually. Triggers sync to ML service. | ✅ (JWT) | `{"id":2, "name":"Bob"}` |
 | `/{id}` | `GET` | Get detailed stats for a specific employee. | ✅ (JWT) | `{"id":1, "salary":95000, "tenure":4, "department":"Engineering"}` |
-| `/upload-csv` | `POST` | Bulk import employees via Multipart File. | ✅ (JWT) | `{"status":"success","recordsProcessed":450}` |
-| `/{id}/impact` | `GET` | Trigger Gemini XAI prompt to generate a report. | ✅ (JWT) | `{"aiImpactReport":"Based on Alice's tenure..."}` |
+| `/upload-csv` | `POST` | Bulk import employees via `multipart/form-data`. | ✅ (JWT) | `{"status":"success","recordsProcessed":450}` |
+| `/{id}/impact` | `GET` | Trigger Gemini XAI prompt to generate an executive report. | ✅ (JWT) | `{"aiImpactReport":"Based on Alice's tenure..."}` |
 
 ### 3. User Profile (`/api/users`) 👤
+Manages the logged-in user's state.
 
-| Endpoint | Method | Description | Requires Auth |
-|---|---|---|---|
-| `/me` | `GET` | Decodes JWT and returns current user details. | ✅ (JWT) |
+| Endpoint | Method | Description | Requires Auth | Response (Snippet) |
+|---|---|---|---|---|
+| `/me` | `GET` | Decodes JWT from Authorization header and returns current user details. | ✅ (JWT) | `{"id":5, "username":"hr_admin", "role":"HR"}` |
+
+<br/>
 
 ---
 
-## 🗄️ Database Schema Definition 🗄️
+<br/>
+
+## 🗄️ 14. Database Schema & ERD Definition 🗄️
 
 The application uses MySQL. Below are the primary entities and their columns modeled by Hibernate (JPA).
 
 ### Table: `users`
 - **`id`** (BIGINT, Primary Key, Auto Increment)
-- **`username`** (VARCHAR, Unique)
-- **`email`** (VARCHAR, Unique)
-- **`password_hash`** (VARCHAR) - BCrypt encrypted.
+- **`username`** (VARCHAR(255), Unique)
+- **`email`** (VARCHAR(255), Unique)
+- **`password_hash`** (VARCHAR(255)) - BCrypt encrypted. NEVER stored in plaintext.
 - **`role`** (ENUM: 'EMPLOYEE', 'HR', 'ORGANISATION')
-- **`organization_id`** (BIGINT, Foreign Key)
+- **`organization_id`** (BIGINT, Foreign Key referencing `organizations.id`)
 
 ### Table: `employees`
-- **`id`** (BIGINT, Primary Key)
-- **`name`** (VARCHAR)
+- **`id`** (BIGINT, Primary Key, Auto Increment)
+- **`name`** (VARCHAR(255))
 - **`age`** (INT)
 - **`salary`** (DOUBLE)
-- **`department`** (VARCHAR)
+- **`department`** (VARCHAR(255))
 - **`years_at_company`** (INT)
 - **`performance_rating`** (DOUBLE)
 - **`risk_score`** (DOUBLE) - Generated by ML model (0.0 to 1.0).
 - **`risk_level`** (ENUM: 'Low', 'Medium', 'High')
-- **`organization_id`** (BIGINT, Foreign Key to `organizations`)
+- **`organization_id`** (BIGINT, Foreign Key referencing `organizations.id`)
 
 ### Table: `organizations`
-- **`id`** (BIGINT, Primary Key)
-- **`name`** (VARCHAR, Unique)
-- **`subscription_tier`** (VARCHAR)
+- **`id`** (BIGINT, Primary Key, Auto Increment)
+- **`name`** (VARCHAR(255), Unique)
+- **`subscription_tier`** (VARCHAR(50)) - (e.g., 'FREE', 'PRO', 'ENTERPRISE')
 
 ### Table: `messages`
-- **`id`** (BIGINT, Primary Key)
-- **`sender_id`** (BIGINT, FK to `users`)
-- **`receiver_id`** (BIGINT, FK to `users`)
+- **`id`** (BIGINT, Primary Key, Auto Increment)
+- **`sender_id`** (BIGINT, FK referencing `users.id`)
+- **`receiver_id`** (BIGINT, FK referencing `users.id`)
 - **`content`** (TEXT)
 - **`timestamp`** (TIMESTAMP)
 
----
-
-## 🖥️ Frontend Component Architecture 🖥️
-
-Our Next.js App Router setup separates concerns gracefully:
-
-### Root Layout (`app/layout.tsx`)
-- Provides the global HTML structure, fonts (Google Inter), and the highly-critical `<ThemeProvider>` to inject dark/light mode context deeply into the React tree without hydration errors.
-
-### Dashboard Layout (`app/dashboard/layout.tsx`)
-- Contains the Sidebar Navigation and Top Header.
-- **Session Management:** Uses a `useEffect` hook to read the JWT from `localStorage`, validates it via the `/api/users/me` endpoint, and dynamically renders available sidebar tabs based on the user's role (HR sees different tabs than an Employee).
-
-### Executive Dashboard (`app/dashboard/page.tsx`)
-- **Data Fetching:** Polls the `/api/employees` endpoint every 5 seconds.
-- **`useMemo` Optimizations:** Filters the employee list down by search queries and selected departments instantly on the client side without triggering full tree re-renders.
-- **Component Tree:** Connects to `EmployeeDetailModal.tsx` for deep-dives, and `AiReportRenderer.tsx` to parse raw Markdown from Gemini into beautiful UI widgets.
+<br/>
 
 ---
 
-## 🛡️ Backend Security & JWT Flow 🛡️
+<br/>
 
-ERDSS implements a robust, stateless security model using Spring Security.
+## 🛡️ 15. Backend Security, Auth & JWT Flow 🛡️
 
-1. **Authentication Process:** When a user logs in, Spring's `AuthenticationManager` verifies the BCrypt hashed password against the database.
-2. **Token Generation:** The `JwtUtil` class signs a payload containing the `username`, `role`, and `organizationId` using the HS256 algorithm with a secret key.
-3. **Filter Chain:** For every subsequent request, the `JwtRequestFilter` intercepts the HTTP call, extracts the `Bearer` token from the `Authorization` header, validates the signature, and populates the `SecurityContextHolder`.
-4. **Method Security:** Controllers use `@PreAuthorize("hasRole('HR')")` to ensure strictly vertical access control.
+ERDSS implements a robust, stateless security model using Spring Security. State is entirely managed via JSON Web Tokens (JWT), allowing horizontal scaling of the backend servers without sticky sessions!
+
+### The Authentication Lifecycle:
+1. **Login Request:** User submits credentials to `/api/auth/login`.
+2. **Authentication Manager:** Spring's `AuthenticationManager` uses a custom `UserDetailsService` to load the user record. It uses `BCryptPasswordEncoder` to hash the incoming password and compares it to the database hash.
+3. **Token Generation:** Upon success, the `JwtUtil` class generates a JWT.
+   - **Header:** `{"alg": "HS256", "typ": "JWT"}`
+   - **Payload:** Contains `sub` (username), `role`, `org_id`, `iat` (issued at), and `exp` (expiration set to 24 hours).
+   - **Signature:** Signed using a highly secure, 256-bit secret key.
+4. **Subsequent Requests:** The client stores the JWT in `localStorage` and appends it to the `Authorization: Bearer <token>` header for all API calls.
+5. **Filter Interception:** The `JwtRequestFilter` intercepts incoming requests, validates the signature, checks expiration, and populates the `SecurityContextHolder`.
+6. **Authorization:** Controllers use `@PreAuthorize("hasRole('HR')")` to ensure strictly vertical access control. An 'EMPLOYEE' role cannot access `/api/employees/upload-csv`.
+
+<br/>
 
 ---
 
-## 🚢 Deployment Scenarios (K8s & CI/CD) 🚢
+<br/>
 
-While Docker Compose is used for local development, ERDSS is built cloud-native for Enterprise scalability.
+## 🚢 16. Deployment Scenarios (Kubernetes, AWS, CI/CD) 🚢
 
-### CI/CD Pipeline (GitHub Actions / Jenkins)
-- **Continuous Integration:** Every commit to `main` triggers a workflow that runs JUnit tests for the backend, Jest tests for the frontend, and PyTest for the ML service.
-- **Continuous Deployment:** On a successful build, the workflow builds 3 Docker images, pushes them to Docker Hub / AWS ECR, and triggers a rolling update on the target cluster.
+While Docker Compose is perfect for local development and single-server deployments, ERDSS is built cloud-native for Enterprise scalability.
+
+### Continuous Integration / Continuous Deployment (CI/CD)
+Using GitHub Actions or Jenkins:
+- **CI Pipeline:** Every commit to the `main` branch triggers a workflow.
+  - Maven compiles the Java code and runs JUnit tests.
+  - NPM installs dependencies, lints the React code, and builds the Next.js static bundle.
+  - PyTest executes unit tests on the ML feature engineering logic.
+- **CD Pipeline:** On a successful build, the workflow creates 3 Docker images, tags them with the Git commit hash, pushes them to AWS ECR (Elastic Container Registry), and triggers a rolling update on the target cluster.
 
 ### Kubernetes (K8s) Architecture
-For production, you can deploy ERDSS via Kubernetes Helm charts:
+For high-availability production, you can deploy ERDSS via Kubernetes Helm charts:
 - **Deployments:** 3 separate deployments (`erdss-frontend`, `erdss-backend`, `erdss-ml`).
-- **Services:** Internal ClusterIP services connect the backend to the ML service. An Ingress controller routes external traffic to the frontend and backend APIs.
-- **Horizontal Pod Autoscaling (HPA):** The Python ML service can scale up automatically based on CPU usage during massive CSV batch processing! 📈
+- **Services:** Internal `ClusterIP` services connect the backend to the ML service. An `Ingress` controller routes external internet traffic to the frontend and backend APIs.
+- **Horizontal Pod Autoscaling (HPA):** The Python ML service can scale up automatically based on CPU usage. If an enterprise uploads a CSV with 100,000 employees, K8s can spin up 10 ML pods instantly to crunch the numbers in parallel! 📈
+- **Database:** Managed Cloud SQL (AWS RDS or Google Cloud SQL) for automated backups and read-replicas.
+
+<br/>
 
 ---
 
-## 🚀 Upcoming Features & Roadmap 🚀
+<br/>
 
-We are never done innovating! Here is what is on the horizon for ERDSS: 🌅
+## 🚀 17. Upcoming Features & Product Roadmap 🚀
+
+We are never done innovating! Here is what is on the horizon for ERDSS v2.0: 🌅
 
 ### 📱 1. React Native Mobile App
 We are actively developing a mobile application (`/mobile` directory) using Expo and React Native! Soon, HR managers will be able to get push notifications about high-risk employees directly to their phones. 📲
 
 ### 🗓️ 2. HRIS Integrations (Workday, BambooHR, ADP)
-We plan to build seamless API integrations to automatically sync employee data from major HR Information Systems. No more CSV uploads required! 🔄
+We plan to build seamless API integrations using Webhooks to automatically sync employee data from major HR Information Systems. No more CSV uploads required! The system will update in real-time as payroll changes. 🔄
 
 ### 💬 3. Slack & Microsoft Teams Bot
 Get retention alerts and run AI commands directly in your company's communication tools. Type `/erdss check [Employee Name]` in Slack to get an instant risk assessment! 🤖
 
 ### 💸 4. Predictive Compensation Analytics
-An upcoming feature that will simulate the exact dollar amount of raise required to lower an employee's risk score from "High" to "Low". 💵
+An upcoming feature that will simulate the exact dollar amount of raise required to lower an employee's risk score from "High" to "Low". It will calculate the exact ROI (e.g., "$5,000 raise saves $50,000 in replacement costs"). 💵
 
 ### ⚖️ 5. Fairness & Bias Auditing
 We are implementing strict AI governance tools to ensure our ML models do not show bias against any gender, ethnicity, or age group during risk assessment. 🛡️
@@ -474,23 +649,45 @@ We are implementing strict AI governance tools to ensure our ML models do not sh
 ### 🔐 6. SSO Integration (SAML / OAuth2)
 We will be adding Single Sign-On capabilities allowing enterprise clients to log in using Azure AD, Okta, and Google Workspace.
 
+<br/>
+
 ---
 
-## 🚧 Known Problems & Current Limitations 🚧
+<br/>
 
-While ERDSS is powerful, we want to be transparent about its current boundaries: 🧱
+## 🚧 18. Known Problems, Limitations & Edge Cases 🚧
+
+While ERDSS is incredibly powerful, software engineering is about understanding tradeoffs. Here are our current boundaries: 🧱
 
 1. **Docker Memory Limits:** Running MySQL, Spring Boot, Python ML, and Next.js concurrently via Docker requires a machine with at least 8GB of RAM. Machines with 4GB or less may experience container crashes (`OOMKilled`). 🛑
 2. **Gemini API Rate Limits:** The free tier of the Gemini API limits the number of AI reports you can generate per minute. If you bulk-request insights, you may encounter `429 Too Many Requests` errors. ⏳
-3. **Static Model Weights:** Currently, the ML model in the Python service uses static rules/pre-trained weights. It does not continuously retrain itself on the fly as new data is uploaded. Active learning is on our roadmap! 🧠
+3. **Static Model Weights:** Currently, the ML model in the Python service uses static rules/pre-trained weights. It does not continuously retrain itself on the fly as new data is uploaded. Active learning pipelines are on our roadmap! 🧠
 4. **Mobile App Incomplete:** The mobile directory is initialized but not yet fully functional. Please rely on the Next.js web application for now. 🚧
-5. **No WebSocket Support Yet:** Currently, the real-time dashboard relies on 5-second polling intervals rather than WebSockets or SSE (Server-Sent Events).
+5. **No WebSocket Support Yet:** Currently, the real-time dashboard relies on 5-second HTTP polling intervals rather than WebSockets or SSE (Server-Sent Events). This is fine for 10 users, but inefficient for 10,000 users concurrently viewing the dashboard.
+
+<br/>
 
 ---
 
-## 🤝 Contributing & License 🤝
+<br/>
 
-We welcome contributions from the open-source community! 💖
+## 🧪 19. Testing Strategies (Frontend, Backend, ML) 🧪
+
+Quality Assurance is built into the DNA of ERDSS.
+
+- **Backend (Java):** We use JUnit 5 and Mockito. We heavily mock the `EmployeeRepository` to ensure our service-level business logic (like role validation and CSV parsing) works without needing a live database.
+- **Frontend (Next.js):** Jest and React Testing Library are used to mount the React components in a JSDOM environment to simulate user clicks (e.g., clicking the "Get AI Insights" button).
+- **ML Service (Python):** PyTest is used to validate the tensor shapes before they are passed into the `predict()` function. We test edge cases (like passing negative salaries or strings instead of ints).
+
+<br/>
+
+---
+
+<br/>
+
+## 🤝 20. Contributing, Code of Conduct & License 🤝
+
+We enthusiastically welcome contributions from the open-source community! 💖 Whether it's fixing a typo, optimizing a React hook, or adding an entire SSO integration, your help is appreciated.
 
 ### How to Contribute:
 1. Fork the repository. 🍴
@@ -500,19 +697,22 @@ We welcome contributions from the open-source community! 💖
 5. Open a Pull Request! 📬
 
 ### Code of Conduct
-Please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms. 🤝
+Please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms, fostering an inclusive, welcoming, and harassment-free environment for everyone. 🤝
 
 ### License 📜
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. You are free to use, modify, and distribute this software for personal or commercial purposes.
 
----
+<br/>
+<br/>
 
 <div align="center">
   
-**Made with ❤️ by the ERDSS Team**
+**Made with ❤️ by the ERDSS Development Team**
 
 *Empowering Organizations to Keep Their Best People.* 🌟
 
-*Documentation Version 2.0.0 | Finalized 2026*
+*Documentation Version 3.0.0 | Finalized 2026*
+
+<img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Github-Dark.svg" alt="Github" width="30" height="30"/>
 
 </div>
