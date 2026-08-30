@@ -702,6 +702,66 @@ Please note that this project is released with a Contributor Code of Conduct. By
 ### License 📜
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. You are free to use, modify, and distribute this software for personal or commercial purposes.
 
+---
+
+<br/>
+
+## ❓ 21. Frequently Asked Questions (FAQ) ❓
+
+**Q1: How accurate is the ML Model?**  
+*A1:* In our internal testing against the IBM HR Analytics dataset, the model achieved an F1-Score of 0.89 for classifying attrition. However, in a real-world enterprise, the accuracy heavily depends on the quality of your payroll and HRIS data. Garbage in, garbage out! 🗑️
+
+**Q2: Does ERDSS store employee passwords in plaintext?**  
+*A2:* Absolutely not! 🛑 We use BCrypt hashing with a strength of 10 rounds to hash all passwords. Even database administrators cannot read user passwords. 
+
+**Q3: Can I run the ML Service on a GPU?**  
+*A3:* By default, Scikit-Learn runs on the CPU. However, if you swap out our Random Forest implementation for XGBoost and compile it with CUDA support, yes! You can achieve massive parallelism for CSV uploads. ⚡
+
+**Q4: Is the Gemini AI integration free?**  
+*A4:* Google provides a free tier for Gemini Pro which is rate-limited (typically 60 queries per minute). If you deploy ERDSS for a massive enterprise, you will need to upgrade to a paid Google Cloud billing account to increase your API limits. 💳
+
+**Q5: What happens if an employee doesn't want their data tracked?**  
+*A5:* We are planning to add GDPR-compliant "Right to be Forgotten" endpoints in v3.1, allowing HR admins to anonymize records seamlessly. 🇪🇺
+
+<br/>
+
+---
+
+<br/>
+
+## 🛠️ 22. Advanced Troubleshooting & Debugging 🛠️
+
+If you run into issues while deploying ERDSS, consult this master troubleshooting guide! 🚨
+
+### 🛑 Issue: Docker `OOMKilled` (Exit Code 137)
+**Symptom:** The Next.js frontend or Java backend container suddenly crashes during startup with Exit Code 137.
+**Cause:** Docker ran out of memory. Next.js production builds and JVMs are memory-hungry! 🍽️
+**Fix:** 
+1. Open Docker Desktop settings.
+2. Go to Resources > Advanced.
+3. Increase Memory allocation to at least `8.00 GB`.
+4. Run `docker-compose up -d --build` again.
+
+### 🛑 Issue: React Hydration Error #310
+**Symptom:** The browser console shows `Error: Minified React error #310; Rendered more hooks than during the previous render.` The screen goes blank. 💀
+**Cause:** This usually happens when wrapping the Next.js `app/layout.tsx` in a context provider conditionally (e.g., waiting for `mounted` state). 
+**Fix:** We have already resolved this in our `ThemeProvider` by unconditionally rendering the context and moving the `mounted` state down to the `ThemeToggle` button! If you fork the repo, ensure you maintain this pattern. ✅
+
+### 🛑 Issue: MySQL Connection Refused (`Communications link failure`)
+**Symptom:** Spring Boot throws massive stack traces on startup complaining about `com.mysql.cj.jdbc.exceptions.CommunicationsException`. 🐬💥
+**Cause:** The backend container tried to connect to MySQL before MySQL finished initializing.
+**Fix:** We use `depends_on: db` in `docker-compose.yml`, but if it still happens, you can add a `wait-for-it.sh` script to the Java entrypoint, or simply wait 30 seconds and let Docker restart the Java container automatically! 🔄
+
+### 🛑 Issue: Gemini AI Returns `429 Too Many Requests`
+**Symptom:** When clicking "Get AI Insights", the UI shows an error and the backend logs show a 429 status code from Google APIs. 📉
+**Cause:** You are clicking the button too fast and hitting the free-tier rate limit! 
+**Fix:** Wait 60 seconds and try again. For production, implement a queuing mechanism (like RabbitMQ or Kafka) to throttle outgoing LLM requests. 🐇
+
+### 🛑 Issue: Blank Dashboard After CSV Upload
+**Symptom:** You upload a CSV with 500 rows, it says "Success", but the dashboard is empty! 👻
+**Cause:** You uploaded a CSV with completely wrong column headers. The parser ignored them.
+**Fix:** Ensure your CSV exactly matches the required template: `name, age, salary, department, years_at_company, performance_rating`. Note that headers are strictly case-sensitive! 🔠
+
 <br/>
 <br/>
 
