@@ -16,7 +16,6 @@ const ThemeContext = createContext<ThemeContextValue>({
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark');
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('hr-theme') as Theme | null;
@@ -24,7 +23,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       setTheme(stored);
       document.documentElement.setAttribute('data-theme', stored);
     }
-    setMounted(true);
   }, []);
 
   const toggleTheme = () => {
@@ -33,9 +31,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('hr-theme', next);
     document.documentElement.setAttribute('data-theme', next);
   };
-
-  // Avoid flash before mount
-  if (!mounted) return <>{children}</>;
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>

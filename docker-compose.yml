@@ -10,6 +10,7 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - ML_SERVICE_URL=http://ml-service:5000/predict
+      - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/employee_retention?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
 
   frontend:
     build:

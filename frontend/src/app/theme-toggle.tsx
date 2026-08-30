@@ -1,10 +1,17 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useTheme } from './theme-provider';
 import { Sun, Moon } from 'lucide-react';
 
 export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const isDark = theme === 'dark';
 
   return (
@@ -27,8 +34,8 @@ export function ThemeToggle() {
         <span
           className="absolute transition-all duration-300"
           style={{
-            opacity: isDark ? 1 : 0,
-            transform: isDark ? 'rotate(0deg) scale(1)' : 'rotate(90deg) scale(0.5)',
+            opacity: mounted && isDark ? 1 : 0,
+            transform: mounted && isDark ? 'rotate(0deg) scale(1)' : 'rotate(90deg) scale(0.5)',
           }}
         >
           <Sun size={18} />
@@ -36,8 +43,8 @@ export function ThemeToggle() {
         <span
           className="absolute transition-all duration-300"
           style={{
-            opacity: isDark ? 0 : 1,
-            transform: isDark ? 'rotate(-90deg) scale(0.5)' : 'rotate(0deg) scale(1)',
+            opacity: mounted && !isDark ? 1 : 0,
+            transform: mounted && !isDark ? 'rotate(0deg) scale(1)' : 'rotate(-90deg) scale(0.5)',
           }}
         >
           <Moon size={18} />
@@ -45,7 +52,7 @@ export function ThemeToggle() {
       </span>
 
       {/* Label */}
-      <span>{isDark ? 'Light mode' : 'Dark mode'}</span>
+      <span>{!mounted ? 'Theme' : (isDark ? 'Light mode' : 'Dark mode')}</span>
 
       {/* Active dot */}
       <span
