@@ -47,20 +47,20 @@ def predict():
         features = {
             'Age': data.get('Age', 35),
             'DailyRate': daily_rate,
-            'DistanceFromHome': 10,
+            'DistanceFromHome': data.get('DistanceFromHome', 10),
             'Education': 3,
-            'EnvironmentSatisfaction': base_sat,
+            'EnvironmentSatisfaction': data.get('EnvironmentSatisfaction', base_sat),
             'HourlyRate': hourly_rate,
-            'JobInvolvement': involvement,
+            'JobInvolvement': data.get('JobInvolvement', involvement),
             'JobLevel': job_level,
-            'JobSatisfaction': base_sat,
+            'JobSatisfaction': data.get('JobSatisfaction', base_sat),
             'MonthlyIncome': monthly_income,
             'MonthlyRate': monthly_rate,
             'NumCompaniesWorked': 2,
-            'PercentSalaryHike': max(0, percent_hike),
+            'PercentSalaryHike': data.get('PercentSalaryHike', max(0, percent_hike)),
             'PerformanceRating': perf_rating,
-            'RelationshipSatisfaction': 3,
-            'StockOptionLevel': 1 if monthly_income > 6000 else 0,
+            'RelationshipSatisfaction': data.get('RelationshipSatisfaction', 3),
+            'StockOptionLevel': data.get('StockOptionLevel', 1 if monthly_income > 6000 else 0),
             'TotalWorkingYears': years_at_company + 3,
             'TrainingTimesLastYear': 2,
             'WorkLifeBalance': data.get('WorkLifeBalance', base_sat),
@@ -73,7 +73,7 @@ def predict():
             'IncomePerLevel': monthly_income / job_level,
             'ManagerStability': 2,
             'FrequentTraveller': 0,
-            'LongDistance': 0,
+            'LongDistance': 1 if data.get('DistanceFromHome', 10) > 20 else 0,
             'HighIncome': 1 if monthly_income > 7000 else 0,
             'SeniorEmployee': 1 if years_at_company > 7 else 0,
             'BusinessTravel_Travel_Frequently': 0,
@@ -96,7 +96,7 @@ def predict():
             'JobRole_Sales Representative': 0,
             'MaritalStatus_Married': 1,
             'MaritalStatus_Single': 0,
-            'OverTime_Yes': 1 if data.get('Overtime', False) else 0
+            'OverTime_Yes': 1 if data.get('OverTime', data.get('Overtime', False)) else 0
         }
         
         # Convert to DataFrame in the exact order of feature_names

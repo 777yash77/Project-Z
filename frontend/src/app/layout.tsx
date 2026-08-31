@@ -1,9 +1,6 @@
-import { Inter } from 'next/font/google';
 import './globals.css';
 import type { Metadata } from 'next';
 import { ThemeProvider } from './theme-provider';
-
-const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'HR Intelligence — Employee Retention System',
@@ -21,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className={`${inter.className} antialiased font-sans`}>
+      <body className={`antialiased font-sans`}>
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

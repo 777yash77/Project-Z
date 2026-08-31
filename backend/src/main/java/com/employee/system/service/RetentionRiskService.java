@@ -65,6 +65,12 @@ public class RetentionRiskService {
             if (extraParams.containsKey("overtime")) payload.put("OverTime", extraParams.get("overtime"));
             if (extraParams.containsKey("workLifeBalance")) payload.put("WorkLifeBalance", extraParams.get("workLifeBalance"));
             if (extraParams.containsKey("promotionGap")) payload.put("YearsSinceLastPromotion", extraParams.get("promotionGap"));
+            if (extraParams.containsKey("jobSatisfaction")) payload.put("JobSatisfaction", extraParams.get("jobSatisfaction"));
+            if (extraParams.containsKey("environmentSatisfaction")) payload.put("EnvironmentSatisfaction", extraParams.get("environmentSatisfaction"));
+            if (extraParams.containsKey("relationshipSatisfaction")) payload.put("RelationshipSatisfaction", extraParams.get("relationshipSatisfaction"));
+            if (extraParams.containsKey("jobInvolvement")) payload.put("JobInvolvement", extraParams.get("jobInvolvement"));
+            if (extraParams.containsKey("distanceFromHome")) payload.put("DistanceFromHome", extraParams.get("distanceFromHome"));
+            if (extraParams.containsKey("percentSalaryHike")) payload.put("PercentSalaryHike", extraParams.get("percentSalaryHike"));
 
             // Call ML service
             String mlServiceUrl = System.getenv().getOrDefault("ML_SERVICE_URL", "http://localhost:5000/predict");
@@ -113,9 +119,15 @@ public class RetentionRiskService {
                     employee.getPerformanceRating(),
                     employee.getAge(),
                     employee.getDepartment(),
-                    false, // overtime default
-                    3, // workLifeBalance default (1-5)
-                    employee.getYearsAtCompany() > 3 ? 3 : 1 // promotionGap default
+                    extraParams.containsKey("overtime") ? (Boolean) extraParams.get("overtime") : false, 
+                    extraParams.containsKey("workLifeBalance") ? (Integer) extraParams.get("workLifeBalance") : 3, 
+                    extraParams.containsKey("promotionGap") ? (Integer) extraParams.get("promotionGap") : (employee.getYearsAtCompany() > 3 ? 3 : 1),
+                    extraParams.containsKey("jobSatisfaction") ? (Integer) extraParams.get("jobSatisfaction") : employee.getJobSatisfaction() != null ? employee.getJobSatisfaction() : 3,
+                    extraParams.containsKey("environmentSatisfaction") ? (Integer) extraParams.get("environmentSatisfaction") : employee.getEnvironmentSatisfaction() != null ? employee.getEnvironmentSatisfaction() : 3,
+                    extraParams.containsKey("relationshipSatisfaction") ? (Integer) extraParams.get("relationshipSatisfaction") : employee.getRelationshipSatisfaction() != null ? employee.getRelationshipSatisfaction() : 3,
+                    extraParams.containsKey("jobInvolvement") ? (Integer) extraParams.get("jobInvolvement") : employee.getJobInvolvement() != null ? employee.getJobInvolvement() : 3,
+                    extraParams.containsKey("distanceFromHome") ? (Integer) extraParams.get("distanceFromHome") : employee.getDistanceFromHome() != null ? employee.getDistanceFromHome() : 10,
+                    extraParams.containsKey("percentSalaryHike") ? (Integer) extraParams.get("percentSalaryHike") : employee.getPercentSalaryHike() != null ? employee.getPercentSalaryHike() : 14
             );
         }
 
@@ -128,7 +140,9 @@ public class RetentionRiskService {
     }
 
     public Map<String, Object> calculateRisk(double salary, int yearsAtCompany, double rating, int age,
-            String department, boolean overtime, int workLifeBalance, int promotionGap) {
+            String department, boolean overtime, int workLifeBalance, int promotionGap,
+            int jobSatisfaction, int environmentSatisfaction, int relationshipSatisfaction,
+            int jobInvolvement, int distanceFromHome, int percentSalaryHike) {
         double score = 0.15;
         List<Map<String, Object>> shapFactors = new ArrayList<>();
 
@@ -154,6 +168,22 @@ public class RetentionRiskService {
             shapFactors.add(Map.of("factor", "Poor Work-Life Balance (" + workLifeBalance + "/5)", "impact", "+12%",
                     "direction", "increase"));
         }
+        if (jobSatisfaction <= 2) {
+            score += 0.10;
+            shapFactors.add(Map.of("factor", "Low Job Satisfaction", "impact", "+10%", "direction", "increase"));
+        }
+        if (environmentSatisfaction <= 2) {
+            score += 0.08;
+            shapFactors.add(Map.of("factor", "Low Environment Satisfaction", "impact", "+8%", "direction", "increase"));
+        }
+        if (distanceFromHome > 20) {
+            score += 0.05;
+            shapFactors.add(Map.of("factor", "Long Commute Distance", "impact", "+5%", "direction", "increase"));
+        }
+        if (percentSalaryHike < 13) {
+            score += 0.05;
+            shapFactors.add(Map.of("factor", "Low Salary Hike", "impact", "+5%", "direction", "increase"));
+        }
         if (yearsAtCompany > 5 && promotionGap >= 2) {
             score += 0.10;
             shapFactors
@@ -174,6 +204,14 @@ public class RetentionRiskService {
             score -= 0.08;
             shapFactors
                     .add(Map.of("factor", "Strong Work-Life Satisfaction", "impact", "-8%", "direction", "decrease"));
+        }
+        if (jobSatisfaction >= 4) {
+            score -= 0.06;
+            shapFactors.add(Map.of("factor", "High Job Satisfaction", "impact", "-6%", "direction", "decrease"));
+        }
+        if (environmentSatisfaction >= 4) {
+            score -= 0.06;
+            shapFactors.add(Map.of("factor", "High Environment Satisfaction", "impact", "-6%", "direction", "decrease"));
         }
 
         score = Math.min(0.96, Math.max(0.04, score));

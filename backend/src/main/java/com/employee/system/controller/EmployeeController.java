@@ -213,6 +213,12 @@ public class EmployeeController {
         if (payload.containsKey("overtime")) extraParams.put("overtime", payload.get("overtime"));
         if (payload.containsKey("workLifeBalance")) extraParams.put("workLifeBalance", payload.get("workLifeBalance"));
         if (payload.containsKey("promotionGap")) extraParams.put("promotionGap", payload.get("promotionGap"));
+        if (payload.containsKey("jobSatisfaction")) extraParams.put("jobSatisfaction", payload.get("jobSatisfaction"));
+        if (payload.containsKey("environmentSatisfaction")) extraParams.put("environmentSatisfaction", payload.get("environmentSatisfaction"));
+        if (payload.containsKey("relationshipSatisfaction")) extraParams.put("relationshipSatisfaction", payload.get("relationshipSatisfaction"));
+        if (payload.containsKey("jobInvolvement")) extraParams.put("jobInvolvement", payload.get("jobInvolvement"));
+        if (payload.containsKey("distanceFromHome")) extraParams.put("distanceFromHome", payload.get("distanceFromHome"));
+        if (payload.containsKey("percentSalaryHike")) extraParams.put("percentSalaryHike", payload.get("percentSalaryHike"));
 
         Map<String, Object> result = retentionRiskService.predictRetentionRisk(tempEmp, extraParams);
 

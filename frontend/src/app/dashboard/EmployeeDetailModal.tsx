@@ -20,6 +20,12 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
   const [simOvertime, setSimOvertime] = useState<boolean>(false);
   const [simWlb, setSimWlb] = useState<number>(3);
   const [simPromotionGap, setSimPromotionGap] = useState<number>(2);
+  const [simJobSat, setSimJobSat] = useState<number>(3);
+  const [simEnvSat, setSimEnvSat] = useState<number>(3);
+  const [simRelSat, setSimRelSat] = useState<number>(3);
+  const [simJobInv, setSimJobInv] = useState<number>(3);
+  const [simDistHome, setSimDistHome] = useState<number>(10);
+  const [simSalaryHike, setSimSalaryHike] = useState<number>(14);
   const [simulationResult, setSimulationResult] = useState<any>(null);
   const [simulating, setSimulating] = useState(false);
 
@@ -34,6 +40,12 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
         setSimOvertime(false);
         setSimWlb(3);
         setSimPromotionGap(emp.yearsAtCompany > 3 ? 3 : 1);
+        setSimJobSat(emp.jobSatisfaction || 3);
+        setSimEnvSat(emp.environmentSatisfaction || 3);
+        setSimRelSat(emp.relationshipSatisfaction || 3);
+        setSimJobInv(emp.jobInvolvement || 3);
+        setSimDistHome(emp.distanceFromHome || 10);
+        setSimSalaryHike(emp.percentSalaryHike || 14);
       })
       .catch(() => setData(null))
       .finally(() => setLoading(false));
@@ -53,6 +65,12 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
         overtime: simOvertime,
         workLifeBalance: simWlb,
         promotionGap: simPromotionGap,
+        jobSatisfaction: simJobSat,
+        environmentSatisfaction: simEnvSat,
+        relationshipSatisfaction: simRelSat,
+        jobInvolvement: simJobInv,
+        distanceFromHome: simDistHome,
+        percentSalaryHike: simSalaryHike,
       });
       setSimulationResult(res.data);
     } catch {
@@ -174,7 +192,7 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
                       </button>
                     </div>
 
-                    <div className="mt-5 grid gap-6 sm:grid-cols-4">
+                    <div className="mt-5 grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                       <div className="flex flex-col">
                         <div className="flex justify-between items-center mb-2">
                           <label className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Proposed Salary</label>
@@ -247,6 +265,96 @@ export default function EmployeeDetailModal({ employeeId, onClose }: EmployeeDet
                         <div className="flex justify-between text-[9px] text-[var(--text-faint)] mt-1.5">
                           <span>0 Yrs</span>
                           <span>10 Yrs</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Job Satisfaction</label>
+                          <span className="text-xs font-bold text-green-400">{simJobSat}/4</span>
+                        </div>
+                        <input
+                          type="range" min="1" max="4" step="1"
+                          value={simJobSat} onChange={(e) => setSimJobSat(Number(e.target.value))}
+                          className="w-full accent-green-500 h-1.5 bg-black/40 rounded-lg appearance-none cursor-pointer outline-none"
+                        />
+                        <div className="flex justify-between text-[9px] text-[var(--text-faint)] mt-1.5">
+                          <span>Low (1)</span><span>High (4)</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Env Satisfaction</label>
+                          <span className="text-xs font-bold text-green-400">{simEnvSat}/4</span>
+                        </div>
+                        <input
+                          type="range" min="1" max="4" step="1"
+                          value={simEnvSat} onChange={(e) => setSimEnvSat(Number(e.target.value))}
+                          className="w-full accent-green-500 h-1.5 bg-black/40 rounded-lg appearance-none cursor-pointer outline-none"
+                        />
+                        <div className="flex justify-between text-[9px] text-[var(--text-faint)] mt-1.5">
+                          <span>Low (1)</span><span>High (4)</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Rel Satisfaction</label>
+                          <span className="text-xs font-bold text-green-400">{simRelSat}/4</span>
+                        </div>
+                        <input
+                          type="range" min="1" max="4" step="1"
+                          value={simRelSat} onChange={(e) => setSimRelSat(Number(e.target.value))}
+                          className="w-full accent-green-500 h-1.5 bg-black/40 rounded-lg appearance-none cursor-pointer outline-none"
+                        />
+                        <div className="flex justify-between text-[9px] text-[var(--text-faint)] mt-1.5">
+                          <span>Low (1)</span><span>High (4)</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Job Involvement</label>
+                          <span className="text-xs font-bold text-green-400">{simJobInv}/4</span>
+                        </div>
+                        <input
+                          type="range" min="1" max="4" step="1"
+                          value={simJobInv} onChange={(e) => setSimJobInv(Number(e.target.value))}
+                          className="w-full accent-green-500 h-1.5 bg-black/40 rounded-lg appearance-none cursor-pointer outline-none"
+                        />
+                        <div className="flex justify-between text-[9px] text-[var(--text-faint)] mt-1.5">
+                          <span>Low (1)</span><span>High (4)</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Commute Dist</label>
+                          <span className="text-xs font-bold text-green-400">{simDistHome} mi</span>
+                        </div>
+                        <input
+                          type="range" min="1" max="50" step="1"
+                          value={simDistHome} onChange={(e) => setSimDistHome(Number(e.target.value))}
+                          className="w-full accent-green-500 h-1.5 bg-black/40 rounded-lg appearance-none cursor-pointer outline-none"
+                        />
+                        <div className="flex justify-between text-[9px] text-[var(--text-faint)] mt-1.5">
+                          <span>1 mi</span><span>50 mi</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Salary Hike %</label>
+                          <span className="text-xs font-bold text-green-400">{simSalaryHike}%</span>
+                        </div>
+                        <input
+                          type="range" min="11" max="25" step="1"
+                          value={simSalaryHike} onChange={(e) => setSimSalaryHike(Number(e.target.value))}
+                          className="w-full accent-green-500 h-1.5 bg-black/40 rounded-lg appearance-none cursor-pointer outline-none"
+                        />
+                        <div className="flex justify-between text-[9px] text-[var(--text-faint)] mt-1.5">
+                          <span>11%</span><span>25%</span>
                         </div>
                       </div>
                     </div>
